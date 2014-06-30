@@ -19,9 +19,6 @@ class PassthroughFuse(LoggingMixIn, Operations):
 
     return path
 
-  # Filesystem methods
-  # ==================
-
   def access(self, path, mode):
     full_path = self._full_path(path)
     if not os.access(full_path, mode):
@@ -47,13 +44,12 @@ class PassthroughFuse(LoggingMixIn, Operations):
     if os.path.isdir(full_path):
       dirents.extend(os.listdir(full_path))
 
-    for r in dirents:
-      yield r
+    for directory in dirents:
+      yield directory
 
   def readlink(self, path):
     pathname = os.readlink(self._full_path(path))
     if pathname.startswith("/"):
-      # Path name is absolute, sanitize it.
       return os.path.relpath(pathname, self.root)
     else:
       return pathname
@@ -87,9 +83,6 @@ class PassthroughFuse(LoggingMixIn, Operations):
 
   def utimens(self, path, times=None):
     return os.utime(self._full_path(path), times)
-
-  # File methods
-  # ============
 
   def open(self, path, flags):
     full_path = self._full_path(path)
