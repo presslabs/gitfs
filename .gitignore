@@ -1,0 +1,14 @@
+*.log
+*.pot
+*.pyc
+settings_*.py
+!deployment/settings/*.py
+.idea
+.project
+.pydevproject
+*~
+.settings
+*.mo
+synctool/*
+.coverage
+.vagrant
