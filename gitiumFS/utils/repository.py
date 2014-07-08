@@ -12,9 +12,13 @@ class Repository(Repository):
   def commit(self, message, author, author_email, ref="refs/heads/master"):
     commit_author = Signature(author, author_email)
     commiter = Signature(author, author_email)
-    tree = self.TreeBuilder().write()
+
+    tree = self.index.write_tree()
+    self.index.write()
+
     parent = self.revparse_single(ref)
-    return self.create_commit(ref, commit_author, commiter, tree, [parent])
+    return self.create_commit(ref, commit_author, commiter, message,
+                              tree, [parent.id])
 
   @classmethod
   def clone(cls, remote_url, path):
