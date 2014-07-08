@@ -20,8 +20,8 @@ class GitFuse(PassthroughFuse):
   def write(self, path, buff, offset, fh):
     result = super(GitFuse, self).write(path, buff, offset, fh)
 
-    self.repo.index.add(path, buff)
-    self.repo.index.commit("Test commit", "gitFS", "git@fs.com")
+    self.repo.index.add(path)
+    self.repo.commit("Test commit", "gitFS", "git@fs.com")
     self.repo.push("origin", "master")
 
     return result
