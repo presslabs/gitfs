@@ -1,8 +1,8 @@
 import re
 
-from tamia import Repository
-
 from gitiumFS import default_config
+from gitiumFS.utils import Repository
+
 from .passthrough import PassthroughFuse
 
 
@@ -16,3 +16,12 @@ class GitFuse(PassthroughFuse):
   def _get_root(self):
     match = re.search(r"(?P<repo_name>[A-Za-z0-9]+)\.git", self.remote_url)
     return "%s/%s" % (default_config.repos_path, match.group("repo_name"))
+
+  def write(self, path, buff, offset, fh):
+    result = super(GitFuse, self).write(path, buff, offset, fh)
+
+    self.repo.index.add(path, buff)
+    self.repo.index.commit("Test commit", "gitFS", "git@fs.com")
+    self.repo.push("origin", "master")
+
+    return result
