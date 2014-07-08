@@ -10,3 +10,5 @@ with open(file_path, 'w') as f:
 
 repo.index.add("README.md")
 repo.commit("my awesome message", "vlad", "vladtemian@gmail.com")
+
+repo.push("origin", "master")
