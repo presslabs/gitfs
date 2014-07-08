@@ -3,8 +3,9 @@ from pygit2 import (Repository, clone_repository, GIT_CHECKOUT_SAFE_CREATE,
 
 
 class Repository(Repository):
-  def push(self):
-    pass
+  def push(self, upstream, branch):
+    remote = self.get_remote(upstream)
+    remote.push("refs/remotes/%s/%s" % (upstream, branch))
 
   def pull(self):
     pass
@@ -25,3 +26,11 @@ class Repository(Repository):
     repo = clone_repository(remote_url, path)
     repo.checkout_head(GIT_CHECKOUT_SAFE_CREATE)
     return repo
+
+  def get_remote(self, name):
+    remote = [remote for remote in self._repo.remotes
+              if remote.name == name]
+    if not remote:
+      raise ValueError("Missing remote")
+
+    return remote[0]
