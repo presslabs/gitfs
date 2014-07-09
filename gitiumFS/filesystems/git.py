@@ -11,7 +11,7 @@ class GitFuse(PassthroughFuse):
     self.remote_url = remote_url
     self.root = self._get_root()
 
-    self.repo = Repository.clone(self.root, remote_url)
+    self.repo = Repository.clone(remote_url, self.root)
 
   def _get_root(self):
     match = re.search(r"(?P<repo_name>[A-Za-z0-9]+)\.git", self.remote_url)
