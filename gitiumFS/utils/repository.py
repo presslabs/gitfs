@@ -44,6 +44,9 @@ class Repository(Repository):
     self.clean_state_files()
 
   def commit(self, message, author, author_email, ref="HEAD"):
+    """ Wrapper for create_commit. It creates a commit from a given ref
+    (default is HEAD)
+    """
     # sign the author
     commit_author = Signature(author, author_email)
     commiter = Signature(author, author_email)

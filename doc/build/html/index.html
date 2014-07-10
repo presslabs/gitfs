@@ -1,0 +1,216 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Welcome to GitiumFS’s documentation! &mdash; GitiumFS 0.1.0 documentation</title>
+  
+
+  
+  
+
+  
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+    <link rel="top" title="GitiumFS 0.1.0 documentation" href="#"/> 
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        <a href="#" class="fa fa-home"> GitiumFS</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+        
+            <ul class="simple">
+</ul>
+
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="#">GitiumFS</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="#">Docs</a> &raquo;</li>
+      
+    <li>Welcome to GitiumFS&#8217;s documentation!</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          <a href="_sources/index.txt" rel="nofollow"> View page source</a>
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            
+  <div class="section" id="welcome-to-gitiumfs-s-documentation">
+<h1>Welcome to GitiumFS&#8217;s documentation!<a class="headerlink" href="#welcome-to-gitiumfs-s-documentation" title="Permalink to this headline">¶</a></h1>
+<p>Contents:</p>
+<div class="toctree-wrapper compound">
+<ul class="simple">
+</ul>
+</div>
+<dl class="class">
+<dt id="gitiumFS.utils.repository.Repository">
+<em class="property">class </em><tt class="descclassname">gitiumFS.utils.repository.</tt><tt class="descname">Repository</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/gitiumFS/utils/repository.html#Repository"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitiumFS.utils.repository.Repository" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="classmethod">
+<dt id="gitiumFS.utils.repository.Repository.clone">
+<em class="property">classmethod </em><tt class="descname">clone</tt><big>(</big><em>remote_url</em>, <em>path</em><big>)</big><a class="reference internal" href="_modules/gitiumFS/utils/repository.html#Repository.clone"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitiumFS.utils.repository.Repository.clone" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clone a repo in a give path and update the working directory with
+a checkout to head (GIT_CHECKOUT_SAFE_CREATE)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="gitiumFS.utils.repository.Repository.commit">
+<tt class="descname">commit</tt><big>(</big><em>message</em>, <em>author</em>, <em>author_email</em>, <em>ref='HEAD'</em><big>)</big><a class="reference internal" href="_modules/gitiumFS/utils/repository.html#Repository.commit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitiumFS.utils.repository.Repository.commit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrapper for create_commit. It creates a commit from a given ref
+(default is HEAD)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="gitiumFS.utils.repository.Repository.get_remote">
+<tt class="descname">get_remote</tt><big>(</big><em>name</em><big>)</big><a class="reference internal" href="_modules/gitiumFS/utils/repository.html#Repository.get_remote"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitiumFS.utils.repository.Repository.get_remote" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieve a remote by name. Raise a ValueError if the remote was not
+added to repo</p>
+<p>Examples:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">repo</span><span class="o">.</span><span class="n">get_remote</span><span class="p">(</span><span class="s">&quot;fork&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="gitiumFS.utils.repository.Repository.pull">
+<tt class="descname">pull</tt><big>(</big><em>upstream</em>, <em>branch_name</em><big>)</big><a class="reference internal" href="_modules/gitiumFS/utils/repository.html#Repository.pull"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitiumFS.utils.repository.Repository.pull" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fetch from a remote and merge the result in local HEAD.</p>
+<p>Examples:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">repo</span><span class="o">.</span><span class="n">pull</span><span class="p">(</span><span class="s">&quot;origin&quot;</span><span class="p">,</span> <span class="s">&quot;master&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="gitiumFS.utils.repository.Repository.push">
+<tt class="descname">push</tt><big>(</big><em>upstream</em>, <em>branch</em><big>)</big><a class="reference internal" href="_modules/gitiumFS/utils/repository.html#Repository.push"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#gitiumFS.utils.repository.Repository.push" title="Permalink to this definition">¶</a></dt>
+<dd><p>Push changes from a branch to a remote</p>
+<p>Examples:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">repo</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="s">&quot;origin&quot;</span><span class="p">,</span> <span class="s">&quot;master&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><a class="reference internal" href="genindex.html"><em>Index</em></a></li>
+<li><a class="reference internal" href="py-modindex.html"><em>Module Index</em></a></li>
+<li><a class="reference internal" href="search.html"><em>Search Page</em></a></li>
+</ul>
+</div>
+
+
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2014, Presslabs.
+    </p>
+  </div>
+
+  <a href="https://github.com/snide/sphinx_rtd_theme">Sphinx theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.1.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
