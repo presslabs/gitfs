@@ -12,3 +12,4 @@ settings_*.py
 synctool/*
 .coverage
 .vagrant
+docs/build
