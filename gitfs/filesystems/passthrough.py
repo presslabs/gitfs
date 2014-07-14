@@ -20,25 +20,28 @@ class PassthroughFuse(LoggingMixIn, Operations):
     return path
 
   def access(self, path, mode):
+    print 'ACCESS: ', path
     full_path = self._full_path(path)
     if not os.access(full_path, mode):
       raise FuseOSError(EACCES)
 
   def chmod(self, path, mode):
+    print 'CHMOD: ', path
     full_path = self._full_path(path)
     return os.chmod(full_path, mode)
 
   def chown(self, path, uid, gid):
+    print 'CHOWN: ', path
     full_path = self._full_path(path)
     return os.chown(full_path, uid, gid)
 
   def getattr(self, path, fh=None):
+    print 'GETATTR: ', path
     full_path = self._full_path(path)
     st = os.lstat(full_path)
     return dict((key, getattr(st, key)) for key in STATS)
 
   def readdir(self, path, fh):
-    print path.split('/')
     full_path = self._full_path(path)
 
     dirents = ['.', '..']
@@ -66,6 +69,7 @@ class PassthroughFuse(LoggingMixIn, Operations):
     return os.mkdir(self._full_path(path), mode)
 
   def statfs(self, path):
+    print 'STASFS: ', path
     full_path = self._full_path(path)
     stv = os.statvfs(full_path)
     return dict((key, getattr(stv, key)) for key in FS_STATS)

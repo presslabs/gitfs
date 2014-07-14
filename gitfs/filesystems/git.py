@@ -25,12 +25,14 @@ class GitFuse(PassthroughFuse):
 
   def current(self, path=''):
     full_path = self._full_path(path)
-    paths = {}
+    paths = {'.': {}, '..': {}}
 
     items = os.listdir(full_path)
     for item in items:
       if os.path.isdir("%s/%s" % (full_path, item)):
         paths[item] = self.current("%s%s/" % (path, item))
+      else:
+        paths[item] = {}
 
     return paths
 
@@ -43,9 +45,16 @@ class GitFuse(PassthroughFuse):
       if entry and entry in paths:
         paths = paths[entry]
 
-    # TODO: check for file
-    for item in paths.keys():
-      yield item
+    if paths.keys():
+      for item in paths.keys():
+        yield item
+
+  def getattr(self, path, fh=None):
+    if path in ['/', '/current'] or path.startswith('/current'):
+      path = path.replace('/current', '')
+      return super(GitFuse, self).getattr(path, fh)
+    else:
+      print path
 
   @property
   def history(self):
