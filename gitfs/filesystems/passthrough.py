@@ -38,6 +38,7 @@ class PassthroughFuse(LoggingMixIn, Operations):
     return dict((key, getattr(st, key)) for key in STATS)
 
   def readdir(self, path, fh):
+    print path.split('/')
     full_path = self._full_path(path)
 
     dirents = ['.', '..']

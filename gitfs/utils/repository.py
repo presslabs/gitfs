@@ -1,8 +1,9 @@
-from pygit2 import (Repository, clone_repository, GIT_CHECKOUT_SAFE_CREATE,
-                    Signature, GIT_BRANCH_REMOTE, GIT_CHECKOUT_FORCE)
+from pygit2 import (Repository as _Repository, clone_repository,
+                    GIT_CHECKOUT_SAFE_CREATE, Signature, GIT_BRANCH_REMOTE,
+                    GIT_CHECKOUT_FORCE)
 
 
-class Repository(Repository):
+class Repository(_Repository):
   def push(self, upstream, branch):
     """ Push changes from a branch to a remote
 
@@ -68,7 +69,7 @@ class Repository(Repository):
 
     repo = clone_repository(remote_url, path)
     repo.checkout_head(GIT_CHECKOUT_SAFE_CREATE)
-    return cls(repo)
+    return cls(path)
 
   def get_remote(self, name):
     """ Retrieve a remote by name. Raise a ValueError if the remote was not
