@@ -62,12 +62,20 @@ class Repository(_Repository):
                               tree, [parent.id])
 
   @classmethod
-  def clone(cls, remote_url, path):
+  def clone(cls, remote_url, path, branch=None):
     """Clone a repo in a give path and update the working directory with
     a checkout to head (GIT_CHECKOUT_SAFE_CREATE)
+
+    :param str remote_url: URL of the repository to clone
+
+    :param str path: Local path to clone into
+
+    :param str branch: Branch to checkout after the
+    clone. The default is to use the remote's default branch.
+
     """
 
-    repo = clone_repository(remote_url, path)
+    repo = clone_repository(remote_url, path, checkout_branch=branch)
     repo.checkout_head(GIT_CHECKOUT_SAFE_CREATE)
     return cls(path)
 

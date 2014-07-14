@@ -2,6 +2,9 @@ import os
 import re
 import shutil
 import signal
+from datetime import datetime
+
+from pygit2 import GIT_SORT_TIME
 
 from gitfs.utils import Repository
 
@@ -9,16 +12,16 @@ from .passthrough import PassthroughFuse
 
 
 class GitFuse(PassthroughFuse):
-  def __init__(self, remote_url, repos_path):
+  def __init__(self, remote_url, repos_path, branch=None):
     self.remote_url = remote_url
     self.root = self._get_root(repos_path)
     self.repos = repos_path
 
-    self.repo = Repository.clone(remote_url, self.root)
+    self.repo = Repository.clone(remote_url, self.root, branch)
 
     self._paths = {
         'current': self.current(),
-        'history': self.history,
+        'history': self.history(),
     }
 
     signal.signal(signal.SIGTERM, self.on_SIGTERM)
@@ -53,12 +56,18 @@ class GitFuse(PassthroughFuse):
     if path in ['/', '/current'] or path.startswith('/current'):
       path = path.replace('/current', '')
       return super(GitFuse, self).getattr(path, fh)
-    else:
+    elif path.startswith('/history'):
       print path
 
-  @property
   def history(self):
-    return {"not_yet_implemented": {}}
+    paths = {}
+    for commit in self.repo.walk(self.repo.head.target, GIT_SORT_TIME):
+      commit_time = datetime.fromtimestamp(commit.commit_time)
+      day = "%s-%s-%s" % (commit_time.year, commit_time.month, commit_time.day)
+      time = "%s-%s-%s" % (commit_time.hour, commit_time.minute,
+                           commit_time.second)
+      paths[day] = "%s-%s" % (time, commit.hex)
+    return paths
 
   def _get_root(self, repos_path):
     match = re.search(r"(?P<repo_name>[A-Za-z0-9]+)\.git", self.remote_url)
