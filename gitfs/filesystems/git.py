@@ -27,6 +27,8 @@ class GitFuse(PassthroughFuse):
     signal.signal(signal.SIGTERM, self.on_SIGTERM)
 
   def current(self, path=''):
+    """ Get all paths from repos. Hold them in memory.
+    """
     full_path = self._full_path(path)
     paths = {'.': {}, '..': {}}
 
@@ -40,6 +42,9 @@ class GitFuse(PassthroughFuse):
     return paths
 
   def readdir(self, path, fh):
+    """ Because all our paths are in memory, it's very easy to read them. Just
+    go through self._paths and that's it.
+    """
     path = path.split('/')
     paths = self._paths
 
@@ -60,13 +65,20 @@ class GitFuse(PassthroughFuse):
       print path
 
   def history(self):
+    """ Walk through all commits from current repo in order to compose
+    _history_ directory
+    """
     paths = {}
+
     for commit in self.repo.walk(self.repo.head.target, GIT_SORT_TIME):
       commit_time = datetime.fromtimestamp(commit.commit_time)
+
       day = "%s-%s-%s" % (commit_time.year, commit_time.month, commit_time.day)
       time = "%s-%s-%s" % (commit_time.hour, commit_time.minute,
                            commit_time.second)
+
       paths[day] = "%s-%s" % (time, commit.hex)
+
     return paths
 
   def _get_root(self, repos_path):
