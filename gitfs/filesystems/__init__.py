@@ -1,1 +1,1 @@
-from .git import GitFuse
+from .git import GitFS

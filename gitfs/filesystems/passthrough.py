@@ -42,6 +42,7 @@ class PassthroughFuse(LoggingMixIn, Operations):
     return dict((key, getattr(st, key)) for key in STATS)
 
   def readdir(self, path, fh):
+    print 'Readdir: ', path
     full_path = self._full_path(path)
 
     dirents = ['.', '..']
@@ -52,6 +53,7 @@ class PassthroughFuse(LoggingMixIn, Operations):
       yield directory
 
   def readlink(self, path):
+    print 'readlink: ', path
     pathname = os.readlink(self._full_path(path))
     if pathname.startswith("/"):
       return os.path.relpath(pathname, self.root)
@@ -59,6 +61,7 @@ class PassthroughFuse(LoggingMixIn, Operations):
       return pathname
 
   def mknod(self, path, mode, dev):
+    print 'mknod: ', path
     return os.mknod(self._full_path(path), mode, dev)
 
   def rmdir(self, path):
