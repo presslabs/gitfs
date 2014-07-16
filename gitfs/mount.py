@@ -1,6 +1,8 @@
-from .router import Router
-from .views import IndexView
+from router import Router
+from views import IndexView
 
 
-router = Router()
+router = Router('~/presslabs/testing.git', '/tmp')
 router.register(r'^/complete', IndexView)
+
+router.utimens('asdasd', a='asd')
