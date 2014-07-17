@@ -16,9 +16,7 @@ class Router(GitFS):
         a specific branch.
 
         :param str remote_url: URL of the repository to clone
-
         :param str repos_path: Where are all the repos clonedd
-
         :param str branch: Branch to checkout after the
         clone. The default is to use the remote's default branch.
 
@@ -34,6 +32,16 @@ class Router(GitFS):
         })
 
     def get_view(self, path):
+        """
+        Try to map a given path to it's specific view.
+
+        If a match is found, an view object is created with the right regex
+        groups(named or unnamed).
+
+        :param str path: path to be matched
+        :rtype: view object, relative path
+        """
+
         for route in self.routes:
             result = re.search(route['regex'], path)
             if result is None:
@@ -50,6 +58,19 @@ class Router(GitFS):
         raise ValueError("View not found!")
 
     def __getattr__(self, attr_name):
+        """Magic method which, return a specific method from a view.
+
+        In Fuse API, almost each method receive a path argument. Based on that
+        path we can route each call to a specific view. For example, if a
+        method which has a path argument like `/current/dir1/dir2/file1` is
+        called, we need to get the certain view that will know how to handle
+        this path, instantiate it and then call our method on the new created
+        object`
+
+        :params str attr_name: Method name to be called
+        :rtype: function
+        """
+
         if attr_name not in dir(operations):
             message = 'Method %s is not implemented by this FS' % attr_name
             raise NotImplementedError(message)
