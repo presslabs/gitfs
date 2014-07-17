@@ -1,2 +1,5 @@
 class View(object):
-  pass
+    def __init__(self, *args, **kwargs):
+        self.args = args
+        for attr in kwargs:
+            setattr(self, attr, kwargs[attr])

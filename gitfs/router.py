@@ -1,3 +1,4 @@
+import re
 import inspect
 
 from fuse import Operations
@@ -26,16 +27,32 @@ class Router(GitFS):
 
         self.routes = []
 
-    def register(self, regex, cls):
-        self.routes.append((regex, cls))
+    def register(self, regex, view):
+        self.routes.append({
+            'regex': regex,
+            'view': view
+        })
 
-    def get_view(self):
-        print 'ok'
+    def get_view(self, path):
+        for route in self.routes:
+            result = re.search(route['regex'], path)
+            if result is None:
+                continue
+
+            groups = result.groups()
+            relative_path = re.sub(route['regex'], '', path)
+
+            kwargs = result.groupdict()
+            args = set(groups) - set(kwargs.values())
+
+            return route['view'](*args, **kwargs), relative_path
+
+        raise ValueError("View not found!")
 
     def __getattr__(self, attr_name):
         if attr_name not in dir(operations):
             message = 'Method %s is not implemented by this FS' % attr_name
-            raise NotImplemented(message)
+            raise NotImplementedError(message)
 
         attr = getattr(operations, attr_name)
         if not callable(attr):
@@ -47,8 +64,8 @@ class Router(GitFS):
             raise Exception('route to special methods')
 
         def placeholder(path, *arg, **kwargs):
-            view = self.get_view(path)
+            view, relative_path = self.get_view(path)
             method = getattr(view, attr_name)
-            return method(path, *arg, **kwargs)
+            return method(relative_path, *arg, **kwargs)
 
         return placeholder

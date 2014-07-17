@@ -3,6 +3,7 @@ from views import IndexView
 
 
 router = Router('~/presslabs/testing.git', '/tmp')
-router.register(r'^/complete', IndexView)
+router.register(r'^/complete/relativity/is/good/(?P<path>\w+)/(\w+)',
+                IndexView)
 
-router.utimens('asdasd', a='asd')
+router.open('/complete/relativity/is/good/one/two/three/four/five.six', 'arg')
