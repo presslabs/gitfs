@@ -4,6 +4,7 @@ import inspect
 from fuse import Operations
 
 from gitfs.filesystems import GitFS
+from gitfs.utils import Repository
 
 
 operations = Operations()
@@ -21,7 +22,11 @@ class Router(GitFS):
         clone. The default is to use the remote's default branch.
 
         """
-        # super(Router, self).__init__(remote_url, repos_path, branch)
+        self.remote_url = remote_url
+        self.repo_path = self._get_repo(repos_path)
+        self.repos = repos_path
+
+        self.repo = Repository.clone(remote_url, self.root, branch)
 
         self.routes = []
 
@@ -90,3 +95,7 @@ class Router(GitFS):
             return method(relative_path, *arg, **kwargs)
 
         return placeholder
+
+    def _get_repo(self, repos_path):
+        match = re.search(r"(?P<repo_name>[A-Za-z0-9]+)\.git", self.remote_url)
+        return "%s/%s" % (repos_path, match.group("repo_name"))
