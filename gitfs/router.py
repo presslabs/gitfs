@@ -24,7 +24,7 @@ class Router(object):
         self.repo_path = self._get_repo(repos_path)
         self.repos = repos_path
 
-        self.repo = Repository.clone(remote_url, self.root, branch)
+        self.repo = Repository.clone(remote_url, self.repo_path, branch)
 
         self.routes = []
 
