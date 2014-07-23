@@ -52,6 +52,7 @@ class Router(object):
             relative_path = re.sub(route['regex'], '', path)
 
             kwargs = result.groupdict()
+            kwargs['repo_path'] = self.repo_path
             args = set(groups) - set(kwargs.values())
 
             return route['view'](*args, **kwargs), relative_path
