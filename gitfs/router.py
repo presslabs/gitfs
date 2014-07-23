@@ -5,9 +5,6 @@ from fuse import Operations
 from gitfs.utils import Repository
 
 
-operations = Operations()
-
-
 class Router(object):
     def __init__(self, remote_url, repos_path, branch=None):
         """
@@ -23,6 +20,7 @@ class Router(object):
         self.remote_url = remote_url
         self.repo_path = self._get_repo(repos_path)
         self.repos = repos_path
+        self.operations = Operations()
 
         self.repo = Repository.clone(remote_url, self.repo_path, branch)
 
@@ -74,11 +72,11 @@ class Router(object):
         :rtype: function
         """
 
-        if attr_name not in dir(operations):
+        if attr_name not in dir(self.operations):
             message = 'Method %s is not implemented by this FS' % attr_name
             raise NotImplementedError(message)
 
-        attr = getattr(operations, attr_name)
+        attr = getattr(self.operations, attr_name)
         if not callable(attr):
             raise ValueError('Invalid method')
 
