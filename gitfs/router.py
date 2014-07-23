@@ -95,5 +95,5 @@ class Router(object):
         return placeholder
 
     def _get_repo(self, repos_path):
-        match = re.search(r"(?P<repo_name>[A-Za-z0-9]+)\.git", self.remote_url)
+        match = re.search(r"(?P<repo_name>[\w\-\_]+)\.git", self.remote_url)
         return "%s/%s" % (repos_path, match.group("repo_name"))
