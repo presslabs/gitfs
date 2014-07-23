@@ -12,9 +12,9 @@ class Router(object):
         a specific branch.
 
         :param str remote_url: URL of the repository to clone
-        :param str repos_path: Where are all the repos clonedd
+        :param str repos_path: Where are all the repos are cloned
         :param str branch: Branch to checkout after the
-        clone. The default is to use the remote's default branch.
+            clone. The default is to use the remote's default branch.
 
         """
         self.remote_url = remote_url
@@ -36,7 +36,7 @@ class Router(object):
         """
         Try to map a given path to it's specific view.
 
-        If a match is found, an view object is created with the right regex
+        If a match is found, a view object is created with the right regex
         groups(named or unnamed).
 
         :param str path: path to be matched
@@ -59,16 +59,17 @@ class Router(object):
         raise ValueError("View not found!")
 
     def __getattr__(self, attr_name):
-        """Magic method which, return a specific method from a view.
+        """
+        Magic method which calls a specific method from a view.
 
-        In Fuse API, almost each method receive a path argument. Based on that
+        In Fuse API, almost each method receives a path argument. Based on that
         path we can route each call to a specific view. For example, if a
         method which has a path argument like `/current/dir1/dir2/file1` is
         called, we need to get the certain view that will know how to handle
-        this path, instantiate it and then call our method on the new created
-        object`
+        this path, instantiate it and then call our method on the newly created
+        object.
 
-        :params str attr_name: Method name to be called
+        :param str attr_name: Method name to be called
         :rtype: function
         """
 
