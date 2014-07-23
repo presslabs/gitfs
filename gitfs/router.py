@@ -1,16 +1,14 @@
 import re
 import inspect
-
 from fuse import Operations
 
-from gitfs.filesystems import GitFS
 from gitfs.utils import Repository
 
 
 operations = Operations()
 
 
-class Router(GitFS):
+class Router(object):
     def __init__(self, remote_url, repos_path, branch=None):
         """
         Clone repo from a remote into repos_path/<repo_name> and checkout to
