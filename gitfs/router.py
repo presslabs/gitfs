@@ -3,6 +3,7 @@ import inspect
 from fuse import Operations
 
 from gitfs.utils import Repository
+from filesystems.passthrough import PassthroughFuse
 
 
 class Router(object):
@@ -83,8 +84,16 @@ class Router(object):
             raise ValueError('Invalid method')
 
         args = inspect.getargspec(attr).args
+        print attr_name
+        print args
         if 'path' not in args:
+            pass
             # TODO: route to special methods
+            # - symlink
+            # - rename
+            # - link
+            # - init
+            # - destroy
             raise Exception('route to special methods')
 
         def placeholder(path, *arg, **kwargs):
