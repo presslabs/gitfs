@@ -96,14 +96,14 @@ class Router(object):
 
         args = inspect.getargspec(attr).args
         if 'path' not in args:
-            #pass
+            pass
             # TODO: route to special methods
             # - symlink
             # - rename
             # - link
             # - init
             # - destroy
-            raise Exception('route to special methods')
+            #raise Exception('route to special methods')
 
         def placeholder(path, *arg, **kwargs):
             view, relative_path = self.get_view(path)
