@@ -1,9 +1,8 @@
 import re
 import inspect
-from fuse import Operations
+from fuse import Operations, FUSE
 
 from gitfs.utils import Repository
-from filesystems.passthrough import PassthroughFuse
 
 
 class Router(object):
@@ -26,6 +25,15 @@ class Router(object):
         self.repo = Repository.clone(remote_url, self.repo_path, branch)
 
         self.routes = []
+        fuse_ops = set([elem[0]
+                        for elem
+                        in inspect.getmembers(FUSE, predicate=inspect.ismethod)])
+        operations_ops = set([elem[0]
+                              for elem in
+                              inspect.getmembers(Operations,
+                                                 predicate=inspect.ismethod)])
+        self.fuse_class_ops = fuse_ops - operations_ops
+
 
     def register(self, regex, view):
         self.routes.append({
@@ -75,6 +83,9 @@ class Router(object):
         :rtype: function
         """
 
+        if attr_name in self.fuse_class_ops:
+            return None
+
         if attr_name not in dir(self.operations):
             message = 'Method %s is not implemented by this FS' % attr_name
             raise NotImplementedError(message)
@@ -84,10 +95,8 @@ class Router(object):
             raise ValueError('Invalid method')
 
         args = inspect.getargspec(attr).args
-        print attr_name
-        print args
         if 'path' not in args:
-            pass
+            #pass
             # TODO: route to special methods
             # - symlink
             # - rename
