@@ -11,12 +11,6 @@ class View(object):
         for attr in kwargs:
             setattr(self, attr, kwargs[attr])
 
-        self.paths = self.build_paths()
-
-    @abstractmethod
-    def build_paths(self, root=''):
-        pass
-
     def _full_path(self, root, partial):
         if partial.startswith("/"):
             partial = partial[1:]
