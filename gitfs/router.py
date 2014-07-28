@@ -1,8 +1,10 @@
 import re
 import inspect
-from fuse import Operations, FUSE
+from errno import EFAULT
+from fuse import Operations, FUSE, FuseOSError
 
 from gitfs.utils import Repository
+from log import log
 
 
 class Router(object):
@@ -18,12 +20,10 @@ class Router(object):
 
         """
         self.remote_url = remote_url
+        self.branch = branch
         self.repo_path = self._get_repo(repos_path)
         self.repos = repos_path
         self.operations = Operations()
-
-        self.repo = Repository.clone(remote_url, self.repo_path, branch)
-
         self.routes = []
         fuse_ops = set([elem[0]
                         for elem
@@ -34,6 +34,28 @@ class Router(object):
                                                  predicate=inspect.ismethod)])
         self.fuse_class_ops = fuse_ops - operations_ops
 
+
+
+    def init(self, path):
+        log.info('Cloning into %s' % self.repo_path)
+        self.repo = Repository.clone(self.remote_url, self.repo_path,
+                                     self.branch)
+        log.info('Done INIT')
+
+    def destroy(self, path):
+        log.info('DESTROY')
+
+
+    def __call__(self, op, *args):
+        if op in ['destroy', 'init']:
+            view = self
+        else:
+            path = args[0]
+            view, _ = self.get_view(path)
+        log.info('calling %s from %s' % (op, view))
+        if not hasattr(view, op):
+            raise FuseOSError(EFAULT)
+        return getattr(view, op)(*args)
 
     def register(self, regex, view):
         self.routes.append({
