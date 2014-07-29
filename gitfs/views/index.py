@@ -1,7 +1,6 @@
 import os
 from errno import ENOENT
 from stat import S_IFDIR
-
 from gitfs import  FuseMethodNotImplemented, FuseOSError
 
 from .view import View
@@ -9,6 +8,9 @@ from log import log
 
 
 class IndexView(View):
+
+    def statfs(self, path):
+        return {}
 
     def getattr(self, path, fh=None):
         '''
