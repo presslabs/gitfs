@@ -53,6 +53,7 @@ class Router(object):
 
 
     def __call__(self, op, *args):
+        # TODO: check args for special methods
         if op in ['destroy', 'init']:
             view = self
         else:
@@ -92,7 +93,7 @@ class Router(object):
             relative_path = re.sub(route['regex'], '', path)
 
             kwargs = result.groupdict()
-            kwargs['root'] = self.mount_path
+            kwargs['repo_path'] = self.mount_path
             args = set(groups) - set(kwargs.values())
 
             return route['view'](*args, **kwargs), relative_path
