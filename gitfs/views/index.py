@@ -24,7 +24,7 @@ class IndexView(View):
 
         if path != '/':
             raise FuseOSError(ENOENT)
-        return dict(st_mode=(S_IFDIR | 0755), st_nlink=1)
+        return dict(st_mode=(S_IFDIR | 0755), st_nlink=2)
 
 
     def opendir(self, path):
