@@ -1,5 +1,5 @@
 from .view import View
 
 
-class HistoryVIew(View):
+class HistoryView(View):
     pass
