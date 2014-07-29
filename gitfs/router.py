@@ -51,7 +51,6 @@ class Router(object):
     def destroy(self, path):
         log.info('DESTROY')
 
-
     def __call__(self, op, *args):
         # TODO: check args for special methods
         if op in ['destroy', 'init']:
@@ -61,13 +60,13 @@ class Router(object):
             view, relative_path = self.get_view(path)
             relative_path = '/' if not relative_path else relative_path
             args = (relative_path,) + args[1:]
-            log.info('args: %r', args)
         log.info('calling %s from %s with %r' % (op, view, args))
         if not hasattr(view, op):
             raise FuseOSError(EFAULT)
         return getattr(view, op)(*args)
 
     def register(self, regex, view):
+        log.info('registring %s for %s', view, regex)
         self.routes.append({
             'regex': regex,
             'view': view
@@ -93,7 +92,9 @@ class Router(object):
             relative_path = re.sub(route['regex'], '', path)
 
             kwargs = result.groupdict()
-            kwargs['repo_path'] = self.mount_path
+            kwargs['repo_path'] = self.repo_path
+            kwargs['mount_path'] = self.mount_path
+            kwargs['regex'] = route['regex']
             args = set(groups) - set(kwargs.values())
 
             return route['view'](*args, **kwargs), relative_path
