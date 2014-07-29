@@ -26,10 +26,6 @@ class IndexView(View):
             raise FuseOSError(ENOENT)
         return dict(st_mode=(S_IFDIR | 0755), st_nlink=1)
 
-    def getxattr(self, path, name, position=0):
-        """Get extended attributes"""
-
-        raise FuseMethodNotImplemented
 
     def opendir(self, path):
         return 0
@@ -50,18 +46,3 @@ class IndexView(View):
         #return dirents
         return ['.', '..', 'current', 'history']
 
-
-    def build_paths(self, root=''):
-        """ Get all paths from repos. Hold them in memory.
-        """
-        full_path = self._full_path(self.repo_path, root)
-        paths = {'.': {}, '..': {}}
-
-        items = os.listdir(full_path)
-        for item in items:
-            if os.path.isdir("%s/%s" % (full_path, item)):
-                paths[item] = self.build_paths("%s%s/" % (root, item))
-            else:
-                paths[item] = {}
-
-        return paths
