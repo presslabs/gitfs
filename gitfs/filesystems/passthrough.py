@@ -4,6 +4,8 @@ from errno import EACCES
 
 from fuse import Operations, LoggingMixIn, FuseOSError
 
+from gitfs.log import log
+
 STATS = ('st_atime', 'st_ctime', 'st_gid', 'st_mode', 'st_mtime', 'st_nlink',
          'st_size', 'st_uid')
 
@@ -12,12 +14,20 @@ FS_STATS = ('f_bavail', 'f_bfree', 'f_blocks', 'f_bsize', 'f_favail',
 
 
 class PassthroughFuse(LoggingMixIn, Operations):
+
+    def __init__(self, root):
+        self.root = root
+
     def _full_path(self, partial):
         if partial.startswith("/"):
             partial = partial[1:]
         path = os.path.join(self.root, partial)
+        log.info('full_path: %s', path)
 
         return path
+
+    #def _full_path(self, partial):
+        #pass
 
     def access(self, path, mode):
         print 'ACCESS: ', path

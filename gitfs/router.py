@@ -8,7 +8,7 @@ from log import log
 
 
 class Router(object):
-    def __init__(self, remote_url, repos_path, branch=None):
+    def __init__(self, remote_url, repos_path, mount_path, branch=None):
         """
         Clone repo from a remote into repos_path/<repo_name> and checkout to
         a specific branch.
@@ -20,9 +20,11 @@ class Router(object):
 
         """
         self.remote_url = remote_url
+        self.repos_path = repos_path
+        self.mount_path = mount_path
         self.branch = branch
         self.repo_path = self._get_repo(repos_path)
-        self.repos = repos_path
+
         self.operations = Operations()
         self.routes = []
         fuse_ops = set([elem[0]
@@ -34,12 +36,16 @@ class Router(object):
                                                  predicate=inspect.ismethod)])
         self.fuse_class_ops = fuse_ops - operations_ops
 
-
-
-    def init(self, path):
         log.info('Cloning into %s' % self.repo_path)
         self.repo = Repository.clone(self.remote_url, self.repo_path,
                                      self.branch)
+        log.info('Done INIT')
+
+    def init(self, path):
+        # XXX: Move back to __init__?
+        #log.info('Cloning into %s' % self.repo_path)
+        #self.repo = Repository.clone(self.remote_url, self.repo_path,
+                                     #self.branch)
         log.info('Done INIT')
 
     def destroy(self, path):
@@ -51,8 +57,11 @@ class Router(object):
             view = self
         else:
             path = args[0]
-            view, _ = self.get_view(path)
-        log.info('calling %s from %s' % (op, view))
+            view, relative_path = self.get_view(path)
+            relative_path = '/' if not relative_path else relative_path
+            args = (relative_path,) + args[1:]
+            log.info('args: %r', args)
+        log.info('calling %s from %s with %r' % (op, view, args))
         if not hasattr(view, op):
             raise FuseOSError(EFAULT)
         return getattr(view, op)(*args)
@@ -83,7 +92,7 @@ class Router(object):
             relative_path = re.sub(route['regex'], '', path)
 
             kwargs = result.groupdict()
-            kwargs['repo_path'] = self.repo_path
+            kwargs['root'] = self.mount_path
             args = set(groups) - set(kwargs.values())
 
             return route['view'](*args, **kwargs), relative_path
@@ -91,6 +100,7 @@ class Router(object):
         raise ValueError("View not found!")
 
     def __getattr__(self, attr_name):
+        log.info('Getting %s attribute.' % attr_name)
         """
         Magic method which calls a specific method from a view.
 

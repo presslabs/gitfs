@@ -1,8 +1,10 @@
 import os
 from abc import ABCMeta, abstractmethod
 
+from gitfs import  FuseMethodNotImplemented
+from gitfs.filesystems.passthrough import PassthroughFuse
 
-class View(object):
+class View(PassthroughFuse):
     __metaclass__ = ABCMeta
 
     def __init__(self, *args, **kwargs):
@@ -11,9 +13,8 @@ class View(object):
         for attr in kwargs:
             setattr(self, attr, kwargs[attr])
 
-    def _full_path(self, root, partial):
-        if partial.startswith("/"):
-            partial = partial[1:]
-        path = os.path.join(root, partial)
 
-        return path
+    def getxattr(self, path, name, position=0):
+        """Get extended attributes"""
+
+        raise FuseMethodNotImplemented
