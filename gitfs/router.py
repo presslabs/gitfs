@@ -1,4 +1,5 @@
 import re
+import os
 import inspect
 from errno import EFAULT
 from fuse import Operations, FUSE, FuseOSError
@@ -102,7 +103,6 @@ class Router(object):
         raise ValueError("View not found!")
 
     def __getattr__(self, attr_name):
-        log.info('Getting %s attribute.' % attr_name)
         """
         Magic method which calls a specific method from a view.
 
@@ -117,6 +117,7 @@ class Router(object):
         :rtype: function
         """
 
+        log.info('Getting %s attribute.' % attr_name)
         if attr_name in self.fuse_class_ops:
             return None
 
@@ -148,4 +149,4 @@ class Router(object):
 
     def _get_repo(self, repos_path):
         match = re.search(r"(?P<repo_name>[\w\-\_]+)\.git", self.remote_url)
-        return "%s/%s" % (repos_path, match.group("repo_name"))
+        return os.path.join(repos_path, match.group('repo_name'))
