@@ -61,7 +61,7 @@ class Router(object):
             view, relative_path = self.get_view(path)
             relative_path = '/' if not relative_path else relative_path
             args = (relative_path,) + args[1:]
-        log.info('calling %s from %s with %r' % (op, view, args))
+        log.info('CALL %s %s with %r' % (op, view, args))
         if not hasattr(view, op):
             raise FuseOSError(EFAULT)
         return getattr(view, op)(*args)
@@ -93,6 +93,7 @@ class Router(object):
             relative_path = re.sub(route['regex'], '', path)
 
             kwargs = result.groupdict()
+            kwargs['repo'] = self.repo
             kwargs['repo_path'] = self.repo_path
             kwargs['mount_path'] = self.mount_path
             kwargs['regex'] = route['regex']
