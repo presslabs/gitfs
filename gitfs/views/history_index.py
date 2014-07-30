@@ -23,8 +23,6 @@ class HistoryIndexView(View):
         the directory, while Linux counts only the subdirectories.
         '''
 
-        if path != '/':
-            raise FuseOSError(ENOENT)
         return dict(st_mode=(S_IFDIR | 0755), st_nlink=2)
 
 
@@ -50,9 +48,36 @@ class HistoryIndexView(View):
 
         return list(commit_dates)
 
-    def readdir(self, path, fh):
-        commit_dates = self._get_commit_dates()
+    def _get_commits_by_date(self, date):
+        """
+        Retrieves all the commits from a particular date.
 
-        dir_entries = ['.', '..'] + commit_dates
+        :param date: date with the format: yyyy-mm-dd
+        :type date: str
+        :returns: a list containg the commits for that day. Each list item
+            will have the format: hh:mm:ss-<short_sha1>, where short_sha1 is
+            the short sha1 of the commit.
+        :rtype: list
+        """
+
+        date = datetime.strptime(date, '%Y-%m-%d').date()
+        commits = []
+        for commit in self.repo.walk(self.repo.head.target, GIT_SORT_TIME):
+            commit_time = datetime.fromtimestamp(commit.commit_time)
+            if  commit_time.date() == date:
+                time = commit_time.time().strftime('%H:%m:%S')
+                commits.append("%s-%s" % (time, commit.hex[:10]))
+
+        return commits
+
+    def readdir(self, path, fh):
+        dir_entries = ['.', '..']
+        if getattr(self, 'date', None):
+            additional_entries = self._get_commits_by_date(self.date)
+        else:
+            additional_entries = self._get_commit_dates()
+
+        dir_entries = ['.', '..'] + additional_entries
+
         for entry in dir_entries:
             yield entry
