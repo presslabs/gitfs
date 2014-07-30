@@ -38,27 +38,21 @@ class HistoryIndexView(View):
         log.info('%s %s', path, amode)
         return 0
 
-    def _get_commit_history(self):
+    def _get_commit_dates(self):
         """
         Walk through all commits from current repo in order to compose the
         _history_ directory.
         """
-        paths = {}
-
+        commit_dates = set()
         for commit in self.repo.walk(self.repo.head.target, GIT_SORT_TIME):
-            commit_time = datetime.fromtimestamp(commit.commit_time)
+            commit_date = datetime.fromtimestamp(commit.commit_time).date()
+            commit_dates.add(commit_date.strftime('%Y-%m-%d'))
 
-            day = commit_time.date().strftime('%Y-%m-%d')
-            time = commit_time.time().strftime('%H-%m-%S')
-
-            paths[day] = "%s-%s" % (time, commit.hex[:7])
-            #paths[day] = "%s-%s" % (time, commit.hex)
-
-        return paths
+        return list(commit_dates)
 
     def readdir(self, path, fh):
-        commit_hist = self._get_commit_history()
+        commit_dates = self._get_commit_dates()
 
-        dir_entries = ['.', '..'] + commit_hist.keys()
+        dir_entries = ['.', '..'] + commit_dates
         for entry in dir_entries:
             yield entry
