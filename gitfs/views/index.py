@@ -40,11 +40,5 @@ class IndexView(View):
         return 0
 
     def readdir(self, path, fh):
-        #dirents = [
-            #('.', {'st_ino': 1, 'st_mode': S_IFDIR}),
-            #('..', {'st_ino': 2, 'st_mode': S_IFDIR}),
-            #('current', {'st_ino': 3, 'st_mode': S_IFDIR}),
-            #('history', {'st_ino': 4, 'st_mode': S_IFDIR})]
-        #return dirents
         return ['.', '..', 'current', 'history']
 
