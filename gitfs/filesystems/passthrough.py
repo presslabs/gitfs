@@ -21,9 +21,7 @@ class PassthroughFuse(LoggingMixIn, Operations):
     def _full_path(self, partial):
         if partial.startswith("/"):
             partial = partial[1:]
-        log.info('partial: %s', partial)
         path = os.path.join(self.root, partial)
-        log.info('full_path: %s', path)
 
         return path
 
@@ -50,7 +48,8 @@ class PassthroughFuse(LoggingMixIn, Operations):
 
         dirents = ['.', '..']
         if os.path.isdir(full_path):
-            dirents.extend(os.listdir(full_path))
+            [dirents.append(entry)
+             for entry in os.listdir(full_path) if entry != '.git']
 
         for directory in dirents:
             yield directory
