@@ -48,10 +48,8 @@ class HistoryIndexView(View):
         for commit in self.repo.walk(self.repo.head.target, GIT_SORT_TIME):
             commit_time = datetime.fromtimestamp(commit.commit_time)
 
-            day = "%s-%s-%s" % (commit_time.year, commit_time.month,
-                                commit_time.day)
-            time = "%s-%s-%s" % (commit_time.hour, commit_time.minute,
-                                 commit_time.second)
+            day = commit_time.date().strftime('%Y-%m-%d')
+            time = commit_time.time().strftime('%H-%m-%S')
 
             paths[day] = "%s-%s" % (time, commit.hex[:7])
             #paths[day] = "%s-%s" % (time, commit.hex)
