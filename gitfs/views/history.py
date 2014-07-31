@@ -53,12 +53,14 @@ class HistoryView(View):
     def readdir(self, path, fh):
         dir_entries = ['.', '..']
         commit = self.repo.revparse_single(self.commit_sha1)
+        dir_tree = commit.tree
 
-        # if the relative_path is not empty retrieve the subtree that is
+        # If the relative_path is not empty, fetch the git tree corresponding
+        # to the directory that we are in.
         tree_name = os.path.split(self.relative_path)[1]
         if tree_name:
             subtree = self._get_commit_subtree(commit.tree, tree_name)
-            [dir_entries.append(entry.name) for entry in subtree]
-        else:
-            [dir_entries.append(entry.name) for entry in commit.tree]
+            dir_tree = subtree
+
+        [dir_entries.append(entry.name) for entry in dir_tree]
         return dir_entries
