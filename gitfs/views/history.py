@@ -33,6 +33,15 @@ class HistoryView(View):
         return 0
 
     def _get_commit_subtree(self, tree, subtree_name):
+        """
+        Retrievs from the repo the Tree object with the name <subtree_name>.
+
+        :param tree: a pygit.Tree instance
+        :param subtree_name: the name of the tree that is being searched for.
+        :type subtree_name: str
+        :returns: a pygit2.Tree instance representig the tree that is was
+            searched for.
+        """
         for e in tree:
             if e.filemode == GIT_FILEMODE_TREE:
                 if e.name == subtree_name:
@@ -44,8 +53,10 @@ class HistoryView(View):
     def readdir(self, path, fh):
         dir_entries = ['.', '..']
         commit = self.repo.revparse_single(self.commit_sha1)
-        if getattr(self, 'relative_path'):
-            tree_name = os.path.split(self.relative_path)[1]
+
+        # if the relative_path is not empty retrieve the subtree that is
+        tree_name = os.path.split(self.relative_path)[1]
+        if tree_name:
             subtree = self._get_commit_subtree(commit.tree, tree_name)
             [dir_entries.append(entry.name) for entry in subtree]
         else:
