@@ -65,7 +65,7 @@ class HistoryIndexView(View):
         for commit in self.repo.walk(self.repo.head.target, GIT_SORT_TIME):
             commit_time = datetime.fromtimestamp(commit.commit_time)
             if  commit_time.date() == date:
-                time = commit_time.time().strftime('%H:%m:%S')
+                time = commit_time.time().strftime('%H:%M:%S')
                 commits.append("%s-%s" % (time, commit.hex[:10]))
 
         return commits
