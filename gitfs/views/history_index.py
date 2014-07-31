@@ -77,7 +77,7 @@ class HistoryIndexView(View):
         else:
             additional_entries = self._get_commit_dates()
 
-        dir_entries = ['.', '..'] + additional_entries
+        dir_entries += additional_entries
 
         for entry in dir_entries:
             yield entry
