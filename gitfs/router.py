@@ -59,6 +59,7 @@ class Router(object):
         else:
             path = args[0]
             view, relative_path = self.get_view(path)
+            args = (relative_path,) + args[1:]
             relative_path = '/' if not relative_path else relative_path
             args = (relative_path,) + args[1:]
         log.info('CALL %s %s with %r' % (op, view, args))
@@ -97,6 +98,7 @@ class Router(object):
             kwargs['repo_path'] = self.repo_path
             kwargs['mount_path'] = self.mount_path
             kwargs['regex'] = route['regex']
+            kwargs['relative_path'] = relative_path
             args = set(groups) - set(kwargs.values())
 
             return route['view'](*args, **kwargs), relative_path
