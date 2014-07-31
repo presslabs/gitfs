@@ -36,7 +36,7 @@ class HistoryView(View):
         """
         Retrievs from the repo the Tree object with the name <subtree_name>.
 
-        :param tree: a pygit.Tree instance
+        :param tree: a pygit2.Tree instance
         :param subtree_name: the name of the tree that is being searched for.
         :type subtree_name: str
         :returns: a pygit2.Tree instance representig the tree that is was
