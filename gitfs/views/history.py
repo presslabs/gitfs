@@ -1,12 +1,16 @@
-import os
-from stat import S_IFDIR
-from pygit2 import GIT_FILEMODE_TREE
 
-from log import log
+from datetime import datetime
+from errno import ENOENT
+from stat import S_IFDIR
+from pygit2 import GIT_SORT_TIME
+
 from .view import View
+from gitfs import  FuseMethodNotImplemented, FuseOSError
+from log import log
 
 
 class HistoryView(View):
+
     def getattr(self, path, fh=None):
         '''
         Returns a dictionary with keys identical to the stat C structure of
@@ -32,35 +36,48 @@ class HistoryView(View):
         log.info('%s %s', path, amode)
         return 0
 
-    def _get_commit_subtree(self, tree, subtree_name):
+    def _get_commit_dates(self):
         """
-        Retrievs from the repo the Tree object with the name <subtree_name>.
+        Walk through all commits from current repo in order to compose the
+        _history_ directory.
+        """
+        commit_dates = set()
+        for commit in self.repo.walk(self.repo.head.target, GIT_SORT_TIME):
+            commit_date = datetime.fromtimestamp(commit.commit_time).date()
+            commit_dates.add(commit_date.strftime('%Y-%m-%d'))
 
-        :param tree: a pygit2.Tree instance
-        :param subtree_name: the name of the tree that is being searched for.
-        :type subtree_name: str
-        :returns: a pygit2.Tree instance representig the tree that is was
-            searched for.
+        return list(commit_dates)
+
+    def _get_commits_by_date(self, date):
         """
-        for e in tree:
-            if e.filemode == GIT_FILEMODE_TREE:
-                if e.name == subtree_name:
-                    return self.repo[e.id]
-                else:
-                    return self._get_commit_subtree(self.repo[e.id],
-                                                    subtree_name)
+        Retrieves all the commits from a particular date.
+
+        :param date: date with the format: yyyy-mm-dd
+        :type date: str
+        :returns: a list containg the commits for that day. Each list item
+            will have the format: hh:mm:ss-<short_sha1>, where short_sha1 is
+            the short sha1 of the commit.
+        :rtype: list
+        """
+
+        date = datetime.strptime(date, '%Y-%m-%d').date()
+        commits = []
+        for commit in self.repo.walk(self.repo.head.target, GIT_SORT_TIME):
+            commit_time = datetime.fromtimestamp(commit.commit_time)
+            if  commit_time.date() == date:
+                time = commit_time.time().strftime('%H:%M:%S')
+                commits.append("%s-%s" % (time, commit.hex[:10]))
+
+        return commits
 
     def readdir(self, path, fh):
         dir_entries = ['.', '..']
-        commit = self.repo.revparse_single(self.commit_sha1)
-        dir_tree = commit.tree
+        if getattr(self, 'date', None):
+            additional_entries = self._get_commits_by_date(self.date)
+        else:
+            additional_entries = self._get_commit_dates()
 
-        # If the relative_path is not empty, fetch the git tree corresponding
-        # to the directory that we are in.
-        tree_name = os.path.split(self.relative_path)[1]
-        if tree_name:
-            subtree = self._get_commit_subtree(commit.tree, tree_name)
-            dir_tree = subtree
+        dir_entries += additional_entries
 
-        [dir_entries.append(entry.name) for entry in dir_tree]
-        return dir_entries
+        for entry in dir_entries:
+            yield entry
