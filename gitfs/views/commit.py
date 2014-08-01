@@ -1,6 +1,8 @@
 import os
-from stat import S_IFDIR
-from pygit2 import GIT_FILEMODE_TREE
+from stat import S_IFDIR, S_IFREG
+from pygit2 import (
+    GIT_FILEMODE_TREE, GIT_FILEMODE_BLOB, GIT_FILEMODE_BLOB_EXECUTABLE
+)
 
 from log import log
 from .view import View
@@ -8,11 +10,12 @@ from .view import View
 
 class CommitView(View):
 
-    def __init__(self, *args, **kwargs):
-        super(CommitView, self).__init__(*args, **kwargs)
-        print self.relative_path
-        #self.dir_entries = self._get_dir_entries(self.relative_path)
-        #print self.dir_entries
+    def _get_git_object_type(self, tree, entry_name):
+        for e in tree:
+            if e.name == entry_name:
+                return e.filemode
+            elif e.filemode == GIT_FILEMODE_TREE:
+                return self._get_git_object(self.repo[e.id], entry_name)
 
     def getattr(self, path, fh=None):
         '''
@@ -26,7 +29,22 @@ class CommitView(View):
         the directory, while Linux counts only the subdirectories.
         '''
 
-        print path
+        # TODO:
+        #   * treat blob and blob_executable differently
+        #   * Return the access rights that have been provided at mount
+        #       or the generic ones
+        #   * Treat links
+        if path and path != '/':
+            commit = self.repo.revparse_single(self.commit_sha1)
+            obj_name = os.path.split(path)[1]
+            obj_type = self._get_git_object_type(commit.tree, obj_name)
+            if obj_type == GIT_FILEMODE_BLOB or\
+               obj_type == GIT_FILEMODE_BLOB_EXECUTABLE:
+                log.info('path: %s -> file', path)
+                return dict(st_mode=(S_IFREG | 0755))
+            elif obj_type == GIT_FILEMODE_TREE:
+                log.info('path: %s -> tree', path)
+                return dict(st_mode=(S_IFDIR | 0755), st_nlink=2)
         return dict(st_mode=(S_IFDIR | 0755), st_nlink=2)
 
 
@@ -91,11 +109,3 @@ class CommitView(View):
         #[dir_entries.append(entry.name) for entry in self.dir_entries]
         return dir_entries
 
-    #def open(self, path, flags):
-        #full_path = self._full_path(path)
-        #return os.open(full_path, flags)
-
-    #def read(self, path, length, offset, fh):
-        #print path
-        #os.lseek(fh, offset, os.SEEK_SET)
-        #return os.read(fh, length)
