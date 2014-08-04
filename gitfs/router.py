@@ -55,7 +55,6 @@ class Router(object):
         log.info('DESTROY')
 
     def __call__(self, operation, *args):
-        log.info("am intrat")
         # TODO: check args for special methods
         if operation in ['destroy', 'init']:
             view = self

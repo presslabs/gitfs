@@ -25,9 +25,8 @@ class IndexView(View):
         the directory, while Linux counts only the subdirectories.
         '''
 
-        log.info('CALL getattr index %s', path)
-        # if path != '/':
-        #    raise FuseOSError(ENOENT)
+        if path != '/':
+            raise FuseOSError(ENOENT)
         return dict(st_mode=(S_IFDIR | 0755), st_nlink=2)
 
     def opendir(self, path):
