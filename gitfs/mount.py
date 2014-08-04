@@ -2,20 +2,16 @@ import argparse
 
 from fuse import FUSE
 
-from router import Router
-from routes import routes
+from gitfs.router import Router
+from gitfs.routes import routes
+from gitfs.utils import parse_args
 
 parser = argparse.ArgumentParser(prog='GitFS')
 parser.add_argument('remote_url', help='repo to be cloned')
 parser.add_argument('mount_point', help='where the repo should be mount')
-parser.add_argument('--repos_path', default="/tmp/gitfs/repos",
-                    help="A path representing where to keep cloned repos")
-parser.add_argument('--branch', default="master",
-                    help="Specific which branch to follow. The default is " +
-                    "to use the remote's default branch.")
-parser.add_argument("--foreground", help="Start in foreground or not",
-                    default=True)
-args = parser.parse_args()
+parser.add_argument('-o', help='other arguments')
+
+args = parse_args(parser)
 
 # setting router
 router = Router(remote_url=args.remote_url,
