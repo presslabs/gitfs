@@ -1,12 +1,11 @@
 
 from datetime import datetime
-from errno import ENOENT
 from stat import S_IFDIR
 from pygit2 import GIT_SORT_TIME
 
-from .view import View
-from gitfs import  FuseMethodNotImplemented, FuseOSError
 from log import log
+
+from .view import View
 
 
 class HistoryView(View):
@@ -25,7 +24,6 @@ class HistoryView(View):
 
         return dict(st_mode=(S_IFDIR | 0755), st_nlink=2)
 
-
     def opendir(self, path):
         return 0
 
@@ -41,6 +39,7 @@ class HistoryView(View):
         Walk through all commits from current repo in order to compose the
         _history_ directory.
         """
+
         commit_dates = set()
         for commit in self.repo.walk(self.repo.head.target, GIT_SORT_TIME):
             commit_date = datetime.fromtimestamp(commit.commit_time).date()
@@ -64,20 +63,18 @@ class HistoryView(View):
         commits = []
         for commit in self.repo.walk(self.repo.head.target, GIT_SORT_TIME):
             commit_time = datetime.fromtimestamp(commit.commit_time)
-            if  commit_time.date() == date:
+            if commit_time.date() == date:
                 time = commit_time.time().strftime('%H:%M:%S')
                 commits.append("%s-%s" % (time, commit.hex[:10]))
 
         return commits
 
     def readdir(self, path, fh):
-        dir_entries = ['.', '..']
         if getattr(self, 'date', None):
             additional_entries = self._get_commits_by_date(self.date)
         else:
             additional_entries = self._get_commit_dates()
 
-        dir_entries += additional_entries
-
+        dir_entries = ['.', '..'] + additional_entries
         for entry in dir_entries:
             yield entry

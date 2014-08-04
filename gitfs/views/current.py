@@ -1,7 +1,9 @@
 import re
 import os
-from .view import View
+
 from gitfs.filesystems.passthrough import PassthroughFuse
+
+from .view import View
 
 
 class CurrentView(View, PassthroughFuse):
