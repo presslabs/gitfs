@@ -30,7 +30,8 @@ class Router(object):
         self.routes = []
         fuse_ops = set([elem[0]
                         for elem
-                        in inspect.getmembers(FUSE, predicate=inspect.ismethod)])
+                        in inspect.getmembers(FUSE,
+                                              predicate=inspect.ismethod)])
         operations_ops = set([elem[0]
                               for elem in
                               inspect.getmembers(Operations,
@@ -44,9 +45,9 @@ class Router(object):
 
     def init(self, path):
         # XXX: Move back to __init__?
-        #log.info('Cloning into %s' % self.repo_path)
-        #self.repo = Repository.clone(self.remote_url, self.repo_path,
-                                     #self.branch)
+        # log.info('Cloning into %s' % self.repo_path)
+        # self.repo = Repository.clone(self.remote_url, self.repo_path,
+                                       # self.branch)
         log.info('Done INIT')
 
     def destroy(self, path):
@@ -67,12 +68,13 @@ class Router(object):
             raise FuseOSError(EFAULT)
         return getattr(view, op)(*args)
 
-    def register(self, regex, view):
-        log.info('registring %s for %s', view, regex)
-        self.routes.append({
-            'regex': regex,
-            'view': view
-        })
+    def register(self, routes):
+        for regex, view in routes:
+            log.info('registring %s for %s', view, regex)
+            self.routes.append({
+                'regex': regex,
+                'view': view
+            })
 
     def get_view(self, path):
         """
@@ -141,7 +143,7 @@ class Router(object):
             # - link
             # - init
             # - destroy
-            #raise Exception('route to special methods')
+            # raise Exception('route to special methods')
 
         def placeholder(path, *arg, **kwargs):
             view, relative_path = self.get_view(path)

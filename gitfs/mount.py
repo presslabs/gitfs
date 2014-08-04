@@ -1,23 +1,28 @@
-import sys
-import os
-sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
-
-from router import Router
-from views import IndexView, CurrentView, HistoryView, CommitView
-
-mount_path = '/tmp/gitfs/mnt'
-
-router = Router(remote_url='/home/zalman/dev/presslabs/test-repo.git',
-                repos_path='/tmp/gitfs/repos/',
-                mount_path=mount_path)
-
-# TODO: replace regex with the strict one for the Historyview
-# -> r'^/history/(?<date>(19|20)\d\d[-](0[1-9]|1[012])[-](0[1-9]|[12][0-9]|3[01]))/',
-router.register(r'^/history/(?P<date>\d{4}-\d{1,2}-\d{1,2})/(?P<time>\d{2}:\d{2}:\d{2})-(?P<commit_sha1>[0-9a-f]{10})', CommitView)
-router.register(r'^/history/(?P<date>\d{4}-\d{1,2}-\d{1,2})', HistoryView)
-router.register(r'^/history', HistoryView)
-router.register(r'^/current', CurrentView)
-router.register(r'^/', IndexView)
+import argparse
 
 from fuse import FUSE
-FUSE(router, mount_path, foreground=True, nonempty=True)
+
+from router import Router
+from routes import routes
+
+parser = argparse.ArgumentParser(prog='GitFS')
+parser.add_argument('remote_url', help='repo to be cloned')
+parser.add_argument('mount_point', help='where the repo should be mount')
+parser.add_argument('--repos_path', default="/tmp/gitfs/repos",
+                    help="A path representing where to keep cloned repos")
+parser.add_argument('--branch', default="master",
+                    help="Specific which branch to follow. The default is " +
+                    "to use the remote's default branch.")
+parser.add_argument("--foreground", help="Start in foreground or not",
+                    default=True)
+args = parser.parse_args()
+
+# setting router
+router = Router(remote_url=args.remote_url,
+                repos_path=args.repos_path,
+                mount_path=args.mount_point)
+# register all the routes
+router.register(routes)
+
+# ready to mount it
+FUSE(router, args.mount_point, foreground=args.foreground, nonempty=True)

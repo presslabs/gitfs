@@ -26,10 +26,9 @@ setup(name='git-fs',
       author_email='gitfs@gmail.com',
       url='https://github.com/Presslabs/git-fs',
       packages=['gitfs'],
-      entry_points={'console_scripts': ['gitfs = gitfs.manage:run']},
+      entry_points={'console_scripts': ['gitfs = gitfs.mount']},
       include_package_data=True,
       install_requires=requires_list,
       classifiers=[
           'Programming Language :: Python :: 2.7',
-      ]
-)
+      ])
