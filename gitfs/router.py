@@ -9,7 +9,8 @@ from gitfs.log import log
 
 
 class Router(object):
-    def __init__(self, remote_url, repos_path, mount_path, branch=None):
+    def __init__(self, remote_url, repos_path, mount_path, branch=None,
+                 **kwargs):
         """
         Clone repo from a remote into repos_path/<repo_name> and checkout to
         a specific branch.
@@ -53,9 +54,10 @@ class Router(object):
     def destroy(self, path):
         log.info('DESTROY')
 
-    def __call__(self, op, *args):
+    def __call__(self, operation, *args):
+        log.info("am intrat")
         # TODO: check args for special methods
-        if op in ['destroy', 'init']:
+        if operation in ['destroy', 'init']:
             view = self
         else:
             path = args[0]
@@ -63,10 +65,10 @@ class Router(object):
             args = (relative_path,) + args[1:]
             relative_path = '/' if not relative_path else relative_path
             args = (relative_path,) + args[1:]
-        log.info('CALL %s %s with %r' % (op, view, args))
-        if not hasattr(view, op):
+        log.info('CALL %s %s with %r' % (operation, view, args))
+        if not hasattr(view, operation):
             raise FuseOSError(EFAULT)
-        return getattr(view, op)(*args)
+        return getattr(view, operation)(*args)
 
     def register(self, routes):
         for regex, view in routes:
