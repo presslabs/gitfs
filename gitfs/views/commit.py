@@ -4,7 +4,8 @@ from pygit2 import (
     GIT_FILEMODE_TREE, GIT_FILEMODE_BLOB, GIT_FILEMODE_BLOB_EXECUTABLE
 )
 
-from log import log
+from gitfs.log import log
+
 from .view import View
 
 
@@ -106,4 +107,3 @@ class CommitView(View):
         [dir_entries.append(entry.name) for entry in dir_tree]
         # [dir_entries.append(entry.name) for entry in self.dir_entries]
         return dir_entries
-

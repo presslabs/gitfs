@@ -5,7 +5,7 @@ from errno import EFAULT
 from fuse import Operations, FUSE, FuseOSError
 
 from gitfs.utils import Repository
-from log import log
+from gitfs.log import log
 
 
 class Router(object):

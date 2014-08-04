@@ -1,9 +1,10 @@
 from errno import ENOENT
 from stat import S_IFDIR
+
 from gitfs import FuseOSError
+from gitfs.log import log
 
 from .view import View
-from log import log
 
 
 class IndexView(View):

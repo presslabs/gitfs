@@ -4,8 +4,6 @@ from errno import EACCES
 
 from fuse import Operations, LoggingMixIn, FuseOSError
 
-from gitfs.log import log
-
 STATS = ('st_atime', 'st_ctime', 'st_gid', 'st_mode', 'st_mtime', 'st_nlink',
          'st_size', 'st_uid')
 
