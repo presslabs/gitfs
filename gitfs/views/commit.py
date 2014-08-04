@@ -1,7 +1,8 @@
 import os
-from stat import S_IFDIR, S_IFREG
+from stat import S_IFDIR, S_IFREG, S_IFLNK
 from pygit2 import (
-    GIT_FILEMODE_TREE, GIT_FILEMODE_BLOB, GIT_FILEMODE_BLOB_EXECUTABLE
+    GIT_FILEMODE_TREE, GIT_FILEMODE_BLOB, GIT_FILEMODE_BLOB_EXECUTABLE,
+    GIT_FILEMODE_LINK
 )
 
 from log import log
@@ -15,7 +16,20 @@ class CommitView(View):
             if e.name == entry_name:
                 return e.filemode
             elif e.filemode == GIT_FILEMODE_TREE:
-                return self._get_git_object(self.repo[e.id], entry_name)
+                return self._get_git_object_type(self.repo[e.id], entry_name)
+
+    def _get_blob_content(self, tree, blob_name):
+        for node in tree:
+            if node.name == blob_name:
+                return self.repo[node.id].data
+            elif node.filemode == GIT_FILEMODE_TREE:
+                return self._get_blob_content(self.repo[node.id], blob_name)
+
+
+    def readlink(self, path):
+        commit = self.repo.revparse_single(self.commit_sha1)
+        obj_name = os.path.split(path)[1]
+        return self._get_blob_content(commit.tree, obj_name)
 
     def getattr(self, path, fh=None):
         '''
@@ -31,19 +45,16 @@ class CommitView(View):
 
         # TODO:
         #   * treat blob and blob_executable differently
-        #   * Return the access rights that have been provided at mount
-        #       or the generic ones
-        #   * Treat links
         if path and path != '/':
             commit = self.repo.revparse_single(self.commit_sha1)
             obj_name = os.path.split(path)[1]
             obj_type = self._get_git_object_type(commit.tree, obj_name)
+            if obj_type == GIT_FILEMODE_LINK:
+                return dict(st_mode=(S_IFLNK | 0644))
             if obj_type == GIT_FILEMODE_BLOB or\
                obj_type == GIT_FILEMODE_BLOB_EXECUTABLE:
-                log.info('path: %s -> file', path)
-                return dict(st_mode=(S_IFREG | 0755))
+                return dict(st_mode=(S_IFREG | 0644))
             elif obj_type == GIT_FILEMODE_TREE:
-                log.info('path: %s -> tree', path)
                 return dict(st_mode=(S_IFDIR | 0755), st_nlink=2)
         return dict(st_mode=(S_IFDIR | 0755), st_nlink=2)
 
