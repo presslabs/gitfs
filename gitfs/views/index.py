@@ -1,7 +1,6 @@
-import os
 from errno import ENOENT
 from stat import S_IFDIR
-from gitfs import  FuseMethodNotImplemented, FuseOSError
+from gitfs import FuseOSError
 
 from .view import View
 from log import log
@@ -28,7 +27,6 @@ class IndexView(View):
             raise FuseOSError(ENOENT)
         return dict(st_mode=(S_IFDIR | 0755), st_nlink=2)
 
-
     def opendir(self, path):
         return 0
 
@@ -41,4 +39,3 @@ class IndexView(View):
 
     def readdir(self, path, fh):
         return ['.', '..', 'current', 'history']
-
