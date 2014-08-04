@@ -15,6 +15,7 @@ def set_defaults(args):
         "user": "root",
         "group": "root",
         "foreground": True,
+        "branch": "master",
     }
     for option, value in defaults.iteritems():
         setattr(args, option, value)

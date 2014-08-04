@@ -9,7 +9,8 @@ from gitfs.utils import parse_args
 parser = argparse.ArgumentParser(prog='GitFS')
 parser.add_argument('remote_url', help='repo to be cloned')
 parser.add_argument('mount_point', help='where the repo should be mount')
-parser.add_argument('-o', help='other arguments')
+parser.add_argument('-o', help='other arguments: repos_path, user, ' +
+                               'group, branch')
 
 args = parse_args(parser)
 
