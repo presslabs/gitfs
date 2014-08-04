@@ -2,6 +2,8 @@
 from datetime import datetime
 from stat import S_IFDIR
 from pygit2 import GIT_SORT_TIME
+from errno import ENOENT
+from fuse import FuseOSError
 
 from log import log
 
@@ -31,7 +33,13 @@ class HistoryView(View):
         pass
 
     def access(self, path, amode):
-        log.info('%s %s', path, amode)
+        if getattr(self, 'date', None):
+            available_dates = self._get_commit_dates()
+            if self.date not in available_dates:
+                raise FuseOSError(ENOENT)
+        else:
+            if path != '/':
+                raise FuseOSError(ENOENT)
         return 0
 
     def _get_commit_dates(self):
