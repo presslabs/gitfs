@@ -47,7 +47,6 @@ class CommitView(View):
                 return dict(st_mode=(S_IFDIR | 0755), st_nlink=2)
         return dict(st_mode=(S_IFDIR | 0755), st_nlink=2)
 
-
     def opendir(self, path):
         return 0
 
@@ -68,12 +67,12 @@ class CommitView(View):
         :returns: a pygit2.Tree instance representig the tree that is was
             searched for.
         """
-        for e in tree:
-            if e.filemode == GIT_FILEMODE_TREE:
-                if e.name == subtree_name:
-                    return self.repo[e.id]
+        for node in tree:
+            if node.filemode == GIT_FILEMODE_TREE:
+                if node.name == subtree_name:
+                    return self.repo[node.id]
                 else:
-                    return self._get_commit_subtree(self.repo[e.id],
+                    return self._get_commit_subtree(self.repo[node.id],
                                                     subtree_name)
 
     def _get_dir_entries(self, name):
@@ -92,7 +91,6 @@ class CommitView(View):
 
         return dir_entries
 
-
     def readdir(self, path, fh):
         dir_entries = ['.', '..']
         commit = self.repo.revparse_single(self.commit_sha1)
@@ -106,6 +104,6 @@ class CommitView(View):
             dir_tree = subtree
 
         [dir_entries.append(entry.name) for entry in dir_tree]
-        #[dir_entries.append(entry.name) for entry in self.dir_entries]
+        # [dir_entries.append(entry.name) for entry in self.dir_entries]
         return dir_entries
 
