@@ -1,9 +1,11 @@
 import os
 from stat import S_IFDIR, S_IFREG, S_IFLNK
+from errno import ENOENT
 from pygit2 import (
     GIT_FILEMODE_TREE, GIT_FILEMODE_BLOB, GIT_FILEMODE_BLOB_EXECUTABLE,
     GIT_FILEMODE_LINK
 )
+from fuse import FuseOSError
 
 from log import log
 from .view import View
@@ -13,7 +15,11 @@ class CommitView(View):
 
     def __init__(self, *args, **kwargs):
         super(CommitView, self).__init__(*args, **kwargs)
-        self.commit = self.repo.revparse_single(self.commit_sha1)
+
+        try:
+            self.commit = self.repo.revparse_single(self.commit_sha1)
+        except KeyError:
+            raise FuseOSError(ENOENT)
 
     def _get_git_object_type(self, tree, entry_name):
         for e in tree:
@@ -78,7 +84,10 @@ class CommitView(View):
         pass
 
     def access(self, path, amode):
-        log.info('%s %s', path, amode)
+        log.info('ACCESS')
+        log.info('PATH: %s', path)
+        log.info('RELATIVE_PATH: %s', self.relative_path)
+        log.info('COMMIT: %s', self.commit)
         return 0
 
     def _get_commit_subtree(self, tree, subtree_name):
@@ -115,6 +124,8 @@ class CommitView(View):
         return dir_entries
 
     def readdir(self, path, fh):
+        log.info('READDIR')
+        log.info('RELATIVE_PATH: %s', self.relative_path)
         dir_entries = ['.', '..']
         dir_tree = self.commit.tree
 
