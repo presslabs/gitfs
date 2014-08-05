@@ -21,3 +21,11 @@ class CurrentView(View, PassthroughFuse):
 
     def readlink(self, path):
         return os.readlink(self._full_path(path))
+
+    def getattr(self, path, fh=None):
+        attr = super(CurrentView, self).getattr(path, fh)
+
+        attr['st_uid'] = self.uid
+        attr['st_gid'] = self.gid
+
+        return attr

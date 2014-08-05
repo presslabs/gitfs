@@ -3,6 +3,8 @@ import os
 import inspect
 import shutil
 
+from pwd import getpwnam
+
 from errno import EFAULT
 
 from fuse import Operations, FUSE, FuseOSError
@@ -13,7 +15,7 @@ from gitfs.log import log
 
 class Router(object):
     def __init__(self, remote_url, repos_path, mount_path, branch=None,
-                 **kwargs):
+                 user="root", group="root"):
         """
         Clone repo from a remote into repos_path/<repo_name> and checkout to
         a specific branch.
@@ -45,6 +47,10 @@ class Router(object):
         log.info('Cloning into %s' % self.repo_path)
         self.repo = Repository.clone(self.remote_url, self.repo_path,
                                      self.branch)
+
+        self.uid = getpwnam(user).pw_uid
+        self.gid = getpwnam(group).pw_gid
+
         log.info('Done INIT')
 
     def init(self, path):
@@ -105,6 +111,8 @@ class Router(object):
             kwargs['mount_path'] = self.mount_path
             kwargs['regex'] = route['regex']
             kwargs['relative_path'] = relative_path
+            kwargs['uid'] = self.uid
+            kwargs['gid'] = self.gid
             args = set(groups) - set(kwargs.values())
 
             return route['view'](*args, **kwargs), relative_path

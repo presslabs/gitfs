@@ -60,7 +60,6 @@ class PassthroughFuse(LoggingMixIn, Operations):
             return pathname
 
     def mknod(self, path, mode, dev):
-        print 'mknod: ', path
         return os.mknod(self._full_path(path), mode, dev)
 
     def rmdir(self, path):
