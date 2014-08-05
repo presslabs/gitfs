@@ -107,7 +107,7 @@ class CommitView(View):
 
         return list(components)
 
-    def _check_path(self, tree, path_components):
+    def _validate_commit_path(self, tree, path_components):
         """
         Checks if a particular path is valid in the context of the commit
         which is being browsed.
@@ -127,8 +127,8 @@ class CommitView(View):
             elif (entry.name == path_components[0] and\
                   entry.filemode == GIT_FILEMODE_TREE and\
                   len(path_components) > 1):
-                return self._check_path(self.repo[entry.id],
-                                        path_components[1:])
+                return self._validate_commit_path(self.repo[entry.id],
+                                                  path_components[1:])
 
         return False
 
@@ -138,7 +138,8 @@ class CommitView(View):
         # commit that is being browsed. If not, raise Fuseoserror with
         if self.relative_path and self.relative_path != '/':
             path_elems = self._split_path_into_components(self.relative_path)
-            is_valid_path = self._check_path(self.commit.tree, path_elems)
+            is_valid_path = self._validate_commit_path(self.commit.tree,
+                                                       path_elems)
             if not is_valid_path:
                 raise FuseOSError(ENOENT)
 
@@ -178,8 +179,6 @@ class CommitView(View):
         return dir_entries
 
     def readdir(self, path, fh):
-        log.info('READDIR')
-        log.info('RELATIVE_PATH: %s', self.relative_path)
         dir_entries = ['.', '..']
         dir_tree = self.commit.tree
 
