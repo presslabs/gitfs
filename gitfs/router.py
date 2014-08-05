@@ -113,6 +113,7 @@ class Router(object):
             kwargs['relative_path'] = relative_path
             kwargs['uid'] = self.uid
             kwargs['gid'] = self.gid
+
             args = set(groups) - set(kwargs.values())
 
             return route['view'](*args, **kwargs), relative_path

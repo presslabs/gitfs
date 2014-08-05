@@ -1,10 +1,12 @@
 import os
 from datetime import datetime
 from stat import S_IFDIR
-from pygit2 import GIT_SORT_TIME
 from errno import ENOENT
+
+from pygit2 import GIT_SORT_TIME
 from fuse import FuseOSError
 
+from gitfs.utils import strptime
 from gitfs.log import log
 
 from .view import View
@@ -74,14 +76,13 @@ class HistoryView(View):
         :rtype: list
         """
 
-        date = datetime.strptime(date, '%Y-%m-%d').date()
+        date = strptime(date, '%Y-%m-%d')
         commits = []
         for commit in self.repo.walk(self.repo.head.target, GIT_SORT_TIME):
             commit_time = datetime.fromtimestamp(commit.commit_time)
             if commit_time.date() == date:
                 time = commit_time.time().strftime('%H:%M:%S')
                 commits.append("%s-%s" % (time, commit.hex[:10]))
-
         return commits
 
     def readdir(self, path, fh):
