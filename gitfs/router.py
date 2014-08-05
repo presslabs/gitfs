@@ -1,15 +1,21 @@
 import re
 import os
 import inspect
+import shutil
+
+from pwd import getpwnam
+
 from errno import EFAULT
+
 from fuse import Operations, FUSE, FuseOSError
 
 from gitfs.utils import Repository
-from log import log
+from gitfs.log import log
 
 
 class Router(object):
-    def __init__(self, remote_url, repos_path, mount_path, branch=None):
+    def __init__(self, remote_url, repos_path, mount_path, branch=None,
+                 user="root", group="root"):
         """
         Clone repo from a remote into repos_path/<repo_name> and checkout to
         a specific branch.
@@ -30,7 +36,8 @@ class Router(object):
         self.routes = []
         fuse_ops = set([elem[0]
                         for elem
-                        in inspect.getmembers(FUSE, predicate=inspect.ismethod)])
+                        in inspect.getmembers(FUSE,
+                                              predicate=inspect.ismethod)])
         operations_ops = set([elem[0]
                               for elem in
                               inspect.getmembers(Operations,
@@ -40,21 +47,25 @@ class Router(object):
         log.info('Cloning into %s' % self.repo_path)
         self.repo = Repository.clone(self.remote_url, self.repo_path,
                                      self.branch)
+
+        self.uid = getpwnam(user).pw_uid
+        self.gid = getpwnam(group).pw_gid
+
         log.info('Done INIT')
 
     def init(self, path):
         # XXX: Move back to __init__?
-        #log.info('Cloning into %s' % self.repo_path)
-        #self.repo = Repository.clone(self.remote_url, self.repo_path,
-                                     #self.branch)
+        # log.info('Cloning into %s' % self.repo_path)
+        # self.repo = Repository.clone(self.remote_url, self.repo_path,
+                                       # self.branch)
         log.info('Done INIT')
 
     def destroy(self, path):
-        log.info('DESTROY')
+        shutil.rmtree(self.repos_path)
 
-    def __call__(self, op, *args):
+    def __call__(self, operation, *args):
         # TODO: check args for special methods
-        if op in ['destroy', 'init']:
+        if operation in ['destroy', 'init']:
             view = self
         else:
             path = args[0]
@@ -62,17 +73,18 @@ class Router(object):
             args = (relative_path,) + args[1:]
             relative_path = '/' if not relative_path else relative_path
             args = (relative_path,) + args[1:]
-        log.info('CALL %s %s with %r' % (op, view, args))
-        if not hasattr(view, op):
+        log.info('CALL %s %s with %r' % (operation, view, args))
+        if not hasattr(view, operation):
             raise FuseOSError(EFAULT)
-        return getattr(view, op)(*args)
+        return getattr(view, operation)(*args)
 
-    def register(self, regex, view):
-        log.info('registring %s for %s', view, regex)
-        self.routes.append({
-            'regex': regex,
-            'view': view
-        })
+    def register(self, routes):
+        for regex, view in routes:
+            log.info('registring %s for %s', view, regex)
+            self.routes.append({
+                'regex': regex,
+                'view': view
+            })
 
     def get_view(self, path):
         """
@@ -99,6 +111,8 @@ class Router(object):
             kwargs['mount_path'] = self.mount_path
             kwargs['regex'] = route['regex']
             kwargs['relative_path'] = relative_path
+            kwargs['uid'] = self.uid
+            kwargs['gid'] = self.gid
             args = set(groups) - set(kwargs.values())
 
             return route['view'](*args, **kwargs), relative_path
@@ -141,7 +155,7 @@ class Router(object):
             # - link
             # - init
             # - destroy
-            #raise Exception('route to special methods')
+            # raise Exception('route to special methods')
 
         def placeholder(path, *arg, **kwargs):
             view, relative_path = self.get_view(path)

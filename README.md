@@ -3,6 +3,12 @@ gitiumFS
 
 A FUSE filesystem for git repositories, with local cache
 
+###Development
+```bash
+pip install -e .
+mount.fuse gitfs#http://github.com/vtemian/testing.git /tmp/mnt -o repos_path="/tmp"
+```
+
 ### MVP
 Mount a repository:
 * Clone it using pygit2

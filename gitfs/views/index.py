@@ -1,14 +1,16 @@
 from errno import ENOENT
 from stat import S_IFDIR
+
 from gitfs import FuseOSError
+from gitfs.log import log
 
 from .view import View
-from log import log
 
 
 class IndexView(View):
 
     def statfs(self, path):
+        log.info('CALL statfs %s', path)
         return {}
 
     def getattr(self, path, fh=None):
@@ -25,7 +27,13 @@ class IndexView(View):
 
         if path != '/':
             raise FuseOSError(ENOENT)
-        return dict(st_mode=(S_IFDIR | 0755), st_nlink=2)
+
+        return {
+            'st_mode': S_IFDIR | 0755,
+            'st_nlink': 2,
+            'st_uid': self.uid,
+            'st_gid': self.gid,
+        }
 
     def opendir(self, path):
         return 0

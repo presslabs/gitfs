@@ -1,9 +1,8 @@
-
 from datetime import datetime
 from stat import S_IFDIR
 from pygit2 import GIT_SORT_TIME
 
-from log import log
+from gitfs.log import log
 
 from .view import View
 

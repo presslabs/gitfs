@@ -4,8 +4,6 @@ from errno import EACCES
 
 from fuse import Operations, LoggingMixIn, FuseOSError
 
-from gitfs.log import log
-
 STATS = ('st_atime', 'st_ctime', 'st_gid', 'st_mode', 'st_mtime', 'st_nlink',
          'st_size', 'st_uid')
 
@@ -62,7 +60,6 @@ class PassthroughFuse(LoggingMixIn, Operations):
             return pathname
 
     def mknod(self, path, mode, dev):
-        print 'mknod: ', path
         return os.mknod(self._full_path(path), mode, dev)
 
     def rmdir(self, path):
