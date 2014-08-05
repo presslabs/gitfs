@@ -1,4 +1,5 @@
 import os
+from collections import deque
 from stat import S_IFDIR, S_IFREG, S_IFLNK
 from errno import ENOENT
 from pygit2 import (
@@ -83,11 +84,64 @@ class CommitView(View):
     def releasedir(self, path, fi):
         pass
 
+    def _split_path_into_components(self, path):
+        """
+        Splits a path and returns a list of its constituents.
+        E.g.: /totally/random/path => ['totally', 'random', 'path']
+
+        :param path: the path to be split
+        :type path: str
+        :returns: the list which contains the path components
+        """
+        components = deque()
+        head, tail = os.path.split(path)
+        if not tail:
+            return []
+        components.appendleft(tail)
+        path = head
+
+        while path != '/':
+            head, tail = os.path.split(path)
+            components.appendleft(tail)
+            path = head
+
+        return list(components)
+
+    def _check_path(self, tree, path_components):
+        """
+        Checks if a particular path is valid in the context of the commit
+        which is being browsed.
+
+        :param tree: a commit tree or a pygit2 tree
+        :param path_components: the components of the path to be checked
+            as a list (e.g.: ['totally', 'random', 'path'])
+        :type path_components: list
+        :returns: True if the path is valid, False otherwise
+        """
+
+        for entry in tree:
+            if (entry.name == path_components[0] and\
+                entry.filemode == GIT_FILEMODE_TREE and\
+                len(path_components) == 1):
+                return True
+            elif (entry.name == path_components[0] and\
+                  entry.filemode == GIT_FILEMODE_TREE and\
+                  len(path_components) > 1):
+                return self._check_path(self.repo[entry.id],
+                                        path_components[1:])
+
+        return False
+
+
     def access(self, path, amode):
-        log.info('ACCESS')
-        log.info('PATH: %s', path)
-        log.info('RELATIVE_PATH: %s', self.relative_path)
-        log.info('COMMIT: %s', self.commit)
+        # Check if the relative path is a valid path in the context of the
+        # commit that is being browsed. If not, raise Fuseoserror with
+        if self.relative_path and self.relative_path != '/':
+            path_elems = self._split_path_into_components(self.relative_path)
+            is_valid_path = self._check_path(self.commit.tree, path_elems)
+            if not is_valid_path:
+                raise FuseOSError(ENOENT)
+
         return 0
 
     def _get_commit_subtree(self, tree, subtree_name):
