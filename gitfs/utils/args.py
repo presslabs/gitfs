@@ -25,13 +25,19 @@ class Args(object):
                     setattr(args, item, value)
         return args
 
+    def __getattr__(self, attr):
+        if attr in self.__dict__:
+            return self.__dict__[attr]
+        else:
+            return getattr(self.__dict__['config'], attr)
+
     def set_defaults(self, args):
         for option, value in self.DEFAULTS.iteritems():
             setattr(args, option, value)
 
         return args
 
-    def get_current_grop(self):
+    def get_current_group(self):
         gid = os.getegid()
         return grp.getgrgid(gid).gr_name
 

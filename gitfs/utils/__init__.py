@@ -1,2 +1,2 @@
 from .repository import Repository
-from .args import parse_args
+from .args import Args
