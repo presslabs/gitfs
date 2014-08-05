@@ -1,7 +1,10 @@
 import re
 import os
 import inspect
+import shutil
+
 from errno import EFAULT
+
 from fuse import Operations, FUSE, FuseOSError
 
 from gitfs.utils import Repository
@@ -52,7 +55,7 @@ class Router(object):
         log.info('Done INIT')
 
     def destroy(self, path):
-        log.info('DESTROY')
+        shutil.rmtree(self.repos_path)
 
     def __call__(self, operation, *args):
         # TODO: check args for special methods
