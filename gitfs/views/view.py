@@ -9,3 +9,9 @@ class View(object):
 
         for attr in kwargs:
             setattr(self, attr, kwargs[attr])
+
+    def getattr(self, *args, **kwargs):
+        return {
+            'st_uid': self.uid,
+            'st_gid': self.gid,
+        }
