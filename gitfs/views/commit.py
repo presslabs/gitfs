@@ -98,11 +98,12 @@ class CommitView(View):
             obj_type = self._get_git_object_type(self.commit.tree, obj_name)
             if obj_type == GIT_FILEMODE_LINK:
                 return dict(st_mode=(S_IFLNK | 0644))
-            if obj_type == GIT_FILEMODE_BLOB or\
-               obj_type == GIT_FILEMODE_BLOB_EXECUTABLE:
+            if obj_type == GIT_FILEMODE_BLOB :
                 return dict(st_mode=(S_IFREG | 0644))
+            elif obj_name == GIT_FILEMODE_BLOB_EXECUTABLE:
+                return dict(st_mode=(S_IFREG | 0755))
             elif obj_type == GIT_FILEMODE_TREE:
-                return dict(st_mode=(S_IFDIR | 0755), st_nlink=2)
+                return dict(st_mode=(S_IFDIR | 0644), st_nlink=2)
             elif obj_type == None:
                 return dict(st_mode=(S_IFREG | 0644))
 
