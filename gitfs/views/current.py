@@ -32,5 +32,4 @@ class CurrentView(View, PassthroughFuse):
             'st_gid': self.gid,
         })
 
-        print attrs
         return attrs
