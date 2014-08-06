@@ -40,8 +40,7 @@ class CommitView(View):
         :param tree: a pygit2.Tree instance
         :param entry_name: the name of the entry that is being searched for
         :type entry_name: str
-        :returns: the filemode for the entry
-        :rtype: int
+        :returns: the filemode for the entry :rtype: int
         """
 
         filemode = None
@@ -56,7 +55,13 @@ class CommitView(View):
 
         return filemode
 
+    def _get_blob_size(self, tree, blob_name):
+        return self._get_blob(tree, blob_name).size
+
     def _get_blob_content(self, tree, blob_name):
+        return self._get_blob(tree, blob_name).data
+
+    def _get_blob(self, tree, blob_name):
         """
         Returns the content of a Blob object with the name <blob_name>.
 
@@ -68,16 +73,14 @@ class CommitView(View):
         """
         for node in tree:
             if node.name == blob_name:
-                return self.repo[node.id].data
+                return self.repo[node.id]
             elif node.filemode == GIT_FILEMODE_TREE:
-                return self._get_blob_content(self.repo[node.id], blob_name)
+                return self._get_blob(self.repo[node.id], blob_name)
 
-    def read(self, path, length, offset, fh):
+    def read(self, path, size, offset, fh):
         obj_name = os.path.split(path)[1]
-        log.info(obj_name)
         content = self._get_blob_content(self.commit.tree, obj_name)
-        log.info(content[offset:offset + length])
-        return content[offset:offset + length]
+        return content[offset:offset + size]
 
     def open(self, path, flags):
         return 0
@@ -98,25 +101,33 @@ class CommitView(View):
         the directory, while Linux counts only the subdirectories.
         '''
 
-        parent = super(CommitView, self).getattr(path, fh)
+        if not path:
+            return
+
+        attrs = super(CommitView, self).getattr(path, fh)
 
         types = {
-            None: {'st_mode': (S_IFREG | 0644)},
-            GIT_FILEMODE_LINK: {'st_mode': (S_IFLNK | 0644)},
-            GIT_FILEMODE_TREE: {'st_mode': (S_IFDIR | 0644), 'st_nlink': 2},
-            GIT_FILEMODE_BLOB: {'st_mode': (S_IFREG | 0644)},
-            GIT_FILEMODE_BLOB_EXECUTABLE: {'st_mode': (S_IFREG | 0755)},
+            GIT_FILEMODE_LINK: {'st_mode': S_IFLNK | 0644},
+            GIT_FILEMODE_TREE: {'st_mode': S_IFDIR | 0644, 'st_nlink': 2},
+            GIT_FILEMODE_BLOB: {'st_mode': S_IFREG | 0644},
+            GIT_FILEMODE_BLOB_EXECUTABLE: {'st_mode': S_IFREG | 0755},
         }
 
         if path == '/':
-            parent.update(types[GIT_FILEMODE_TREE])
-
-        if path and path != '/':
+            attrs.update(types[GIT_FILEMODE_TREE])
+        else:
             obj_name = os.path.split(path)[1]
             obj_type = self._get_git_object_type(self.commit.tree, obj_name)
-            parent.update(types[obj_type])
 
-        return parent
+            if obj_type is None:
+                raise FuseOSError(ENOENT)
+
+            attrs.update(types[obj_type])
+            if obj_type in [GIT_FILEMODE_BLOB, GIT_FILEMODE_BLOB_EXECUTABLE]:
+                attrs['st_size'] = self._get_blob_size(self.commit.tree,
+                                                       obj_name)
+
+        return attrs
 
     def opendir(self, path):
         return 0
@@ -133,11 +144,13 @@ class CommitView(View):
         :type path: str
         :returns: the list which contains the path components
         """
-        components = deque()
         head, tail = os.path.split(path)
         if not tail:
             return []
+
+        components = deque()
         components.appendleft(tail)
+
         path = head
 
         while path != '/':
@@ -160,22 +173,24 @@ class CommitView(View):
         """
 
         for entry in tree:
-            if (entry.name == path_components[0] and\
-                entry.filemode == GIT_FILEMODE_TREE and\
-                len(path_components) == 1):
+            if (entry.name == path_components[0] and
+               entry.filemode == GIT_FILEMODE_TREE and
+               len(path_components) == 1):
                 return True
-            elif (entry.name == path_components[0] and\
-                  entry.filemode == GIT_FILEMODE_TREE and\
+            elif (entry.name == path_components[0] and
+                  entry.filemode == GIT_FILEMODE_TREE and
                   len(path_components) > 1):
                 return self._validate_commit_path(self.repo[entry.id],
                                                   path_components[1:])
 
         return False
 
-
     def access(self, path, amode):
-        # Check if the relative path is a valid path in the context of the
-        # commit that is being browsed. If not, raise Fuseoserror with
+        """
+        Check if the relative path is a valid path in the context of the
+        commit that is being browsed. If not, raise Fuseoserror with
+        """
+
         if self.relative_path and self.relative_path != '/':
             path_elems = self._split_path_into_components(self.relative_path)
             is_valid_path = self._validate_commit_path(self.commit.tree,
@@ -203,23 +218,7 @@ class CommitView(View):
                     return self._get_commit_subtree(self.repo[node.id],
                                                     subtree_name)
 
-    def _get_dir_entries(self, name):
-        dir_entries = []
-        dir_tree = self.commit.tree
-
-        # If the relative_path is not empty, fetch the git tree corresponding
-        # to the directory that we are in.
-        tree_name = os.path.split(self.relative_path)[1]
-        if tree_name:
-            subtree = self._get_commit_subtree(self.commit.tree, tree_name)
-            dir_tree = subtree
-
-        [dir_entries.append(entry) for entry in dir_tree]
-
-        return dir_entries
-
     def readdir(self, path, fh):
-        dir_entries = ['.', '..']
         dir_tree = self.commit.tree
 
         # If the relative_path is not empty, fetch the git tree corresponding
@@ -229,6 +228,10 @@ class CommitView(View):
             subtree = self._get_commit_subtree(self.commit.tree, tree_name)
             dir_tree = subtree
 
-        [dir_entries.append(entry.name) for entry in dir_tree]
-        # [dir_entries.append(entry.name) for entry in self.dir_entries]
-        return dir_entries
+        return ['.', '..'] + [entry.name for entry in dir_tree]
+
+    def flush(self, path, fh):
+        return 0
+
+    def release(self, path, fh):
+        return 0

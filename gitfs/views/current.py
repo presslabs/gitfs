@@ -1,7 +1,7 @@
 import re
 import os
 
-from gitfs.filesystems.passthrough import PassthroughFuse
+from gitfs.filesystems.passthrough import PassthroughFuse, STATS
 
 from .view import View
 
@@ -23,9 +23,14 @@ class CurrentView(View, PassthroughFuse):
         return os.readlink(self._full_path(path))
 
     def getattr(self, path, fh=None):
-        attr = super(CurrentView, self).getattr(path, fh)
+        full_path = self._full_path(path)
+        st = os.lstat(full_path)
 
-        attr['st_uid'] = self.uid
-        attr['st_gid'] = self.gid
+        attrs = dict((key, getattr(st, key)) for key in STATS)
+        attrs.update({
+            'st_uid': self.uid,
+            'st_gid': self.gid,
+        })
 
-        return attr
+        print attrs
+        return attrs
