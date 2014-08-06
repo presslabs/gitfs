@@ -55,7 +55,13 @@ class CommitView(View):
 
         return filemode
 
+    def _get_blob_size(self, tree, blob_name):
+        return self._get_blob(tree, blob_name).size
+
     def _get_blob_content(self, tree, blob_name):
+        return self._get_blob(tree, blob_name).data
+
+    def _get_blob(self, tree, blob_name):
         """
         Returns the content of a Blob object with the name <blob_name>.
 
@@ -67,9 +73,9 @@ class CommitView(View):
         """
         for node in tree:
             if node.name == blob_name:
-                return self.repo[node.id].data
+                return self.repo[node.id]
             elif node.filemode == GIT_FILEMODE_TREE:
-                return self._get_blob_content(self.repo[node.id], blob_name)
+                return self._get_blob(self.repo[node.id], blob_name)
 
     def read(self, path, size, offset, fh):
         obj_name = os.path.split(path)[1]
@@ -101,7 +107,6 @@ class CommitView(View):
         attrs = super(CommitView, self).getattr(path, fh)
 
         types = {
-            None: {'st_mode': S_IFDIR | 0644, 'st_link': 2},
             GIT_FILEMODE_LINK: {'st_mode': S_IFLNK | 0644},
             GIT_FILEMODE_TREE: {'st_mode': S_IFDIR | 0644, 'st_nlink': 2},
             GIT_FILEMODE_BLOB: {'st_mode': S_IFREG | 0644},
@@ -109,14 +114,19 @@ class CommitView(View):
         }
 
         if path == '/':
-            attrs = types[GIT_FILEMODE_TREE]
+            attrs.update(types[GIT_FILEMODE_TREE])
         else:
             obj_name = os.path.split(path)[1]
             obj_type = self._get_git_object_type(self.commit.tree, obj_name)
 
-            attrs = types[obj_type]
+            if obj_type is None:
+                raise FuseOSError(ENOENT)
 
-        log.info("%s %s", path, attrs)
+            attrs.update(types[obj_type])
+            if obj_type in [GIT_FILEMODE_BLOB, GIT_FILEMODE_BLOB_EXECUTABLE]:
+                attrs['st_size'] = self._get_blob_size(self.commit.tree,
+                                                       obj_name)
+
         return attrs
 
     def opendir(self, path):
@@ -219,3 +229,9 @@ class CommitView(View):
             dir_tree = subtree
 
         return ['.', '..'] + [entry.name for entry in dir_tree]
+
+    def flush(self, path, fh):
+        return 0
+
+    def release(self, path, fh):
+        return 0

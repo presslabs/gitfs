@@ -28,7 +28,7 @@ class HistoryView(View):
 
         attrs = super(HistoryView, self).getattr(path, fh)
         attrs.update({
-            'st_mode': (S_IFDIR | 0755),
+            'st_mode': S_IFDIR | 0775,
             'st_nlink': 2
         })
 
