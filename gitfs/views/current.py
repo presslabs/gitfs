@@ -32,5 +32,4 @@ class CurrentView(View, PassthroughFuse):
             'st_gid': self.gid,
         })
 
-        print path, attrs
         return attrs
