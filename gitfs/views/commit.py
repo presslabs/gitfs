@@ -56,7 +56,6 @@ class CommitView(View):
 
         return filemode
 
-
     def _get_blob_content(self, tree, blob_name):
         """
         Returns the content of a Blob object with the name <blob_name>.
@@ -73,6 +72,15 @@ class CommitView(View):
             elif node.filemode == GIT_FILEMODE_TREE:
                 return self._get_blob_content(self.repo[node.id], blob_name)
 
+    def read(self, path, length, offset, fh):
+        obj_name = os.path.split(path)[1]
+        log.info(obj_name)
+        content = self._get_blob_content(self.commit.tree, obj_name)
+        log.info(content[offset:offset + length])
+        return content[offset:offset + length]
+
+    def open(self, path, flags):
+        return 0
 
     def readlink(self, path):
         obj_name = os.path.split(path)[1]
