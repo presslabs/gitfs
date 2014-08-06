@@ -40,8 +40,7 @@ class CommitView(View):
         :param tree: a pygit2.Tree instance
         :param entry_name: the name of the entry that is being searched for
         :type entry_name: str
-        :returns: the filemode for the entry
-        :rtype: int
+        :returns: the filemode for the entry :rtype: int
         """
 
         filemode = None
@@ -102,11 +101,11 @@ class CommitView(View):
         attrs = super(CommitView, self).getattr(path, fh)
 
         types = {
-            None: {'st_mode': (S_IFDIR | 0644), 'st_link': 2},
-            GIT_FILEMODE_LINK: {'st_mode': (S_IFLNK | 0644)},
-            GIT_FILEMODE_TREE: {'st_mode': (S_IFDIR | 0644), 'st_nlink': 2},
-            GIT_FILEMODE_BLOB: {'st_mode': (S_IFREG | 0644)},
-            GIT_FILEMODE_BLOB_EXECUTABLE: {'st_mode': (S_IFREG | 0755)},
+            None: {'st_mode': S_IFDIR | 0644, 'st_link': 2},
+            GIT_FILEMODE_LINK: {'st_mode': S_IFLNK | 0644},
+            GIT_FILEMODE_TREE: {'st_mode': S_IFDIR | 0644, 'st_nlink': 2},
+            GIT_FILEMODE_BLOB: {'st_mode': S_IFREG | 0644},
+            GIT_FILEMODE_BLOB_EXECUTABLE: {'st_mode': S_IFREG | 0755},
         }
 
         if path == '/':
@@ -117,6 +116,7 @@ class CommitView(View):
 
             attrs = types[obj_type]
 
+        log.info("%s %s", path, attrs)
         return attrs
 
     def opendir(self, path):
