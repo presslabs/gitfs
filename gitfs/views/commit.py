@@ -24,11 +24,38 @@ class CommitView(View):
             raise FuseOSError(ENOENT)
 
     def _get_git_object_type(self, tree, entry_name):
-        for e in tree:
-            if e.name == entry_name:
-                return e.filemode
-            elif e.filemode == GIT_FILEMODE_TREE:
-                return self._get_git_object_type(self.repo[e.id], entry_name)
+        """
+        Returns the filemode of the git object with the name <entry_name>.
+
+
+        Available fielmodes:
+
+         0     (0000000)  GIT_FILEMODE_NEW
+         16384 (0040000)  GIT_FILEMODE_TREE
+         33188 (0100644)  GIT_FILEMODE_BLOB
+         33261 (0100755)  GIT_FILEMODE_BLOB_EXECUTABLE
+         40960 (0120000)  GIT_FILEMODE_LINK
+         57344 (0160000)  GIT_FILEMODE_COMMIT
+
+        :param tree: a pygit2.Tree instance
+        :param entry_name: the name of the entry that is being searched for
+        :type entry_name: str
+        :returns: the filemode for the entry
+        :rtype: int
+        """
+
+        filemode = None
+        for entry in tree:
+            if entry.name == entry_name:
+                return entry.filemode
+            elif entry.filemode == GIT_FILEMODE_TREE:
+                filemode = self._get_git_object_type(self.repo[entry.id],
+                                                     entry_name)
+                if filemode:
+                    return filemode
+
+        return filemode
+
 
     def _get_blob_content(self, tree, blob_name):
         """
@@ -63,10 +90,6 @@ class CommitView(View):
         the directory, while Linux counts only the subdirectories.
         '''
 
-        """
-        TODO:
-            * Use the rights provided at mount point.
-        """
         if path and path != '/':
             obj_name = os.path.split(path)[1]
             obj_type = self._get_git_object_type(self.commit.tree, obj_name)
