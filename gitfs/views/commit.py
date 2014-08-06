@@ -8,8 +8,6 @@ from pygit2 import (
 )
 from fuse import FuseOSError
 
-from gitfs.log import log
-
 from .view import View
 
 
