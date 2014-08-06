@@ -8,14 +8,13 @@ from pwd import getpwnam
 from errno import EFAULT
 
 from fuse import Operations, FUSE, FuseOSError
-
 from gitfs.utils import Repository
 from gitfs.log import log
 
 
 class Router(object):
     def __init__(self, remote_url, repos_path, mount_path, branch=None,
-                 user="root", group="root"):
+                 user="root", group="root", **kwargs):
         """
         Clone repo from a remote into repos_path/<repo_name> and checkout to
         a specific branch.
@@ -34,6 +33,8 @@ class Router(object):
 
         self.operations = Operations()
         self.routes = []
+        self.cached_views = {}
+
         fuse_ops = set([elem[0]
                         for elem
                         in inspect.getmembers(FUSE,
@@ -50,6 +51,9 @@ class Router(object):
 
         self.uid = getpwnam(user).pw_uid
         self.gid = getpwnam(group).pw_gid
+
+        self.author = (kwargs['author_name'], kwargs['author_email'])
+        self.commiter = (kwargs['commiter_name'], kwargs['commiter_email'])
 
         log.info('Done INIT')
 
@@ -105,6 +109,10 @@ class Router(object):
             groups = result.groups()
             relative_path = re.sub(route['regex'], '', path)
 
+            cache_key = result.group(0)
+            if cache_key in self.cached_views:
+                return self.cached_views[cache_key], relative_path
+
             kwargs = result.groupdict()
             kwargs['repo'] = self.repo
             kwargs['repo_path'] = self.repo_path
@@ -113,10 +121,15 @@ class Router(object):
             kwargs['relative_path'] = relative_path
             kwargs['uid'] = self.uid
             kwargs['gid'] = self.gid
+            kwargs['author'] = self.author
+            kwargs['commiter'] = self.commiter
 
             args = set(groups) - set(kwargs.values())
 
-            return route['view'](*args, **kwargs), relative_path
+            view = route['view'](*args, **kwargs)
+            self.cached_views[cache_key] = view
+
+            return view, relative_path
 
         raise ValueError("View not found!")
 
