@@ -27,7 +27,6 @@ class Args(object):
                     if value == "True":
                         value = True
                     if value == "False":
-                        print 'is false'
                         value = False
                     setattr(args, item, value)
         return args
