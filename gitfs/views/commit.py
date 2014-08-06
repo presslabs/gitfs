@@ -98,7 +98,10 @@ class CommitView(View):
         the directory, while Linux counts only the subdirectories.
         '''
 
-        parent = super(CommitView, self).getattr(path, fh)
+        if not path:
+            return
+
+        attrs = super(CommitView, self).getattr(path, fh)
 
         types = {
             None: {'st_mode': (S_IFREG | 0644)},
@@ -109,14 +112,14 @@ class CommitView(View):
         }
 
         if path == '/':
-            parent.update(types[GIT_FILEMODE_TREE])
-
-        if path and path != '/':
+            attrs.update(types[GIT_FILEMODE_TREE])
+        else:
             obj_name = os.path.split(path)[1]
             obj_type = self._get_git_object_type(self.commit.tree, obj_name)
-            parent.update(types[obj_type])
 
-        return parent
+            attrs.update(types[obj_type])
+
+        return attrs
 
     def opendir(self, path):
         return 0
@@ -231,4 +234,5 @@ class CommitView(View):
 
         [dir_entries.append(entry.name) for entry in dir_tree]
         # [dir_entries.append(entry.name) for entry in self.dir_entries]
+        log.info(dir_entries)
         return dir_entries

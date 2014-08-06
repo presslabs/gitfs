@@ -26,7 +26,13 @@ class HistoryView(View):
         the directory, while Linux counts only the subdirectories.
         '''
 
-        return dict(st_mode=(S_IFDIR | 0755), st_nlink=2)
+        attrs = super(HistoryView, self).getattr(path, fh)
+        attrs.update({
+            'st_mode': (S_IFDIR | 0755),
+            'st_nlink': 2
+        })
+
+        return attrs
 
     def opendir(self, path):
         return 0
