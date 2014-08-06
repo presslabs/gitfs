@@ -98,22 +98,25 @@ class CommitView(View):
         the directory, while Linux counts only the subdirectories.
         '''
 
+        parent = super(CommitView, self).getattr(path, fh)
+
+        types = {
+            None: {'st_mode': (S_IFREG | 0644)},
+            GIT_FILEMODE_LINK: {'st_mode': (S_IFLNK | 0644)},
+            GIT_FILEMODE_TREE: {'st_mode': (S_IFDIR | 0644), 'st_nlink': 2},
+            GIT_FILEMODE_BLOB: {'st_mode': (S_IFREG | 0644)},
+            GIT_FILEMODE_BLOB_EXECUTABLE: {'st_mode': (S_IFREG | 0755)},
+        }
+
         if path == '/':
-            return dict(st_mode=(S_IFDIR | 0644), st_nlink=2)
+            parent.update(types[GIT_FILEMODE_TREE])
 
         if path and path != '/':
             obj_name = os.path.split(path)[1]
             obj_type = self._get_git_object_type(self.commit.tree, obj_name)
-            if obj_type == GIT_FILEMODE_LINK:
-                return dict(st_mode=(S_IFLNK | 0644))
-            if obj_type == GIT_FILEMODE_BLOB:
-                return dict(st_mode=(S_IFREG | 0644))
-            elif obj_name == GIT_FILEMODE_BLOB_EXECUTABLE:
-                return dict(st_mode=(S_IFREG | 0755))
-            elif obj_type == GIT_FILEMODE_TREE:
-                return dict(st_mode=(S_IFDIR | 0644), st_nlink=2)
-            elif obj_type == None:
-                return dict(st_mode=(S_IFREG | 0644))
+            parent.update(types[obj_type])
+
+        return parent
 
     def opendir(self, path):
         return 0
