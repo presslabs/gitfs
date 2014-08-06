@@ -12,6 +12,8 @@ class Args(object):
             "group": self.get_current_group(),
             "foreground": True,
             "branch": "master",
+            "allow_other": False,
+            "allow_root": False,
         }
         self.config = self.build_config(parser.parse_args())
 
@@ -22,6 +24,10 @@ class Args(object):
             for arg in args.o.split(","):
                 if "=" in arg:
                     item, value = arg.split("=")
+                    if value == "True":
+                        value = True
+                    if value == "False":
+                        value = False
                     setattr(args, item, value)
         return args
 

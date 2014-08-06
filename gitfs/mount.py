@@ -25,4 +25,5 @@ router = Router(remote_url=args.remote_url,
 router.register(routes)
 
 # ready to mount it
-FUSE(router, args.mount_point, foreground=args.foreground, nonempty=True)
+FUSE(router, args.mount_point, foreground=args.foreground, nonempty=True,
+     allow_root=args.allow_root, allow_other=args.allow_other)
