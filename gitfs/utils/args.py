@@ -14,6 +14,10 @@ class Args(object):
             "branch": "master",
             "allow_other": False,
             "allow_root": False,
+            "author_name": "Presslabs",
+            "author_email": "git@presslabs.com",
+            "commiter_name": "Presslabs",
+            "commiter_email": "git@presslabs.com",
         }
         self.config = self.build_config(parser.parse_args())
 

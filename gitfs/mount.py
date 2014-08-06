@@ -19,7 +19,11 @@ router = Router(remote_url=args.remote_url,
                 repos_path=args.repos_path,
                 branch=args.branch,
                 user=args.user,
-                group=args.group)
+                group=args.group,
+                commiter_name=args.commiter_name,
+                commiter_email=args.commiter_email,
+                author_name=args.author_name,
+                author_email=args.author_email)
 
 # register all the routes
 router.register(routes)
