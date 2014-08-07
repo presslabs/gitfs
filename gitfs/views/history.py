@@ -1,7 +1,7 @@
 import os
 from datetime import datetime
 from stat import S_IFDIR
-from errno import ENOENT
+from errno import ENOENT, EROFS
 
 from pygit2 import GIT_SORT_TIME
 from fuse import FuseOSError
@@ -26,6 +26,9 @@ class HistoryView(View):
         the directory, while Linux counts only the subdirectories.
         '''
 
+        if path not in self._get_commit_dates() and path != '/':
+            raise FuseOSError(ENOENT)
+
         attrs = super(HistoryView, self).getattr(path, fh)
         attrs.update({
             'st_mode': S_IFDIR | 0775,
@@ -39,6 +42,15 @@ class HistoryView(View):
 
     def releasedir(self, path, fi):
         pass
+
+    def open(self, path, fh):
+        return 0
+
+    def create(self, path, fh):
+        raise FuseOSError(EROFS)
+
+    def write(self, path, fh):
+        raise FuseOSError(EROFS)
 
     def access(self, path, amode):
         if getattr(self, 'date', None):
