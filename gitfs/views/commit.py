@@ -9,10 +9,10 @@ from pygit2 import (
 from fuse import FuseOSError
 
 from .view import View
+from gitfs.log import log
 
 
 class CommitView(View):
-
     def __init__(self, *args, **kwargs):
         super(CommitView, self).__init__(*args, **kwargs)
 
@@ -21,7 +21,12 @@ class CommitView(View):
         except KeyError:
             raise FuseOSError(ENOENT)
 
-    def _get_git_object_type(self, tree, entry_name):
+    def _is_searched_entry(self, entry_name, searched_name, path_components):
+        return (entry_name == searched_name and\
+                len(path_components) == 1 and\
+                entry_name == path_components[0])
+
+    def _retrieve_git_object_type(self, tree, entry_name, path_components):
         """
         Returns the filemode of the git object with the name <entry_name>.
 
@@ -43,37 +48,21 @@ class CommitView(View):
 
         filemode = None
         for entry in tree:
-            if entry.name == entry_name:
+            if self._is_searched_entry(entry.name, entry_name, path_components):
                 return entry.filemode
             elif entry.filemode == GIT_FILEMODE_TREE:
-                filemode = self._get_git_object_type(self.repo[entry.id],
-                                                     entry_name)
+                filemode = self._retrieve_git_object_type(self.repo[entry.id],
+                                                          entry_name,
+                                                          path_components[1:])
                 if filemode:
                     return filemode
 
         return filemode
 
-    def _get_blob_size(self, tree, blob_name):
-        return self._get_blob(tree, blob_name).size
-
-    def _get_blob_content(self, tree, blob_name):
-        return self._get_blob(tree, blob_name).data
-
-    def _get_blob(self, tree, blob_name):
-        """
-        Returns the content of a Blob object with the name <blob_name>.
-
-        :param tree: a commit tree or a simple tree
-        :param blob_name: the name of the blob that is being searched for
-        :type blob_name: str
-        :returns: the content of the blob with the name <blob_name>
-        :rtype: str
-        """
-        for node in tree:
-            if node.name == blob_name:
-                return self.repo[node.id]
-            elif node.filemode == GIT_FILEMODE_TREE:
-                return self._get_blob(self.repo[node.id], blob_name)
+    def _get_git_object_type(self, tree, path):
+        path_components = self._split_path_into_components(path)
+        return self._retrieve_git_object_type(tree, path_components[-1],
+                                              path_components)
 
     def _split_path_into_components(self, path):
         """
@@ -112,6 +101,7 @@ class CommitView(View):
         :returns: True if the path is valid, False otherwise
         """
 
+        is_valid = False
         for entry in tree:
             if (entry.name == path_components[0] and
                entry.filemode == GIT_FILEMODE_TREE and
@@ -120,10 +110,12 @@ class CommitView(View):
             elif (entry.name == path_components[0] and
                   entry.filemode == GIT_FILEMODE_TREE and
                   len(path_components) > 1):
-                return self._validate_commit_path(self.repo[entry.id],
-                                                  path_components[1:])
+                is_valid = self._validate_commit_path(self.repo[entry.id],
+                                                      path_components[1:])
+                if is_valid:
+                    return is_valid
 
-        return False
+        return is_valid
 
     def _get_commit_subtree(self, tree, subtree_name):
         """
@@ -143,17 +135,44 @@ class CommitView(View):
                     return self._get_commit_subtree(self.repo[node.id],
                                                     subtree_name)
 
+    def _retrieve_git_object(self, tree, obj_name, path_components):
+        git_obj = None
+        for entry in tree:
+            if (entry.name == obj_name and\
+                len(path_components) == 1 and\
+                entry.name == path_components[0]):
+                return self.repo[entry.id]
+            elif entry.filemode == GIT_FILEMODE_TREE:
+                git_obj = self._retrieve_git_object(self.repo[entry.id],
+                                                    obj_name,
+                                                    path_components[1:])
+                if git_obj:
+                    return git_obj
+
+        return git_obj
+
+
+    def _get_git_object(self, tree, path):
+        path_components = self._split_path_into_components(path)
+        return self._retrieve_git_object(tree, path_components[-1],
+                                         path_components)
+
+    def _get_blob_size(self, tree, path):
+        return self._get_git_object(tree, path).size
+
+    def _get_blob_data(self, tree, path):
+        return self._get_git_object(tree, path).data
+
     def read(self, path, size, offset, fh):
-        obj_name = os.path.split(path)[1]
-        content = self._get_blob_content(self.commit.tree, obj_name)
-        return content[offset:offset + size]
+        data = self._get_blob_data(self.commit.tree, path)
+        return data[offset:offset + size]
 
     def open(self, path, flags):
         return 0
 
     def readlink(self, path):
         obj_name = os.path.split(path)[1]
-        return self._get_blob_content(self.commit.tree, obj_name)
+        return self._get_blob_data(self.commit.tree, obj_name)
 
     def getattr(self, path, fh=None):
         '''
@@ -182,16 +201,14 @@ class CommitView(View):
         if path == '/':
             attrs.update(types[GIT_FILEMODE_TREE])
         else:
-            obj_name = os.path.split(path)[1]
-            obj_type = self._get_git_object_type(self.commit.tree, obj_name)
+            obj_type = self._get_git_object_type(self.commit.tree, path)
 
             if obj_type is None:
                 raise FuseOSError(ENOENT)
 
             attrs.update(types[obj_type])
             if obj_type in [GIT_FILEMODE_BLOB, GIT_FILEMODE_BLOB_EXECUTABLE]:
-                attrs['st_size'] = self._get_blob_size(self.commit.tree,
-                                                       obj_name)
+                attrs['st_size'] = self._get_blob_size(self.commit.tree, path)
 
         return attrs
 
@@ -221,12 +238,14 @@ class CommitView(View):
 
         # If the relative_path is not empty, fetch the git tree corresponding
         # to the directory that we are in.
-        tree_name = os.path.split(self.relative_path)[1]
+        tree_name = os.path.split(path)[1]
         if tree_name:
-            subtree = self._get_commit_subtree(self.commit.tree, tree_name)
+            subtree = self._get_git_object(self.commit.tree, path)
             dir_tree = subtree
 
-        return ['.', '..'] + [entry.name for entry in dir_tree]
+        dir_entries = ['.', '..'] + [entry.name for entry in dir_tree]
+        for entry in dir_entries:
+            yield entry
 
     def flush(self, path, fh):
         return 0
