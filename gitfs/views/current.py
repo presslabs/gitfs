@@ -47,7 +47,6 @@ class CurrentView(View, PassthroughFuse):
         """
 
         if path in self.dirty:
-            print path
             self.repo.index.add(os.path.split(path)[1])
             self.repo.commit("Update %s" % path, self.author, self.commiter)
             self.repo.push("origin", self.branch)
