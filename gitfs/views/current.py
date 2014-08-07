@@ -11,8 +11,7 @@ class CurrentView(View, PassthroughFuse):
     def __init__(self, *args, **kwargs):
         super(CurrentView, self).__init__(*args, **kwargs)
         self.root = self.repo_path
-        # TODO: we need to store more here...create a dict
-        self.dirty = set([])
+        self.dirty = {}
 
     def rename(self, old, new):
         new = re.sub(self.regex, '', new)
@@ -38,7 +37,9 @@ class CurrentView(View, PassthroughFuse):
 
     def write(self, path, buf, offset, fh):
         result = super(CurrentView, self).write(path, buf, offset, fh)
-        self.dirty.add(path)
+        self.dirty[path] = {
+            'message': 'Update %s' % path
+        }
         return result
 
     def release(self, path, fh):
@@ -56,22 +57,27 @@ class CurrentView(View, PassthroughFuse):
 
             self.repo.index.add(clean_path)
             # TODO: read commit message from dirty
-            self.repo.commit("Update %s" % clean_path, self.author,
+            self.repo.commit(self.dirty[path]['message'], self.author,
                              self.commiter)
             self.repo.push("origin", self.branch)
 
-            self.dirty.remove(path)
+            del self.dirty[path]
 
         return os.close(fh)
 
     def mkdir(self, path, mode):
         result = super(CurrentView, self).mkdir(path, mode)
-        path = "/%s/.keep" % os.path.split(path)[1]
+
+        # create .keep file
+        path = "%s/.keep" % os.path.split(path)[1]
         fh = self.create(path, 0644)
         self.release(path, fh)
+
         return result
 
     def create(self, path, mode, fi=None):
         result = super(CurrentView, self).create(path, mode, fi)
-        self.dirty.add(path)
+        self.dirty[path] = {
+            'message': "Created %s" % path
+        }
         return result
