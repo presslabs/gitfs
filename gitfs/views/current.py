@@ -11,6 +11,7 @@ class CurrentView(View, PassthroughFuse):
     def __init__(self, *args, **kwargs):
         super(CurrentView, self).__init__(*args, **kwargs)
         self.root = self.repo_path
+        # TODO: we need to store more here...create a dict
         self.dirty = set([])
 
     def rename(self, old, new):
@@ -46,10 +47,31 @@ class CurrentView(View, PassthroughFuse):
         the changed to upstream.
         """
 
+        # TODO:add them into a queue and commit/push them in another thread
+
         if path in self.dirty:
-            self.repo.index.add(os.path.split(path)[1])
-            self.repo.commit("Update %s" % path, self.author, self.commiter)
+            clean_path = path
+            if path.startswith("/"):
+                clean_path = path[1:]
+
+            self.repo.index.add(clean_path)
+            # TODO: read commit message from dirty
+            self.repo.commit("Update %s" % clean_path, self.author,
+                             self.commiter)
             self.repo.push("origin", self.branch)
+
             self.dirty.remove(path)
 
         return os.close(fh)
+
+    def mkdir(self, path, mode):
+        result = super(CurrentView, self).mkdir(path, mode)
+        path = "/%s/.keep" % os.path.split(path)[1]
+        fh = self.create(path, 0644)
+        self.release(path, fh)
+        return result
+
+    def create(self, path, mode, fi=None):
+        result = super(CurrentView, self).create(path, mode, fi)
+        self.dirty.add(path)
+        return result
