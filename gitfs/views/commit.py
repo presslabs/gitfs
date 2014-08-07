@@ -93,7 +93,7 @@ class CommitView(View):
 
         path = head
 
-        while path != '/':
+        while path and path != '/':
             head, tail = os.path.split(path)
             components.appendleft(tail)
             path = head
