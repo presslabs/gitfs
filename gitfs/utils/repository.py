@@ -1,9 +1,12 @@
 from pygit2 import (Repository as _Repository, clone_repository,
                     GIT_CHECKOUT_SAFE_CREATE, Signature, GIT_BRANCH_REMOTE,
-                    GIT_CHECKOUT_FORCE)
+                    GIT_CHECKOUT_FORCE, GIT_FILEMODE_TREE, GIT_FILEMODE_BLOB,
+                    GIT_FILEMODE_BLOB_EXECUTABLE, GIT_FILEMODE_LINK)
 
+from .path import split_path_into_components
 
 class Repository(_Repository):
+
     def push(self, upstream, branch):
         """ Push changes from a branch to a remote
 
@@ -95,3 +98,71 @@ class Repository(_Repository):
             raise ValueError("Missing remote")
 
         return remote[0]
+
+    def _get_git_object_type(self, tree, entry_name, path_components):
+        """
+        Returns the filemode of the git object with the name <entry_name>.
+
+
+        Available fielmodes:
+
+         0     (0000000)  GIT_FILEMODE_NEW
+         16384 (0040000)  GIT_FILEMODE_TREE
+         33188 (0100644)  GIT_FILEMODE_BLOB
+         33261 (0100755)  GIT_FILEMODE_BLOB_EXECUTABLE
+         40960 (0120000)  GIT_FILEMODE_LINK
+         57344 (0160000)  GIT_FILEMODE_COMMIT
+
+        :param tree: a pygit2.Tree instance
+        :param entry_name: the name of the entry that is being searched for
+        :type entry_name: str
+        :returns: the filemode for the entry :rtype: int
+        """
+
+        filemode = None
+        for entry in tree:
+            if (entry.name == entry_name and\
+                len(path_components) == 1 and\
+                entry.name == path_components[0]):
+
+                return entry.filemode
+            elif entry.filemode == GIT_FILEMODE_TREE:
+                filemode = self._get_git_object_type(self[entry.id],
+                                                     entry_name,
+                                                     path_components[1:])
+                if filemode:
+                    return filemode
+
+        return filemode
+
+    def get_git_object_type(self, tree, path):
+        path_components = split_path_into_components(path)
+        return self._get_git_object_type(tree, path_components[-1],
+                                         path_components)
+
+    def _get_git_object(self, tree, obj_name, path_components):
+        git_obj = None
+        for entry in tree:
+            if (entry.name == obj_name and\
+                len(path_components) == 1 and\
+                entry.name == path_components[0]):
+                return self[entry.id]
+            elif entry.filemode == GIT_FILEMODE_TREE:
+                git_obj = self._get_git_object(self[entry.id],
+                                                obj_name,
+                                                path_components[1:])
+                if git_obj:
+                    return git_obj
+
+        return git_obj
+
+
+    def get_git_object(self, tree, path):
+        path_components = split_path_into_components(path)
+        return self._get_git_object(tree, path_components[-1], path_components)
+
+    def get_blob_size(self, tree, path):
+        return self.get_git_object(tree, path).size
+
+    def get_blob_data(self, tree, path):
+        return self.get_git_object(tree, path).data
