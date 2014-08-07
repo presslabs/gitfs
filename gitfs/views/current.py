@@ -41,8 +41,16 @@ class CurrentView(View, PassthroughFuse):
         return result
 
     def release(self, path, fh):
+        """
+        Check for path if something was written to. If so, commit and push
+        the changed to upstream.
+        """
+
         if path in self.dirty:
-            self.repo.index.add(path)
+            print path
+            self.repo.index.add(os.path.split(path)[1])
             self.repo.commit("Update %s" % path, self.author, self.commiter)
+            self.repo.push("origin", self.branch)
             self.dirty.remove(path)
+
         return os.close(fh)
