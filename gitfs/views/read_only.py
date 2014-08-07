@@ -34,3 +34,6 @@ class ReadOnlyView(View):
 
     def access(self, path, amode):
         return 0
+
+    def mkdir(self, path, mode):
+        raise FuseOSError(EROFS)
