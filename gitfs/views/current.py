@@ -45,10 +45,10 @@ class CurrentView(View, PassthroughFuse):
     def mkdir(self, path, mode):
         result = super(CurrentView, self).mkdir(path, mode)
 
-        # create .keep file
         path = "%s/.keep" % os.path.split(path)[1]
-        fh = self.create(path, 0644)
-        self.release(path, fh)
+        if not os.path.exists(path):
+            fh = self.create(path, 0644)
+            self.release(path, fh)
 
         return result
 
