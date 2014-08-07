@@ -153,7 +153,6 @@ class Repository(_Repository):
         """
         Returns the filemode of the git object with the relative path <path>.
 
-
         :param tree: a `pygit2.Tree` instance
         :param path: the relative path of the object
         :type entry_name: str
@@ -215,7 +214,6 @@ class Repository(_Repository):
     def get_git_object(self, tree, path):
         """
         Returns the git object with the relative path <path>.
-
 
         :param tree: a `pygit2.Tree` instance
         :param path: the relative path of the object
