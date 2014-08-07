@@ -65,7 +65,7 @@ class Router(object):
         log.info('Done INIT')
 
     def destroy(self, path):
-        shutil.rmtree(self.repos_path)
+        shutil.rmtree(self.repo_path)
 
     def __call__(self, operation, *args):
         # TODO: check args for special methods
@@ -114,6 +114,8 @@ class Router(object):
                 return self.cached_views[cache_key], relative_path
 
             kwargs = result.groupdict()
+
+            # TODO: move all this to a nice config variable
             kwargs['repo'] = self.repo
             kwargs['repo_path'] = self.repo_path
             kwargs['mount_path'] = self.mount_path
@@ -123,6 +125,7 @@ class Router(object):
             kwargs['gid'] = self.gid
             kwargs['author'] = self.author
             kwargs['commiter'] = self.commiter
+            kwargs['branch'] = self.branch
 
             args = set(groups) - set(kwargs.values())
 
