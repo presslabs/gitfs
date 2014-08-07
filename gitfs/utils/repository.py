@@ -1,7 +1,6 @@
 from pygit2 import (Repository as _Repository, clone_repository,
                     GIT_CHECKOUT_SAFE_CREATE, Signature, GIT_BRANCH_REMOTE,
-                    GIT_CHECKOUT_FORCE, GIT_FILEMODE_TREE, GIT_FILEMODE_BLOB,
-                    GIT_FILEMODE_BLOB_EXECUTABLE, GIT_FILEMODE_LINK)
+                    GIT_CHECKOUT_FORCE, GIT_FILEMODE_TREE)
 
 from .path import split_path_into_components
 
