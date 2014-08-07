@@ -1,14 +1,10 @@
 import os
-from datetime import datetime
 from stat import S_IFDIR
 from errno import ENOENT
 
-from pygit2 import GIT_SORT_TIME
 from fuse import FuseOSError
 
-from gitfs.utils import strptime
 from gitfs.log import log
-
 from .view import View
 
 
