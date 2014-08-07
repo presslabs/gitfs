@@ -139,9 +139,6 @@ class Repository(_Repository):
         filemode = None
         for entry in tree:
             if self._is_searched_entry(entry.name, entry_name, path_components):
-            #if (entry.name == entry_name and\
-                #len(path_components) == 1 and\
-                #entry.name == path_components[0]):
                 return entry.filemode
             elif entry.filemode == GIT_FILEMODE_TREE:
                 filemode = self._get_git_object_type(self[entry.id],
@@ -200,9 +197,6 @@ class Repository(_Repository):
         git_obj = None
         for entry in tree:
             if self._is_searched_entry(entry.name, obj_name, path_components):
-            #if (entry.name == obj_name and\
-                #len(path_components) == 1 and\
-                #entry.name == path_components[0]):
                 return self[entry.id]
             elif entry.filemode == GIT_FILEMODE_TREE:
                 git_obj = self._get_git_object(self[entry.id],
