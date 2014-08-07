@@ -169,10 +169,10 @@ class CommitView(ReadOnlyView):
         attrs = super(CommitView, self).getattr(path, fh)
 
         types = {
-            GIT_FILEMODE_LINK: {'st_mode': S_IFLNK | 0644},
-            GIT_FILEMODE_TREE: {'st_mode': S_IFDIR | 0644, 'st_nlink': 2},
-            GIT_FILEMODE_BLOB: {'st_mode': S_IFREG | 0644},
-            GIT_FILEMODE_BLOB_EXECUTABLE: {'st_mode': S_IFREG | 0755},
+            GIT_FILEMODE_LINK: {'st_mode': S_IFLNK | 0444},
+            GIT_FILEMODE_TREE: {'st_mode': S_IFDIR | 0555, 'st_nlink': 2},
+            GIT_FILEMODE_BLOB: {'st_mode': S_IFREG | 0444},
+            GIT_FILEMODE_BLOB_EXECUTABLE: {'st_mode': S_IFREG | 0555},
         }
 
         if path == '/':
