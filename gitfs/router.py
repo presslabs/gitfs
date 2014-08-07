@@ -109,7 +109,7 @@ class Router(object):
             groups = result.groups()
             relative_path = re.sub(route['regex'], '', path)
 
-            cache_key = result.group(0)
+            cache_key = result.group(0) + relative_path
             if cache_key in self.cached_views:
                 return self.cached_views[cache_key], relative_path
 
