@@ -9,10 +9,10 @@ from fuse import FuseOSError
 from gitfs.utils import strptime
 from gitfs.log import log
 
-from .view import View
+from .read_only import ReadOnlyView
 
 
-class HistoryView(View):
+class HistoryView(ReadOnlyView):
 
     def getattr(self, path, fh=None):
         '''
@@ -26,6 +26,9 @@ class HistoryView(View):
         the directory, while Linux counts only the subdirectories.
         '''
 
+        if path not in self._get_commit_dates() and path != '/':
+            raise FuseOSError(ENOENT)
+
         attrs = super(HistoryView, self).getattr(path, fh)
         attrs.update({
             'st_mode': S_IFDIR | 0775,
@@ -33,12 +36,6 @@ class HistoryView(View):
         })
 
         return attrs
-
-    def opendir(self, path):
-        return 0
-
-    def releasedir(self, path, fi):
-        pass
 
     def access(self, path, amode):
         if getattr(self, 'date', None):

@@ -13,9 +13,6 @@ FS_STATS = ('f_bavail', 'f_bfree', 'f_blocks', 'f_bsize', 'f_favail',
 
 class PassthroughFuse(LoggingMixIn, Operations):
 
-    def __init__(self, root):
-        self.root = root
-
     def _full_path(self, partial):
         if partial.startswith("/"):
             partial = partial[1:]

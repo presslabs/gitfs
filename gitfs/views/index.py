@@ -2,16 +2,11 @@ from errno import ENOENT
 from stat import S_IFDIR
 
 from gitfs import FuseOSError
-from gitfs.log import log
 
-from .view import View
+from .read_only import ReadOnlyView
 
 
-class IndexView(View):
-
-    def statfs(self, path):
-        log.info('CALL statfs %s', path)
-        return {}
+class IndexView(ReadOnlyView):
 
     def getattr(self, path, fh=None):
         '''
@@ -35,16 +30,6 @@ class IndexView(View):
         })
 
         return attrs
-
-    def opendir(self, path):
-        return 0
-
-    def releasedir(self, path, fi):
-        pass
-
-    def access(self, path, amode):
-        log.info('%s %s', path, amode)
-        return 0
 
     def readdir(self, path, fh):
         return ['.', '..', 'current', 'history']
