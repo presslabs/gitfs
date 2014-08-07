@@ -1,7 +1,7 @@
 import os
 from datetime import datetime
 from stat import S_IFDIR
-from errno import ENOENT, EROFS
+from errno import ENOENT
 
 from pygit2 import GIT_SORT_TIME
 from fuse import FuseOSError
@@ -9,10 +9,10 @@ from fuse import FuseOSError
 from gitfs.utils import strptime
 from gitfs.log import log
 
-from .view import View
+from .read_only import ReadOnlyView
 
 
-class HistoryView(View):
+class HistoryView(ReadOnlyView):
 
     def getattr(self, path, fh=None):
         '''
@@ -36,21 +36,6 @@ class HistoryView(View):
         })
 
         return attrs
-
-    def opendir(self, path):
-        return 0
-
-    def releasedir(self, path, fi):
-        pass
-
-    def open(self, path, fh):
-        return 0
-
-    def create(self, path, fh):
-        raise FuseOSError(EROFS)
-
-    def write(self, path, fh):
-        raise FuseOSError(EROFS)
 
     def access(self, path, amode):
         if getattr(self, 'date', None):

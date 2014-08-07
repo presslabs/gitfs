@@ -8,11 +8,10 @@ from pygit2 import (
 )
 from fuse import FuseOSError
 
-from .view import View
+from .read_only import ReadOnlyView
 
 
-class CommitView(View):
-
+class CommitView(ReadOnlyView):
     def __init__(self, *args, **kwargs):
         super(CommitView, self).__init__(*args, **kwargs)
 
@@ -148,9 +147,6 @@ class CommitView(View):
         content = self._get_blob_content(self.commit.tree, obj_name)
         return content[offset:offset + size]
 
-    def open(self, path, flags):
-        return 0
-
     def readlink(self, path):
         obj_name = os.path.split(path)[1]
         return self._get_blob_content(self.commit.tree, obj_name)
@@ -195,12 +191,6 @@ class CommitView(View):
 
         return attrs
 
-    def opendir(self, path):
-        return 0
-
-    def releasedir(self, path, fi):
-        pass
-
     def access(self, path, amode):
         """
         Check if the relative path is a valid path in the context of the
@@ -227,9 +217,3 @@ class CommitView(View):
             dir_tree = subtree
 
         return ['.', '..'] + [entry.name for entry in dir_tree]
-
-    def flush(self, path, fh):
-        return 0
-
-    def release(self, path, fh):
-        return 0

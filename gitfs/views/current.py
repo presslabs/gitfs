@@ -6,7 +6,7 @@ from gitfs.filesystems.passthrough import PassthroughFuse, STATS
 from .view import View
 
 
-class CurrentView(View, PassthroughFuse):
+class CurrentView(PassthroughFuse, View):
 
     def __init__(self, *args, **kwargs):
         super(CurrentView, self).__init__(*args, **kwargs)

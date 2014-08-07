@@ -1,7 +1,5 @@
 from abc import ABCMeta
 
-from gitfs import FuseMethodNotImplemented
-
 
 class View(object):
     __metaclass__ = ABCMeta
@@ -17,6 +15,3 @@ class View(object):
             'st_uid': self.uid,
             'st_gid': self.gid,
         }
-
-    def getxattr(self, path, fh):
-        raise FuseMethodNotImplemented
