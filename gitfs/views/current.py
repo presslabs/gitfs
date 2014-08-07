@@ -42,29 +42,6 @@ class CurrentView(View, PassthroughFuse):
         }
         return result
 
-    def release(self, path, fh):
-        """
-        Check for path if something was written to. If so, commit and push
-        the changed to upstream.
-        """
-
-        # TODO:add them into a queue and commit/push them in another thread
-
-        if path in self.dirty:
-            clean_path = path
-            if path.startswith("/"):
-                clean_path = path[1:]
-
-            self.repo.index.add(clean_path)
-            # TODO: read commit message from dirty
-            self.repo.commit(self.dirty[path]['message'], self.author,
-                             self.commiter)
-            self.repo.push("origin", self.branch)
-
-            del self.dirty[path]
-
-        return os.close(fh)
-
     def mkdir(self, path, mode):
         result = super(CurrentView, self).mkdir(path, mode)
 
@@ -77,7 +54,30 @@ class CurrentView(View, PassthroughFuse):
 
     def create(self, path, mode, fi=None):
         result = super(CurrentView, self).create(path, mode, fi)
+
         self.dirty[path] = {
             'message': "Created %s" % path
         }
+
         return result
+
+    def release(self, path, fh):
+        """
+        Check for path if something was written to. If so, commit and push
+        the changed to upstream.
+        """
+
+        # TODO:add them into a queue and commit/push them in another thread
+        if path in self.dirty:
+            self.commit(path, self.dirty[path]['message'])
+            del self.dirty[path]
+
+        return os.close(fh)
+
+    def commit(self, path, message):
+        if path.startswith("/"):
+            path = path[1:]
+
+        self.repo.index.add(path)
+        self.repo.commit(message, self.author, self.commiter)
+        self.repo.push("origin", self.branch)
