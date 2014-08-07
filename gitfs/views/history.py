@@ -31,7 +31,7 @@ class HistoryView(ReadOnlyView):
 
         attrs = super(HistoryView, self).getattr(path, fh)
         attrs.update({
-            'st_mode': S_IFDIR | 0775,
+            'st_mode': S_IFDIR | 0555,
             'st_nlink': 2
         })
 

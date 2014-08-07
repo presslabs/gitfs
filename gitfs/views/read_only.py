@@ -1,3 +1,4 @@
+import os
 from errno import EROFS
 
 from fuse import FuseOSError
@@ -11,7 +12,7 @@ class ReadOnlyView(View):
     def getxattr(self, path, fh):
         raise FuseMethodNotImplemented
 
-    def open(self, path, fh):
+    def open(self, path, flags):
         return 0
 
     def create(self, path, fh):
