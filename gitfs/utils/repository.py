@@ -1,8 +1,11 @@
+from datetime import datetime
 from pygit2 import (Repository as _Repository, clone_repository,
                     GIT_CHECKOUT_SAFE_CREATE, Signature, GIT_BRANCH_REMOTE,
-                    GIT_CHECKOUT_FORCE, GIT_FILEMODE_TREE)
+                    GIT_CHECKOUT_FORCE, GIT_FILEMODE_TREE, GIT_SORT_TIME)
 
+from .strptime import strptime
 from .path import split_path_into_components
+
 
 class Repository(_Repository):
 
@@ -256,3 +259,37 @@ class Repository(_Repository):
         :rtype: str
         """
         return self.get_git_object(tree, path).data
+
+    def get_commit_dates(self):
+        """
+        Walk through all commits from current repo in order to compose the
+        _history_ directory.
+        """
+
+        commit_dates = set()
+        for commit in self.walk(self.head.target, GIT_SORT_TIME):
+            commit_date = datetime.fromtimestamp(commit.commit_time).date()
+            commit_dates.add(commit_date.strftime('%Y-%m-%d'))
+
+        return list(commit_dates)
+
+    def get_commits_by_date(self, date):
+        """
+        Retrieves all the commits from a particular date.
+
+        :param date: date with the format: yyyy-mm-dd
+        :type date: str
+        :returns: a list containg the commits for that day. Each list item
+            will have the format: hh:mm:ss-<short_sha1>, where short_sha1 is
+            the short sha1 of the commit (first 10 characters).
+        :rtype: list
+        """
+
+        date = strptime(date, '%Y-%m-%d')
+        commits = []
+        for commit in self.walk(self.head.target, GIT_SORT_TIME):
+            commit_time = datetime.fromtimestamp(commit.commit_time)
+            if commit_time.date() == date:
+                time = commit_time.time().strftime('%H:%M:%S')
+                commits.append("%s-%s" % (time, commit.hex[:10]))
+        return commits
