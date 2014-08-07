@@ -105,11 +105,6 @@ class CommitView(View):
         pass
 
     def access(self, path, amode):
-        """
-        Check if the relative path is a valid path in the context of the
-        commit that is being browsed. If not, raise Fuseoserror with
-        """
-
         if self.relative_path and self.relative_path != '/':
             path_elems = split_path_into_components(self.relative_path)
             is_valid_path = self._validate_commit_path(self.commit.tree,
