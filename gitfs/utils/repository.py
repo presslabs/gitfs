@@ -46,13 +46,14 @@ class Repository(_Repository):
         # cleanup the merging state
         self.clean_state_files()
 
-    def commit(self, message, author, author_email, ref="HEAD"):
+    def commit(self, message, author, commiter, ref="HEAD"):
         """ Wrapper for create_commit. It creates a commit from a given ref
         (default is HEAD)
         """
+
         # sign the author
-        commit_author = Signature(author, author_email)
-        commiter = Signature(author, author_email)
+        author = Signature(author[0], author[1])
+        commiter = Signature(commiter[0], commiter[1])
 
         # write index localy
         tree = self.index.write_tree()
@@ -60,7 +61,7 @@ class Repository(_Repository):
 
         # get parent
         parent = self.revparse_single(ref)
-        return self.create_commit(ref, commit_author, commiter, message,
+        return self.create_commit(ref, author, commiter, message,
                                   tree, [parent.id])
 
     @classmethod
