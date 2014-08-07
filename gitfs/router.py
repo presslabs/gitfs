@@ -75,8 +75,6 @@ class Router(object):
             path = args[0]
             view, relative_path = self.get_view(path)
             args = (relative_path,) + args[1:]
-            relative_path = '/' if not relative_path else relative_path
-            args = (relative_path,) + args[1:]
         log.info('CALL %s %s with %r' % (operation, view, args))
         if not hasattr(view, operation):
             raise FuseOSError(EFAULT)
@@ -108,6 +106,7 @@ class Router(object):
 
             groups = result.groups()
             relative_path = re.sub(route['regex'], '', path)
+            relative_path = '/' if not relative_path else relative_path
 
             cache_key = result.group(0) + relative_path
             if cache_key in self.cached_views:
