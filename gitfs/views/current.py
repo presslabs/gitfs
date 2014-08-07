@@ -11,7 +11,7 @@ class CurrentView(View, PassthroughFuse):
     def __init__(self, *args, **kwargs):
         super(CurrentView, self).__init__(*args, **kwargs)
         self.root = self.repo_path
-        self.dirty = set([])
+        self.dirty = {}
 
     def rename(self, old, new):
         new = re.sub(self.regex, '', new)
@@ -37,7 +37,28 @@ class CurrentView(View, PassthroughFuse):
 
     def write(self, path, buf, offset, fh):
         result = super(CurrentView, self).write(path, buf, offset, fh)
-        self.dirty.add(path)
+        self.dirty[path] = {
+            'message': 'Update %s' % path
+        }
+        return result
+
+    def mkdir(self, path, mode):
+        result = super(CurrentView, self).mkdir(path, mode)
+
+        path = "%s/.keep" % os.path.split(path)[1]
+        if not os.path.exists(path):
+            fh = self.create(path, 0644)
+            self.release(path, fh)
+
+        return result
+
+    def create(self, path, mode, fi=None):
+        result = super(CurrentView, self).create(path, mode, fi)
+
+        self.dirty[path] = {
+            'message': "Created %s" % path
+        }
+
         return result
 
     def release(self, path, fh):
@@ -46,10 +67,17 @@ class CurrentView(View, PassthroughFuse):
         the changed to upstream.
         """
 
+        # TODO:add them into a queue and commit/push them in another thread
         if path in self.dirty:
-            self.repo.index.add(os.path.split(path)[1])
-            self.repo.commit("Update %s" % path, self.author, self.commiter)
-            self.repo.push("origin", self.branch)
-            self.dirty.remove(path)
+            self.commit(path, self.dirty[path]['message'])
+            del self.dirty[path]
 
         return os.close(fh)
+
+    def commit(self, path, message):
+        if path.startswith("/"):
+            path = path[1:]
+
+        self.repo.index.add(path)
+        self.repo.commit(message, self.author, self.commiter)
+        self.repo.push("origin", self.branch)
