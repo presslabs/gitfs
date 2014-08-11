@@ -18,18 +18,18 @@ test: testenv
 	mkdir -p $(REPO_DIR)
 	mkdir -p $(BARE_REPO)
 	cd $(BARE_REPO);\
-		pwd;\
 		git init --bare .;\
-		cd ..;\
-		pwd
-		git clone $(BARE_REPO) $(REPO)
-		cd $(REPO)
-		echo "just testing around here" >> testing
-		touch me
-		git add .
-		git commit -m "Initial test commnit"
-		git push -u origin master
-		$(VIRTUAL_ENV)/bin/py.test tests
+		cd ../../;\
+		git clone $(BARE_REPO) $(REPO);\
+		cd $(REPO);\
+		echo "just testing around here" >> testing;\
+		touch me;\
+		git add .;\
+		git commit -m "Initial test commnit";\
+		git push -u origin master;\
+	$(VIRTUAL_ENV)/bin/python gitfs/mount.py tests $(BARE_REPO) $(MNT_DIR) -o repos_path=$(REPO_DIR)
+	$(VIRTUAL_ENV)/bin/py.test tests
+
 
 $(VIRTUAL_ENV)/bin/py.test: $(VIRTUAL_ENV)/bin/pip requirements.txt
 	$(VIRTUAL_ENV)/bin/pip install cffi==0.8.6
