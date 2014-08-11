@@ -37,7 +37,8 @@ test: testenv
 		HOME=../../$(TEST_DIR) git push -u origin master
 	pip install -e .
 	$(VIRTUAL_ENV)/bin/gitfs $(BARE_REPO) $(MNT_DIR) -o repos_path=$(REPO_DIR) & echo "$$!" > $(GITFS_PID)
-	$(VIRTUAL_ENV)/bin/py.test tests
+	sleep 1
+	MOUNT_PATH=$(MNT_DIR) REPO_PATH=$(REPO_DIR) $(VIRTUAL_ENV)/bin/py.test tests
 	kill -9 `cat $(GITFS_PID)`
 
 $(VIRTUAL_ENV)/bin/py.test: $(VIRTUAL_ENV)/bin/pip requirements.txt

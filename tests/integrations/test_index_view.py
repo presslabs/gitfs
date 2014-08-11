@@ -1,3 +1,8 @@
-class IndexViewTest(object):
+import os
+
+from .base import BaseTest
+
+
+class TestIndexView(BaseTest):
     def test_read_from_index_view(self):
-        pass
+        assert os.listdir(self.mount_path) == ['current', 'history']
