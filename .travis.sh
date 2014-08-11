@@ -4,6 +4,6 @@ sudo apt-get update
 sudo apt-get install -y udev fuse-utils libfuse-dev libfuse2 libgit2-0 libgit2-dev git git-core
 
 sudo mknod /dev/fuse -m 0666 c 10 229
-sudo chown root:root /dev/fuse
+sudo chown travis:travis /dev/fuse
 sudo adduser travis fuse
 sudo chmod g+rw /dev/fuse
