@@ -1,4 +1,3 @@
-import os
 from errno import EROFS
 
 from fuse import FuseOSError
@@ -37,4 +36,7 @@ class ReadOnlyView(View):
         return 0
 
     def mkdir(self, path, mode):
+        raise FuseOSError(EROFS)
+
+    def utimens(self, path, times=None):
         raise FuseOSError(EROFS)
