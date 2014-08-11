@@ -6,6 +6,5 @@ install:
     - sudo apt-get install -y libfuse-dev libfuse2 libgit2-0 libgit2-dev git git-core
 python:
   - "2.7"
-  - "pypy"
 script:
     - make test
