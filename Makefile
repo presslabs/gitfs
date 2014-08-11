@@ -7,6 +7,12 @@ REPO_DIR:=$(TEST_DIR)/$(shell bash -c 'echo $$RANDOM')_repo
 BARE_REPO:=$(TEST_DIR)/testing_repo.git
 REPO:=$(TEST_DIR)/testing_repo
 GITFS_PID:=$(TEST_DIR)/gitfs.pid
+GITCONFIG="\
+[user]\
+  name = GitFs\
+  email = gitfs@gitfs.com"
+
+GITCONFIG_PATH=$(TEST_DIR)/.gitconfig
 
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
@@ -18,13 +24,11 @@ test: testenv
 	mkdir -p $(MNT_DIR)
 	mkdir -p $(REPO_DIR)
 	mkdir -p $(BARE_REPO)
+	echo $(GITCONFIG) > $(GITCONFIG_PATH)
+	export GIT_CONFIG=$(GITCONFIG_PATH)
 	cd $(BARE_REPO);\
 		git init --bare .;\
-		git config user.name "gitfs test";\
-		git config user.email "gitfs@gitfs.com";\
 		cd ../../;\
-		git config user.name "gitfs test";\
-		git config user.email "gitfs@gitfs.com";\
 		git clone $(BARE_REPO) $(REPO);\
 		cd $(REPO);\
 		echo "just testing around here" >> testing;\
