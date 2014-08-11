@@ -26,9 +26,12 @@ test: testenv
 		touch me;\
 		git add .;\
 		git commit -m "Initial test commnit";\
-		git push -u origin master;\
-	$(VIRTUAL_ENV)/bin/python gitfs/mount.py tests $(BARE_REPO) $(MNT_DIR) -o repos_path=$(REPO_DIR)
+		git push -u origin master
+	pip install -e .
+	$(VIRTUAL_ENV)/bin/gitfs $(BARE_REPO) $(MNT_DIR) -o repos_path=$(REPO_DIR) &
+	GITFS_PID=$!
 	$(VIRTUAL_ENV)/bin/py.test tests
+	kill -9 GITFS_PID
 
 
 $(VIRTUAL_ENV)/bin/py.test: $(VIRTUAL_ENV)/bin/pip requirements.txt
