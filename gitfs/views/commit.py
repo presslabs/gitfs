@@ -53,10 +53,12 @@ class CommitView(ReadOnlyView):
         return filemode
 
     def _get_blob_size(self, tree, blob_name):
-        return self._get_blob(tree, blob_name).size
+        blob = self._get_blob(tree, blob_name)
+        return blob.size if blob else 0
 
     def _get_blob_content(self, tree, blob_name):
-        return self._get_blob(tree, blob_name).data
+        blob = self._get_blob(tree, blob_name)
+        return blob.data if blob else ""
 
     def _get_blob(self, tree, blob_name):
         """
@@ -186,8 +188,8 @@ class CommitView(ReadOnlyView):
 
             attrs.update(types[obj_type])
             if obj_type in [GIT_FILEMODE_BLOB, GIT_FILEMODE_BLOB_EXECUTABLE]:
-                attrs['st_size'] = self._get_blob_size(self.commit.tree,
-                                                       obj_name)
+                attrs['st_size'] = self.repo.get_blob_size(self.commit.tree,
+                                                           obj_name)
 
         return attrs
 
@@ -216,4 +218,6 @@ class CommitView(ReadOnlyView):
             subtree = self._get_commit_subtree(self.commit.tree, tree_name)
             dir_tree = subtree
 
-        return ['.', '..'] + [entry.name for entry in dir_tree]
+        dir_entries = ['.', '..']
+        if 
+        return + [entry.name for entry in dir_tree] else []

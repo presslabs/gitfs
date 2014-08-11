@@ -40,3 +40,6 @@ class ReadOnlyView(View):
 
     def utimens(self, path, times=None):
         raise FuseOSError(EROFS)
+
+    def chown(self, path, uid, gid):
+        raise FuseOSError(EROFS)
