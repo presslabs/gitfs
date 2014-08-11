@@ -5,5 +5,5 @@ sudo apt-get install -y udev fuse-utils libfuse-dev libfuse2 libgit2-0 libgit2-d
 
 sudo mknod /dev/fuse -m 0666 c 10 229
 sudo chown root:root /dev/fuse
-sudo gpasswd -a travis fuse
+useradd -G fuse travis
 sudo chmod g+rw /dev/fuse
