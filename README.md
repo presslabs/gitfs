@@ -1,4 +1,4 @@
-gitiumFS
+gitiumFS [![Build Status](https://magnum.travis-ci.com/PressLabs/git-fs.svg?token=kZEsZAXxkYYs2Frs15Pd&branch=start-testing)](https://magnum.travis-ci.com/PressLabs/git-fs)
 ========
 
 A FUSE filesystem for git repositories, with local cache
