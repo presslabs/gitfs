@@ -1,0 +1,3 @@
+[console_scripts]
+gitfs = gitfs.mount
+
