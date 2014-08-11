@@ -35,6 +35,8 @@ test: testenv
 		HOME=../../$(TEST_DIR) git add .;\
 		HOME=../../$(TEST_DIR) git commit -m "Initial test commnit";\
 		HOME=../../$(TEST_DIR) git push -u origin master
+	pip install cffi
+	pip install -r requirements.txt
 	pip install -e .
 	$(VIRTUAL_ENV)/bin/gitfs $(BARE_REPO) $(MNT_DIR) -o repos_path=$(REPO_DIR) & echo "$$!" > $(GITFS_PID)
 	sleep 2
