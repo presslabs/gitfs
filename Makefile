@@ -8,9 +8,9 @@ BARE_REPO:=$(TEST_DIR)/testing_repo.git
 REPO:=$(TEST_DIR)/testing_repo
 GITFS_PID:=$(TEST_DIR)/gitfs.pid
 GITCONFIG="\
-[user]\
-  name = GitFs\
-  email = gitfs@gitfs.com"
+[user]\n\
+\t name = GitFs\n\
+\t email = gitfs@gitfs.com\n"
 
 GITCONFIG_PATH=$(TEST_DIR)/.gitconfig
 
@@ -27,7 +27,7 @@ test: testenv
 	echo $(GITCONFIG) > $(GITCONFIG_PATH)
 	cd $(BARE_REPO);\
 		export GIT_CONFIG=$(GITCONFIG_PATH);\
-		echo $$GIT_CONFIG;\
+		git config --file=$(GITCONFIG_PATH);\
 		git init --bare .;\
 		cd ../../;\
 		git clone $(BARE_REPO) $(REPO);\
