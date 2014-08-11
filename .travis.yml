@@ -1,6 +1,8 @@
 language: python
 install:
     - ./.travis.sh
+    - pip install cffi
+    - pip install -r requirements.txt
 python:
   - "2.7"
 script:

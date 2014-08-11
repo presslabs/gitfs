@@ -35,21 +35,20 @@ test: testenv
 		HOME=../../$(TEST_DIR) git add .;\
 		HOME=../../$(TEST_DIR) git commit -m "Initial test commnit";\
 		HOME=../../$(TEST_DIR) git push -u origin master
-	pip install cffi
-	pip install -r requirements.txt
-	pip install -e .
+	$(VIRTUAL_ENV)/bin/pip install -e .
 	$(VIRTUAL_ENV)/bin/gitfs $(BARE_REPO) $(MNT_DIR) -o repos_path=$(REPO_DIR) & echo "$$!" > $(GITFS_PID)
 	sleep 2
 	MOUNT_PATH=$(MNT_DIR) REPO_PATH=$(REPO_DIR) $(VIRTUAL_ENV)/bin/py.test tests
 	kill -9 `cat $(GITFS_PID)`
 
-$(VIRTUAL_ENV)/bin/py.test: $(VIRTUAL_ENV)/bin/pip requirements.txt
-	$(VIRTUAL_ENV)/bin/pip install cffi==0.8.6
-	$(VIRTUAL_ENV)/bin/pip install -r requirements.txt
+$(VIRTUAL_ENV)/bin/py.test: $(VIRTUAL_ENV)/bin/pip
 	touch $@
 
 $(VIRTUAL_ENV)/bin/pip:
 	virtualenv $(VIRTUAL_ENV)
+	$(VIRTUAL_ENV)/bin/pip install cffi
+	$(VIRTUAL_ENV)/bin/pip install -r requirements.txt
+	$(VIRTUAL_ENV)/bin/pip install -e .
 
 clean:
 	rm -rf $(BUILD_DIR)
