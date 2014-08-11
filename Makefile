@@ -19,6 +19,8 @@ test: testenv
 	mkdir -p $(REPO_DIR)
 	mkdir -p $(BARE_REPO)
 	cd $(BARE_REPO);\
+		git config user.name "gitfs test";\
+		git config user.email "gitfs@gitfs.com";\
 		git init --bare .;\
 		cd ../../;\
 		git clone $(BARE_REPO) $(REPO);\
@@ -27,8 +29,6 @@ test: testenv
 		touch me;\
 		git add .;\
 		git commit -m "Initial test commnit";\
-		git config user.name "gitfs test";\
-		git config user.email "gitfs@gitfs.com";\
 		git push -u origin master
 	pip install -e .
 	$(VIRTUAL_ENV)/bin/gitfs $(BARE_REPO) $(MNT_DIR) -o repos_path=$(REPO_DIR) & echo "$$!" > $(GITFS_PID)
