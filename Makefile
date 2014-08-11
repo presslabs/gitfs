@@ -18,11 +18,13 @@ test: testenv
 	mkdir -p $(MNT_DIR)
 	mkdir -p $(REPO_DIR)
 	mkdir -p $(BARE_REPO)
-	git config user.name "gitfs test"
-	git config user.email "gitfs@gitfs.com"
 	cd $(BARE_REPO);\
 		git init --bare .;\
+		git config user.name "gitfs test";\
+		git config user.email "gitfs@gitfs.com";\
 		cd ../../;\
+		git config user.name "gitfs test";\
+		git config user.email "gitfs@gitfs.com";\
 		git clone $(BARE_REPO) $(REPO);\
 		cd $(REPO);\
 		echo "just testing around here" >> testing;\
