@@ -26,15 +26,15 @@ test: testenv
 	mkdir -p $(BARE_REPO)
 	echo $(GITCONFIG) > $(GITCONFIG_PATH)
 	cd $(BARE_REPO);\
-		HOME=$(TEST_DIR) git init --bare .;\
+		HOME=../../$(TEST_DIR) git init --bare .;\
 		cd ../../;\
 		HOME=$(TEST_DIR) git clone $(BARE_REPO) $(REPO);\
 		cd $(REPO);\
 		echo "just testing around here" >> testing;\
 		touch me;\
-		HOME=$(TEST_DIR) git add .;\
-		HOME=$(TEST_DIR) git commit -m "Initial test commnit";\
-		HOME=$(TEST_DIR) git push -u origin master
+		HOME=../../$(TEST_DIR) git add .;\
+		HOME=../../$(TEST_DIR) git commit -m "Initial test commnit";\
+		HOME=../../$(TEST_DIR) git push -u origin master
 	pip install -e .
 	$(VIRTUAL_ENV)/bin/gitfs $(BARE_REPO) $(MNT_DIR) -o repos_path=$(REPO_DIR) & echo "$$!" > $(GITFS_PID)
 	$(VIRTUAL_ENV)/bin/py.test tests
