@@ -25,8 +25,9 @@ test: testenv
 	mkdir -p $(REPO_DIR)
 	mkdir -p $(BARE_REPO)
 	echo $(GITCONFIG) > $(GITCONFIG_PATH)
-	export GIT_CONFIG=$(GITCONFIG_PATH)
 	cd $(BARE_REPO);\
+		export GIT_CONFIG=$(GITCONFIG_PATH);\
+		echo $$GIT_CONFIG;\
 		git init --bare .;\
 		cd ../../;\
 		git clone $(BARE_REPO) $(REPO);\
