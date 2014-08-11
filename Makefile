@@ -20,7 +20,6 @@ $(BUILD_DIR):
 testenv: $(VIRTUAL_ENV)/bin/py.test
 
 test: testenv
-	ls /dev
 	mkdir -p $(TEST_DIR)
 	mkdir -p $(MNT_DIR)
 	mkdir -p $(REPO_DIR)
