@@ -1,9 +1,11 @@
 import re
 import os
+from stat import S_IXUSR, S_IXGRP, S_IXOTH
 
 from gitfs.filesystems.passthrough import PassthroughFuse, STATS
 
 from .view import View
+from gitfs.log import log
 
 
 class CurrentView(PassthroughFuse, View):
@@ -59,6 +61,19 @@ class CurrentView(PassthroughFuse, View):
             'message': "Created %s" % path
         }
 
+        return result
+
+
+    def chmod(self, path, mode):
+        mode = int(str(oct(mode))[3:-1], 8)
+        log.info("st_mode: %s", mode)
+        log.info('user has exec permission: %s' % bool(mode & S_IXUSR))
+        log.info('group has exec permission: %s' %  bool(mode & S_IXGRP))
+        log.info('ohter have exec permission: %s' % bool(mode & S_IXOTH))
+        result = super(CurrentView, self).chmod(path, mode)
+        #self.dirty[path] = {
+            #'message': 'chmod'
+        #}
         return result
 
     def release(self, path, fh):
