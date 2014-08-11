@@ -18,9 +18,9 @@ test: testenv
 	mkdir -p $(MNT_DIR)
 	mkdir -p $(REPO_DIR)
 	mkdir -p $(BARE_REPO)
+	git config user.name "gitfs test"
+	git config user.email "gitfs@gitfs.com"
 	cd $(BARE_REPO);\
-		git config user.name "gitfs test";\
-		git config user.email "gitfs@gitfs.com";\
 		git init --bare .;\
 		cd ../../;\
 		git clone $(BARE_REPO) $(REPO);\
