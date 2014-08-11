@@ -7,4 +7,4 @@ sudo mknod /dev/fuse -m 0666 c 10 229
 sudo chown root:root /dev/fuse
 sudo adduser travis fuse
 sudo chmod g+rw /dev/fuse
-exec su -l $USER
+sudo -u travis -i
