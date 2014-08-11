@@ -23,7 +23,7 @@ class HistoryView(ReadOnlyView):
         the directory, while Linux counts only the subdirectories.
         '''
 
-        if path not in self._get_commit_dates() and path != '/':
+        if path not in self.repo.get_commit_dates() and path != '/':
             raise FuseOSError(ENOENT)
 
         attrs = super(HistoryView, self).getattr(path, fh)
