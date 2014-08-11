@@ -36,7 +36,7 @@ test: testenv
 		HOME=../../$(TEST_DIR) git commit -m "Initial test commnit";\
 		HOME=../../$(TEST_DIR) git push -u origin master
 	pip install -e .
-	modeprobe fuse
+	modprobe fuse
 	$(VIRTUAL_ENV)/bin/gitfs $(BARE_REPO) $(MNT_DIR) -o repos_path=$(REPO_DIR) & echo "$$!" > $(GITFS_PID)
 	sleep 1
 	MOUNT_PATH=$(MNT_DIR) REPO_PATH=$(REPO_DIR) $(VIRTUAL_ENV)/bin/py.test tests
