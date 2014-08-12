@@ -1,3 +1,5 @@
+import os
+
 from tests.integrations.base import BaseTest
 
 
@@ -26,3 +28,21 @@ class TestWriteCurrentView(BaseTest):
         last_commit = commits[0]
         commit = self.repo.revparse_single(last_commit.split('-')[1])
         assert self.repo.get_blob_data(commit.tree, "new_file") == content
+
+    def test_create_a_directory(self):
+        directory = "%s/new_directory" % self.current
+
+        os.makedirs(directory)
+
+        # check if directory exists or not
+        directory_path = "%s/testing_repo/new_directory" % self.repo_path
+        assert os.path.exists(directory_path)
+
+        # check for .keep file
+        keep_path = "%s/testing_repo/new_directory/.keep" % self.repo_path
+        assert os.path.exists(keep_path)
+
+        # check if a commit was made
+        date = self.repo.get_commit_dates()
+        commits = self.repo.get_commits_by_date(date[0])
+        assert len(commits) == 3
