@@ -4,4 +4,4 @@ install:
 python:
     - "2.7"
 script:
-    - sudo -u travis make test
+    - make test
