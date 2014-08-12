@@ -17,6 +17,9 @@ class CurrentView(PassthroughFuse, View):
         new = re.sub(self.regex, '', new)
         super(CurrentView, self).rename(old, new)
 
+        message = "Rename %s to %s" % (old, new)
+        self.commit(new, message)
+
     def symlink(self, name, target):
         return os.symlink(target, self._full_path(name))
 
