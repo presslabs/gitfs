@@ -1,4 +1,5 @@
 import os
+import stat
 
 from tests.integrations.base import BaseTest
 
@@ -46,3 +47,16 @@ class TestWriteCurrentView(BaseTest):
         date = self.repo.get_commit_dates()
         commits = self.repo.get_commits_by_date(date[0])
         assert len(commits) == 3
+
+    def test_chmod(self):
+        filename = "%s/testing" % self.current
+        os.chmod(filename, 0766)
+
+        # check if the right mode was set
+        stats = os.stat(filename)
+        assert stats.st_mode == 0100766
+
+        # check if a commit was made
+        date = self.repo.get_commit_dates()
+        commits = self.repo.get_commits_by_date(date[0])
+        assert len(commits) == 4

@@ -75,24 +75,13 @@ class CurrentView(PassthroughFuse, View):
 
         return result
 
-    def flush(self, path, fh):
-        """
-        Each time you flush, a new commit push are made
-        """
-        result = super(CurrentView, self).flush(path, fh)
-
-        message = 'Write to %s' % path
-        self.commit(path, message)
-
-        return result
-
     def fsync(self, path, fdatasync, fh):
         """
         Each time you fsync, a new commit and push are made
         """
         result = super(CurrentView, self).fsync(path, fdatasync, fh)
 
-        message = 'Write to %s' % path
+        message = 'Fsync to %s' % path
         self.commit(path, message)
 
         return result
