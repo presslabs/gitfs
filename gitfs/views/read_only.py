@@ -1,4 +1,3 @@
-import os
 from errno import EROFS
 
 from fuse import FuseOSError
@@ -43,4 +42,7 @@ class ReadOnlyView(View):
         raise FuseOSError(EROFS)
 
     def chown(self, path, uid, gid):
+        raise FuseOSError(EROFS)
+
+    def chmod(self, path, mode):
         raise FuseOSError(EROFS)

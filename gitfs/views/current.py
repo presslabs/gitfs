@@ -61,6 +61,19 @@ class CurrentView(PassthroughFuse, View):
 
         return result
 
+    def chmod(self, path, mode):
+        """
+        Executes chmod on the file at os level and then it commits the change.
+        """
+
+        result = super(CurrentView, self).chmod(path, mode)
+
+        str_mode = str(oct(mode))[3:-1]
+        message = 'chmod to %s on %s' % (str_mode, path)
+        self.commit(path, message)
+
+        return result
+
     def release(self, path, fh):
         """
         Check for path if something was written to. If so, commit and push
