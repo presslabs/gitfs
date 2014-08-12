@@ -1,5 +1,4 @@
 import os
-import stat
 
 from tests.integrations.base import BaseTest
 
@@ -60,3 +59,17 @@ class TestWriteCurrentView(BaseTest):
         date = self.repo.get_commit_dates()
         commits = self.repo.get_commits_by_date(date[0])
         assert len(commits) == 4
+
+    def test_rename(self):
+        old_filename = "%s/testing" % self.current
+        new_filename = "%s/new_testing" % self.current
+
+        os.rename(old_filename, new_filename)
+
+        # check for new file
+        assert os.path.exists(new_filename)
+
+        # check if a commit was made
+        date = self.repo.get_commit_dates()
+        commits = self.repo.get_commits_by_date(date[0])
+        assert len(commits) == 5
