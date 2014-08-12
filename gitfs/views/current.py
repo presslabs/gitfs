@@ -4,7 +4,6 @@ import os
 from gitfs.filesystems.passthrough import PassthroughFuse, STATS
 
 from .view import View
-from gitfs.log import log
 
 
 class CurrentView(PassthroughFuse, View):
