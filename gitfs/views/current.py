@@ -38,7 +38,8 @@ class CurrentView(PassthroughFuse, View):
     def write(self, path, buf, offset, fh):
         result = super(CurrentView, self).write(path, buf, offset, fh)
         self.dirty[path] = {
-            'message': 'Update %s' % path
+            'message': 'Update %s' % path,
+            'is_dirty': True
         }
         return result
 
@@ -54,9 +55,9 @@ class CurrentView(PassthroughFuse, View):
 
     def create(self, path, mode, fi=None):
         result = super(CurrentView, self).create(path, mode, fi)
-
         self.dirty[path] = {
-            'message': "Created %s" % path
+            'message': "Created %s" % path,
+            'is_dirty': True
         }
 
         return result
@@ -81,9 +82,9 @@ class CurrentView(PassthroughFuse, View):
         """
 
         # TODO:add them into a queue and commit/push them in another thread
-        if path in self.dirty:
+        if path in self.dirty and self.dirty[path]['is_dirty']:
+            self.dirty[path]['is_dirty'] = False
             self.commit(path, self.dirty[path]['message'])
-            del self.dirty[path]
 
         return os.close(fh)
 
