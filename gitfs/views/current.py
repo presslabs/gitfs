@@ -86,7 +86,7 @@ class CurrentView(PassthroughFuse, View):
         """
         result = super(CurrentView, self).fsync(path, fdatasync, fh)
 
-        message = 'Fsync to %s' % path
+        message = 'Fsync %s' % path
         self.commit(path, message)
 
         return result

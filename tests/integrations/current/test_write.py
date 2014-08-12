@@ -73,3 +73,16 @@ class TestWriteCurrentView(BaseTest):
         date = self.repo.get_commit_dates()
         commits = self.repo.get_commits_by_date(date[0])
         assert len(commits) == 5
+
+    def test_fsync(self):
+        filename = "%s/me" % self.current
+        content = "test fsync"
+
+        with open(filename, "w") as f:
+            f.write(content)
+            os.fsync(f.fileno())
+
+        # check if a commit was made
+        date = self.repo.get_commit_dates()
+        commits = self.repo.get_commits_by_date(date[0])
+        assert len(commits) == 6
