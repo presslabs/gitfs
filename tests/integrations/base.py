@@ -8,4 +8,4 @@ class BaseTest(object):
         self.mount_path = "%s/" % os.environ["MOUNT_PATH"]
         self.repo_path = "%s/" % os.environ["REPO_PATH"]
 
-        self.repo = Repository("%s/" % self.repo_path)
+        self.repo = Repository("%s/testing_repo/" % self.repo_path)
