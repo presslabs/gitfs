@@ -17,6 +17,8 @@ class CurrentView(PassthroughFuse, View):
         new = re.sub(self.regex, '', new)
         super(CurrentView, self).rename(old, new)
 
+        self.repo.index.remove(os.path.split(old)[1])
+
         message = "Rename %s to %s" % (old, new)
         self.commit(new, message)
 
