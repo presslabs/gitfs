@@ -42,13 +42,12 @@ test: testenv
 	kill -9 `cat $(GITFS_PID)`
 
 $(VIRTUAL_ENV)/bin/py.test: $(VIRTUAL_ENV)/bin/pip
+	$(VIRTUAL_ENV)/bin/pip install cffi
+	$(VIRTUAL_ENV)/bin/pip install -r requirements.txt
 	touch $@
 
 $(VIRTUAL_ENV)/bin/pip:
 	virtualenv $(VIRTUAL_ENV)
-	$(VIRTUAL_ENV)/bin/pip install cffi
-	$(VIRTUAL_ENV)/bin/pip install -r requirements.txt
-	$(VIRTUAL_ENV)/bin/pip install -e .
 
 clean:
 	rm -rf $(BUILD_DIR)
