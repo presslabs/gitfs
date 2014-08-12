@@ -29,6 +29,9 @@ class TestWriteCurrentView(BaseTest):
         commit = self.repo.revparse_single(last_commit.split('-')[1])
         assert self.repo.get_blob_data(commit.tree, "new_file") == content
 
+        # check for the right commit message
+        assert commit.message == "Update /new_file"
+
     def test_create_a_directory(self):
         directory = "%s/new_directory" % self.current
 
@@ -47,6 +50,11 @@ class TestWriteCurrentView(BaseTest):
         commits = self.repo.get_commits_by_date(date[0])
         assert len(commits) == 3
 
+        # check for the right commit message
+        last_commit = commits[0]
+        commit = self.repo.revparse_single(last_commit.split('-')[1])
+        assert commit.message == "Created new_directory/.keep"
+
     def test_chmod(self):
         filename = "%s/testing" % self.current
         os.chmod(filename, 0766)
@@ -59,6 +67,11 @@ class TestWriteCurrentView(BaseTest):
         date = self.repo.get_commit_dates()
         commits = self.repo.get_commits_by_date(date[0])
         assert len(commits) == 4
+
+        # check for the right commit message
+        last_commit = commits[0]
+        commit = self.repo.revparse_single(last_commit.split('-')[1])
+        assert commit.message == "Chmod to 0766 on /testing"
 
     def test_rename(self):
         old_filename = "%s/testing" % self.current
@@ -74,6 +87,11 @@ class TestWriteCurrentView(BaseTest):
         commits = self.repo.get_commits_by_date(date[0])
         assert len(commits) == 5
 
+        # check for the right commit message
+        last_commit = commits[0]
+        commit = self.repo.revparse_single(last_commit.split('-')[1])
+        assert commit.message == "Rename /testing to /new_testing"
+
     def test_fsync(self):
         filename = "%s/me" % self.current
         content = "test fsync"
@@ -86,3 +104,8 @@ class TestWriteCurrentView(BaseTest):
         date = self.repo.get_commit_dates()
         commits = self.repo.get_commits_by_date(date[0])
         assert len(commits) == 6
+
+        # check for the right commit message
+        last_commit = commits[0]
+        commit = self.repo.revparse_single(last_commit.split('-')[1])
+        assert commit.message == "Fsync /me"
