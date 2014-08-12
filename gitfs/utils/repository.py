@@ -110,14 +110,15 @@ class Repository(_Repository):
         exactly).
 
         :param entry_name: the name of the tree entry
-        :param searched_entry: the name of the object that is being searched for
+        :param searched_entry: the name of the object that is being searched
+                               for
         :type searched_entry: str
         :param path_components: the path of the object being searched for
         :type path_components: list
         """
 
-        return (entry_name == searched_entry and\
-                len(path_components) == 1 and\
+        return (entry_name == searched_entry and
+                len(path_components) == 1 and
                 entry_name == path_components[0])
 
     def _get_git_object_type(self, tree, entry_name, path_components):
@@ -139,7 +140,8 @@ class Repository(_Repository):
 
         filemode = None
         for entry in tree:
-            if self._is_searched_entry(entry.name, entry_name, path_components):
+            if self._is_searched_entry(entry.name, entry_name,
+                                       path_components):
                 return entry.filemode
             elif entry.filemode == GIT_FILEMODE_TREE:
                 filemode = self._get_git_object_type(self[entry.id],
@@ -187,8 +189,8 @@ class Repository(_Repository):
         :param path_components: the path of the object being searched for as
             a list (e.g: for '/a/b/c/file.txt' => ['a', 'b', 'c', 'file.txt'])
         :type path_components: list
-        :returns: an instance corresponding to the object that is being searched
-            for in case of success, or None otherwise.
+        :returns: an instance corresponding to the object that is being
+            searched for in case of success, or None otherwise.
         :rtype: one of the following:
             an instance of `pygit2.Tree`
             an instance of `pygit2.Blob`
@@ -200,14 +202,12 @@ class Repository(_Repository):
             if self._is_searched_entry(entry.name, obj_name, path_components):
                 return self[entry.id]
             elif entry.filemode == GIT_FILEMODE_TREE:
-                git_obj = self._get_git_object(self[entry.id],
-                                                obj_name,
-                                                path_components[1:])
+                git_obj = self._get_git_object(self[entry.id], obj_name,
+                                               path_components[1:])
                 if git_obj:
                     return git_obj
 
         return git_obj
-
 
     def get_git_object(self, tree, path):
         """
@@ -216,8 +216,8 @@ class Repository(_Repository):
         :param tree: a `pygit2.Tree` instance
         :param path: the relative path of the object
         :type path: str
-        :returns: an instance corresponding to the object that is being searched
-            for in case of success, or None else.
+        :returns: an instance corresponding to the object that is being
+            searched for in case of success, or None else.
         :rtype: one of the following:
             an intance of `pygit2.Tree`
             an intance of `pygit2.Blob`
