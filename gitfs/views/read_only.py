@@ -44,3 +44,6 @@ class ReadOnlyView(View):
 
     def chown(self, path, uid, gid):
         raise FuseOSError(EROFS)
+
+    def chmod(self, path, mode):
+        raise FuseOSError(EROFS)
