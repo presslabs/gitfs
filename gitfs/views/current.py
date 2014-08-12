@@ -17,6 +17,11 @@ class CurrentView(PassthroughFuse, View):
         new = re.sub(self.regex, '', new)
         super(CurrentView, self).rename(old, new)
 
+        self.repo.index.remove(os.path.split(old)[1])
+
+        message = "Rename %s to %s" % (old, new)
+        self.commit(new, message)
+
     def symlink(self, name, target):
         return os.symlink(target, self._full_path(name))
 
@@ -75,24 +80,13 @@ class CurrentView(PassthroughFuse, View):
 
         return result
 
-    def flush(self, path, fh):
-        """
-        Each time you flush, a new commit push are made
-        """
-        result = super(CurrentView, self).flush(path, fh)
-
-        message = 'Write to %s' % path
-        self.commit(path, message)
-
-        return result
-
     def fsync(self, path, fdatasync, fh):
         """
         Each time you fsync, a new commit and push are made
         """
         result = super(CurrentView, self).fsync(path, fdatasync, fh)
 
-        message = 'Write to %s' % path
+        message = 'Fsync %s' % path
         self.commit(path, message)
 
         return result
