@@ -70,7 +70,15 @@ class CurrentView(PassthroughFuse, View):
         result = super(CurrentView, self).chmod(path, mode)
 
         str_mode = str(oct(mode))[3:-1]
-        message = 'chmod to %s on %s' % (str_mode, path)
+        message = 'Chmod to %s on %s' % (str_mode, path)
+        self.commit(path, message)
+
+        return result
+
+    def fsync(self, path, fdatasync, fh):
+        result = super(CurrentView, self).fsync(path, fdatasync, fh)
+
+        message = 'Write to %s' % path
         self.commit(path, message)
 
         return result
