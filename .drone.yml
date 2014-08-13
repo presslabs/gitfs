@@ -1,0 +1,7 @@
+image: python2.7
+script:
+  - sudo chown ubuntu:admin /dev/fuse
+  - sudo chmod 660 /dev/fuse
+  - echo user_allow_other | sudo tee -a /etc/fuse.conf > /dev/null
+  - sudo chmod 644 /etc/fuse.conf
+  - make test
