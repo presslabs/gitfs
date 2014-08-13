@@ -1,7 +1,7 @@
 image: python2.7
-cache:
-    - /var/cache/apt/
-    - /home/ubuntu/virtualenv
 script:
     - make deps
     - make test
+cache:
+    - /var/cache/apt/
+    - /home/ubuntu/virtualenv
