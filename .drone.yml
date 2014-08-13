@@ -4,4 +4,3 @@ script:
     - make test
 cache:
     - /var/cache/apt/
-    - /home/ubuntu/virtualenv
