@@ -2,7 +2,6 @@ image: python2.7
 env:
     - PIP_DOWNLOAD_CACHE=$HOME/.pip_download_cache
 cache:
-    - /var/cache/apt/*.bin
     - $HOME/.pip_download_cache
 script:
     - make deps
