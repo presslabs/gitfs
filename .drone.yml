@@ -2,6 +2,7 @@ image: python2.7
 env:
     - PIP_DOWNLOAD_CACHE=/tmp/pip_download_cache
 script:
+    - sudo chown ubuntu:ubuntu /tmp/pip_download_cache
     - make deps
     - make test
 cache:
