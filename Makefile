@@ -17,7 +17,10 @@ GITCONFIG_PATH=$(TEST_DIR)/.gitconfig
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
 
-testenv: $(VIRTUAL_ENV)/bin/py.test
+testenv: $(VIRTUAL_ENV)/bin/pip
+	$(VIRTUAL_ENV)/bin/pip install cffi
+	$(VIRTUAL_ENV)/bin/pip install -r requirements.txt
+
 
 test: testenv
 	mkdir -p $(TEST_DIR)
@@ -42,9 +45,7 @@ test: testenv
 	kill -9 `cat $(GITFS_PID)`
 
 $(VIRTUAL_ENV)/bin/py.test: $(VIRTUAL_ENV)/bin/pip
-	$(VIRTUAL_ENV)/bin/pip install cffi
-	$(VIRTUAL_ENV)/bin/pip install -r requirements.txt
-	touch $@
+		touch $@
 
 $(VIRTUAL_ENV)/bin/pip:
 	virtualenv $(VIRTUAL_ENV)
