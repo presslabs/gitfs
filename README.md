@@ -23,4 +23,3 @@ Mount a repository:
 * Mounts the filesystem as a user/group
 * Optimizes pulls by caching
 * Coalesce pushes
-
