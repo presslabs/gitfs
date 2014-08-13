@@ -23,7 +23,10 @@ class CurrentView(PassthroughFuse, View):
         self.commit(new, message)
 
     def symlink(self, name, target):
-        return os.symlink(target, self._full_path(name))
+        result = os.symlink(target, self._full_path(name))
+        message = "Create symlink to %s for %s" % (target, name)
+        self.commit(name, message)
+        return result
 
     def readlink(self, path):
         return os.readlink(self._full_path(path))
