@@ -63,6 +63,7 @@ test: testenv
 	sleep 2
 	MOUNT_PATH=$(MNT_DIR) REPO_PATH=$(REPO_DIR) $(VIRTUAL_ENV)/bin/py.test tests
 	kill -9 `cat $(GITFS_PID)`
+	sudo umount -f $(MNT_DIR)
 
 clean:
 	rm -rf $(BUILD_DIR)
