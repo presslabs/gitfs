@@ -23,6 +23,12 @@ $(VIRTUAL_ENV)/bin/py.test: $(VIRTUAL_ENV)/bin/pip
 $(VIRTUAL_ENV)/bin/pip:
 	virtualenv $(VIRTUAL_ENV)
 
+drone: deps
+	sudo chown ubuntu:admin /dev/fuse
+	sudo chmod 660 /dev/fuse
+	echo user_allow_other | sudo tee -a /etc/fuse.conf > /dev/null
+	sudo chmod 644 /etc/fuse.conf
+
 deps: system python
 
 system:
@@ -31,10 +37,6 @@ system:
 	sudo add-apt-repository -y ppa:presslabs/testing-ppa
 	sudo apt-get update
 	sudo apt-get install -y libgit2-0 libgit2-dev git git-core
-	sudo chown ubuntu:admin /dev/fuse
-	sudo chmod 660 /dev/fuse
-	echo user_allow_other | sudo tee -a /etc/fuse.conf > /dev/null
-	sudo chmod 644 /etc/fuse.conf
 
 python: $(VIRTUAL_ENV)/bin/pip
 	$(VIRTUAL_ENV)/bin/pip install cffi
@@ -71,4 +73,4 @@ clean:
 	rm -rf $(REPO_DIR)
 	rm -rf $(TEST_DIR)
 
-.PHONY: clean test deps testenv
+.PHONY: clean test deps testenv drone

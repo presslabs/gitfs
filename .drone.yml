@@ -3,8 +3,7 @@ env:
     - PIP_DOWNLOAD_CACHE=/tmp/pip_download_cache
 script:
     - sudo chown ubuntu:ubuntu /tmp/pip_download_cache
-    - pip --version
-    - make deps
+    - make drone
     - make test
 cache:
     - /var/cache/apt/
