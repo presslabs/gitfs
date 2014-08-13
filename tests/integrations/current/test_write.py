@@ -1,4 +1,5 @@
 import os
+import time
 
 from tests.integrations.base import BaseTest
 
@@ -6,7 +7,7 @@ from tests.integrations.base import BaseTest
 class TestWriteCurrentView(BaseTest):
     def setup(self):
         super(TestWriteCurrentView, self).setup()
-        self.current = "%s/current/" % self.mount_path
+        self.current = "%scurrent" % self.mount_path
 
     def test_write_a_file(self):
         content = "Just a small file"
@@ -75,9 +76,28 @@ class TestWriteCurrentView(BaseTest):
         self.assert_new_commit()
         self.assert_commit_message("Fsync /me")
 
+        time.sleep(1)
+
+        self.assert_new_commit()
+        self.assert_commit_message("Update /me")
+
     def test_create(self):
         filename = "%s/new_empty_file" % self.current
         open(filename, "a").close()
 
+        time.sleep(1)
+
         self.assert_new_commit()
         self.assert_commit_message("Created /new_empty_file")
+
+    def test_symbolic_link(self):
+        target = "me"
+        name = "%s/links" % self.current
+        os.symlink(target, name)
+
+        # check if link exists
+        assert os.path.exists(name)
+
+        self.assert_new_commit()
+        self.assert_commit_message("Create symlink to %s for /links" %
+                                   (target))
