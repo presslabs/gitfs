@@ -20,17 +20,10 @@ class TestWriteCurrentView(BaseTest):
             assert f.read() == content
 
         # check if a commit was made
-        date = self.repo.get_commit_dates()
-        commits = self.repo.get_commits_by_date(date[0])
-        assert len(commits) == 2
+        self.assert_new_commit()
 
-        # check if the commit contains the right blob
-        last_commit = commits[0]
-        commit = self.repo.revparse_single(last_commit.split('-')[1])
-        assert self.repo.get_blob_data(commit.tree, "new_file") == content
-
-        # check for the right commit message
-        assert commit.message == "Update /new_file"
+        self.assert_blob(content, "new_file")
+        self.assert_commit_message("Update /new_file")
 
     def test_create_a_directory(self):
         directory = "%s/new_directory" % self.current
@@ -45,15 +38,8 @@ class TestWriteCurrentView(BaseTest):
         keep_path = "%s/testing_repo/new_directory/.keep" % self.repo_path
         assert os.path.exists(keep_path)
 
-        # check if a commit was made
-        date = self.repo.get_commit_dates()
-        commits = self.repo.get_commits_by_date(date[0])
-        assert len(commits) == 3
-
-        # check for the right commit message
-        last_commit = commits[0]
-        commit = self.repo.revparse_single(last_commit.split('-')[1])
-        assert commit.message == "Created new_directory/.keep"
+        self.assert_new_commit()
+        self.assert_commit_message("Created new_directory/.keep")
 
     def test_chmod(self):
         filename = "%s/testing" % self.current
@@ -63,15 +49,8 @@ class TestWriteCurrentView(BaseTest):
         stats = os.stat(filename)
         assert stats.st_mode == 0100766
 
-        # check if a commit was made
-        date = self.repo.get_commit_dates()
-        commits = self.repo.get_commits_by_date(date[0])
-        assert len(commits) == 4
-
-        # check for the right commit message
-        last_commit = commits[0]
-        commit = self.repo.revparse_single(last_commit.split('-')[1])
-        assert commit.message == "Chmod to 0766 on /testing"
+        self.assert_new_commit()
+        self.assert_commit_message("Chmod to 0766 on /testing")
 
     def test_rename(self):
         old_filename = "%s/testing" % self.current
@@ -82,15 +61,8 @@ class TestWriteCurrentView(BaseTest):
         # check for new file
         assert os.path.exists(new_filename)
 
-        # check if a commit was made
-        date = self.repo.get_commit_dates()
-        commits = self.repo.get_commits_by_date(date[0])
-        assert len(commits) == 5
-
-        # check for the right commit message
-        last_commit = commits[0]
-        commit = self.repo.revparse_single(last_commit.split('-')[1])
-        assert commit.message == "Rename /testing to /new_testing"
+        self.assert_new_commit()
+        self.assert_commit_message("Rename /testing to /new_testing")
 
     def test_fsync(self):
         filename = "%s/me" % self.current
@@ -100,12 +72,12 @@ class TestWriteCurrentView(BaseTest):
             f.write(content)
             os.fsync(f.fileno())
 
-        # check if a commit was made
-        date = self.repo.get_commit_dates()
-        commits = self.repo.get_commits_by_date(date[0])
-        assert len(commits) == 6
+        self.assert_new_commit()
+        self.assert_commit_message("Fsync /me")
 
-        # check for the right commit message
-        last_commit = commits[0]
-        commit = self.repo.revparse_single(last_commit.split('-')[1])
-        assert commit.message == "Fsync /me"
+    def test_create(self):
+        filename = "%s/new_empty_file" % self.current
+        open(filename, "a").close()
+
+        self.assert_new_commit()
+        self.assert_commit_message("Created /new_empty_file")
