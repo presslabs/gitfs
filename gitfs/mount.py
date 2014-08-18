@@ -2,9 +2,9 @@ import argparse
 
 from fuse import FUSE
 
-from gitfs.router import Router
-from gitfs.routes import routes
 from gitfs.utils import Args
+from gitfs.routes import routes
+from gitfs.router import Router
 
 parser = argparse.ArgumentParser(prog='GitFS')
 parser.add_argument('remote_url', help='repo to be cloned')

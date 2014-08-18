@@ -8,8 +8,11 @@ from pwd import getpwnam
 from errno import EFAULT
 
 from fuse import Operations, FUSE, FuseOSError
-from gitfs.utils import Repository
+from gitfs.utils import Repository, LRUCache
 from gitfs.log import log
+
+
+lru = LRUCache(1)
 
 
 class Router(object):
@@ -33,7 +36,6 @@ class Router(object):
 
         self.operations = Operations()
         self.routes = []
-        self.cached_views = {}
 
         fuse_ops = set([elem[0]
                         for elem
@@ -109,8 +111,10 @@ class Router(object):
             relative_path = '/' if not relative_path else relative_path
 
             cache_key = result.group(0) + relative_path
-            if cache_key in self.cached_views:
-                return self.cached_views[cache_key], relative_path
+            log.info("Cache key for %s: %s", path, cache_key)
+            view = lru.get(cache_key)
+            if view is not None:
+                return view, relative_path
 
             kwargs = result.groupdict()
 
@@ -129,7 +133,7 @@ class Router(object):
             args = set(groups) - set(kwargs.values())
 
             view = route['view'](*args, **kwargs)
-            self.cached_views[cache_key] = view
+            lru.set(cache_key, view)
 
             return view, relative_path
 
