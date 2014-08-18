@@ -5,12 +5,14 @@ from errno import ENOENT
 from fuse import FuseOSError
 
 from gitfs.log import log
+from gitfs.cache import lru_cache
 
 from .read_only import ReadOnlyView
 
 
 class HistoryView(ReadOnlyView):
 
+    @lru_cache(4000)
     def getattr(self, path, fh=None):
         '''
         Returns a dictionary with keys identical to the stat C structure of
