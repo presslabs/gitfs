@@ -8,6 +8,7 @@ from pygit2 import (
 from fuse import FuseOSError
 
 from gitfs.utils import split_path_into_components
+from gitfs.cache import lru_cache
 
 from .read_only import ReadOnlyView
 
@@ -57,6 +58,7 @@ class CommitView(ReadOnlyView):
         obj_name = os.path.split(path)[1]
         return self.repo.get_blob_data(self.commit.tree, obj_name)
 
+    @lru_cache(1000)
     def getattr(self, path, fh=None):
         '''
         Returns a dictionary with keys identical to the stat C structure of
