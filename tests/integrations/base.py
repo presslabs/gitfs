@@ -1,10 +1,16 @@
 import os
+from datetime import datetime
 
 from gitfs.utils.repository import Repository
 
 
 class BaseTest(object):
     COMMITS_DONE = 1
+
+    @property
+    def today(self):
+        now = datetime.now()
+        return "%s-%s-%s" % (now.year, now.month, now.day)
 
     def setup(self):
         self.mount_path = "%s/" % os.environ["MOUNT_PATH"]
