@@ -10,7 +10,7 @@ class BaseTest(object):
     @property
     def today(self):
         now = datetime.now()
-        return "%s-%s-%s" % (now.year, now.month, now.day)
+        return now.strftime("%Y-%m-%d")
 
     def setup(self):
         self.mount_path = "%s/" % os.environ["MOUNT_PATH"]

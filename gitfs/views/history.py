@@ -68,9 +68,10 @@ class HistoryView(ReadOnlyView):
         for entry in dir_entries:
             yield entry
 
-    def _get_commit_time(self, index=0):
+    def _get_commit_time(self, index):
         if getattr(self, 'date', None):
-            commit = self.repo.get_commits_by_date(self.date)[index]
+            commit = sorted(self.repo.get_commits_by_date(self.date))
+            commit = commit[index]
             date_repr = "%s %s" % (self.date, commit.split("-")[0])
             date = strptime(date_repr, "%Y-%m-%d %H:%M:%S", True)
             return (date - datetime(1970, 1, 1)).total_seconds()
