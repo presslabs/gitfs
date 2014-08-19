@@ -1,11 +1,14 @@
+import time
 import os
 from stat import S_IFDIR
 from errno import ENOENT
+from datetime import datetime
 
 from fuse import FuseOSError
 
 from gitfs.log import log
 from gitfs.cache import lru_cache
+from gitfs.utils import strptime
 
 from .read_only import ReadOnlyView
 
@@ -31,7 +34,9 @@ class HistoryView(ReadOnlyView):
         attrs = super(HistoryView, self).getattr(path, fh)
         attrs.update({
             'st_mode': S_IFDIR | 0555,
-            'st_nlink': 2
+            'st_nlink': 2,
+            'st_ctime': self._get_first_commit_time(),
+            'st_mtime': self._get_last_commit_time(),
         })
 
         return attrs
@@ -62,3 +67,17 @@ class HistoryView(ReadOnlyView):
         dir_entries = ['.', '..'] + additional_entries
         for entry in dir_entries:
             yield entry
+
+    def _get_commit_time(self, index=0):
+        if getattr(self, 'date', None):
+            commit = self.repo.get_commits_by_date(self.date)[index]
+            date_repr = "%s %s" % (self.date, commit.split("-")[0])
+            date = strptime(date_repr, "%Y-%m-%d %H:%M:%S", True)
+            return (date - datetime(1970, 1, 1)).total_seconds()
+        return int(time.time())
+
+    def _get_last_commit_time(self):
+        return self._get_commit_time(-1)
+
+    def _get_first_commit_time(self):
+        return self._get_commit_time(0)

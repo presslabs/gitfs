@@ -16,6 +16,7 @@ class TestReadCurrentView(BaseTest):
         filename = "%s/current/testing" % self.mount_path
         stats = os.stat(filename)
 
+        # TODO: get created + modified time
         attrs = {
             'st_uid': os.getuid(),
             'st_gid': os.getgid(),

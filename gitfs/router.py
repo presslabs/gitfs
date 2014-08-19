@@ -2,6 +2,7 @@ import re
 import os
 import inspect
 import shutil
+import time
 
 from pwd import getpwnam
 
@@ -57,6 +58,8 @@ class Router(object):
 
         self.author = (kwargs['author_name'], kwargs['author_email'])
         self.commiter = (kwargs['commiter_name'], kwargs['commiter_email'])
+
+        self.mount_time = int(time.time())
 
         log.info('Done INIT')
 
@@ -132,6 +135,7 @@ class Router(object):
             kwargs['author'] = self.author
             kwargs['commiter'] = self.commiter
             kwargs['branch'] = self.branch
+            kwargs['mount_time'] = self.mount_time
 
             args = set(groups) - set(kwargs.values())
 
