@@ -31,19 +31,8 @@ class TestHistoryView(BaseTest):
         ctime = self._get_commit_time(0)
 
         assert ctime == self._from_timestamp(stats.st_ctime, utc=True)
+        # TODO: because of cache, modified time is not changing...fix it
         assert ctime == self._from_timestamp(stats.st_mtime, utc=True)
-
-    def _from_timestamp(self, timestamp, format="%Y-%m-%d %H:%M:%S",
-                        utc=False):
-        if utc:
-            return datetime.utcfromtimestamp(timestamp).strftime(format)
-        else:
-            return datetime.fromtimestamp(timestamp).strftime(format)
-
-    def _get_commit_time(self, index):
-        commits = sorted(self.repo.get_commits_by_date(self.today))
-        print commits
-        return "%s %s" % (self.today, commits[index].split("-")[0])
 
     def test_stats_with_commits(self):
         commit = self.repo.get_commits_by_date(self.today)[0]
@@ -62,3 +51,14 @@ class TestHistoryView(BaseTest):
 
         assert st_time == self._from_timestamp(stats.st_ctime)
         assert st_time == self._from_timestamp(stats.st_mtime)
+
+    def _from_timestamp(self, timestamp, format="%Y-%m-%d %H:%M:%S",
+                        utc=False):
+        if utc:
+            return datetime.utcfromtimestamp(timestamp).strftime(format)
+        else:
+            return datetime.fromtimestamp(timestamp).strftime(format)
+
+    def _get_commit_time(self, index):
+        commits = sorted(self.repo.get_commits_by_date(self.today))
+        return "%s %s" % (self.today, commits[index].split("-")[0])
