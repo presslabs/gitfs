@@ -24,12 +24,13 @@ class LRUCache(Cache):
             Cache.__init__(self, maxsize, lambda e: getsizeof(e[0]))
         else:
             Cache.__init__(self, maxsize)
+
         root = Node()
         root.prev = root.next = root
         self.__root = root
 
-    def __getitem__(self, key, cache_getitem=Cache.__getitem__):
-        value, link = cache_getitem(self, key)
+    def __getitem__(self, key):
+        value, link = super(LRUCache, self).__getitem__(key)
         root = self.__root
         link.prev.next = link.next
         link.next.prev = link.prev
@@ -38,48 +39,52 @@ class LRUCache(Cache):
         tail.next = root.prev = link
         return value
 
-    def __setitem__(self, key, value,
-                    cache_getitem=Cache.__getitem__,
-                    cache_setitem=Cache.__setitem__):
+    def __setitem__(self, key, value):
         try:
-            _, link = cache_getitem(self, key)
+            _, link = super(LRUCache, self).__getitem__(key)
         except KeyError:
             link = Node()
-        cache_setitem(self, key, (value, link))
+
+        super(LRUCache, self).__setitem__(key, (value, link))
+
         try:
             link.prev.next = link.next
             link.next.prev = link.prev
         except AttributeError:
             link.data = key
+
         root = self.__root
         link.prev = tail = root.prev
         link.next = root
         tail.next = root.prev = link
 
-    def __delitem__(self, key,
-                    cache_getitem=Cache.__getitem__,
-                    cache_delitem=Cache.__delitem__):
-        _, link = cache_getitem(self, key)
-        cache_delitem(self, key)
+    def __delitem__(self, key):
+        _, link = super(LRUCache, self).__getitem__(key)
+        super(LRUCache, self).__delitem__(key)
+
         link.prev.next = link.next
         link.next.prev = link.prev
+
         del link.next
         del link.prev
 
-    def __repr__(self, cache_getitem=Cache.__getitem__):
+    def __repr__(self):
         return '%s(%r, maxsize=%d, currsize=%d)' % (
             self.__class__.__name__,
-            [(key, cache_getitem(self, key)[0]) for key in self],
+            [(key, super(LRUCache, self).__getitem__(key)[0]) for key in self],
             self.maxsize,
             self.currsize,
         )
 
     def popitem(self):
         """Remove and return the `(key, value)` pair least recently used."""
+
         root = self.__root
         link = root.next
+
         if link is root:
             raise KeyError('cache is empty')
+
         key = link.data
         return (key, self.pop(key))
 
@@ -139,5 +144,6 @@ def lru_cache(maxsize=128, typed=False, getsizeof=None, lock=RLock):
     algorithm.
 
     """
+
     makekey = _makekey_typed if typed else _makekey
     return _cachedfunc(LRUCache(maxsize, getsizeof), makekey, lock())

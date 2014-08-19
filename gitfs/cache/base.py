@@ -16,6 +16,7 @@ class Cache(collections.MutableMapping):
     def __init__(self, maxsize, getsizeof=None):
         if getsizeof is not None:
             self.getsizeof = getsizeof
+
         self.__mapping = dict()
         self.__maxsize = maxsize
         self.__currsize = 0
@@ -27,13 +28,17 @@ class Cache(collections.MutableMapping):
         mapping = self.__mapping
         maxsize = self.__maxsize
         size = self.getsizeof(value)
+
         if size > maxsize:
             raise ValueError('value too large')
+
         if key not in mapping or mapping[key][1] < size:
             while self.__currsize + size > maxsize:
                 self.popitem()
+
         if key in mapping:
             self.__currsize -= mapping[key][1]
+
         mapping[key] = (value, size)
         self.__currsize += size
 

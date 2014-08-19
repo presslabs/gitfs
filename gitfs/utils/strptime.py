@@ -106,7 +106,10 @@ class TimeParser(object):
 def strptime(string, format="%a %b %d %H:%M:%S %Y", to_datetime=False):
     date = TimeParser(format).match(string)
     result = datetime.date(date[0], date[1], date[2])
+
     if to_datetime and len(date) > 3:
         time = datetime.time(date[3], date[4], date[5])
         result = datetime.datetime.combine(result, time)
+        result = result.replace(tzinfo=None)
+
     return result
