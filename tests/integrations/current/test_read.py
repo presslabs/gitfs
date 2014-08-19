@@ -16,11 +16,16 @@ class TestReadCurrentView(BaseTest):
         filename = "%s/current/testing" % self.mount_path
         stats = os.stat(filename)
 
-        # TODO: get created + modified time
+        filename = "%s/testing_repo/testing" % self.repo_path
+        real_stats = os.stat(filename)
+
         attrs = {
             'st_uid': os.getuid(),
             'st_gid': os.getgid(),
-            'st_mode': 0100644
+            'st_mode': 0100644,
+            'st_ctime': real_stats.st_ctime,
+            'st_mtime': real_stats.st_mtime,
+            'st_atime': real_stats.st_atime,
         }
 
         for name, value in attrs.iteritems():
