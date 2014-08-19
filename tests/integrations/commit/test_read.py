@@ -6,9 +6,35 @@ from tests.integrations.base import BaseTest
 
 class TestReadCommitView(BaseTest):
     def test_listdirs(self):
-        now = datetime.now()
-        today = "%s-%s-%s" % (now.year, now.month, now.day)
+        commits = self.repo.get_commits_by_date(self.today)
+        files = os.listdir("%s/history/%s/%s" % (self.mount_path, self.today,
+                           commits[-1]))
 
-        commits = self.repo.get_commits_by_date(today)
-        directory = os.listdir("%s/history/%s" % (self.mount_path, today))
-        assert directory == commits
+        real_files = os.listdir("%s/testing_repo/" % self.repo_path)
+        real_files.remove(".git")
+        assert set(files) == set(real_files)
+
+    def test_stats(self):
+        commit = self.repo.get_commits_by_date(self.today)[0]
+        directory = "%s/history/%s/%s" % (self.mount_path, self.today, commit)
+        filename = "%s/testing" % directory
+
+        stats = os.stat(filename)
+
+        attrs = {
+            'st_uid': os.getuid(),
+            'st_gid': os.getgid(),
+            'st_mode': 0100444,
+        }
+
+        for name, value in attrs.iteritems():
+            assert getattr(stats, name) == value
+
+        st_time = "%s %s" % (self.today, commit.split("-")[0])
+
+        format = "%Y-%m-%d %H:%M:%S"
+        ctime = datetime.fromtimestamp(stats.st_ctime).strftime(format)
+        mtime = datetime.fromtimestamp(stats.st_ctime).strftime(format)
+
+        assert ctime == st_time
+        assert mtime == st_time
