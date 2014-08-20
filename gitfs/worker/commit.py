@@ -1,31 +1,13 @@
-import Queue
-from threading import Thread
-
-
-class Worker(Thread):
-    def __init__(self, queue, repository, timeout=2):
-        self.queue = queue
-        self.repository = repository
-        self.timeout = timeout
-
-    def run(self):
-        while True:
-            jobs = []
-            try:
-                job = self.queue.get(timeout=self.timeout, block=True)
-                jobs.append(job)
-            except Queue.Empty:
-                if jobs:
-                    self.execute(jobs)
-
-    def execute(self, jobs):
-        raise NotImplemented("execute method should be implemented")
+from .base import Worker
 
 
 class CommitWorker(Worker):
-    def __init__(self, author, commiter, *args, **kwargs):
-        self.author = author
-        self.commiter = commiter
+    def __init__(self, push_queue, author_name, author_email, commiter_name,
+                 commiter_email, *args, **kwargs):
+        self.author = (author_name, author_email)
+        self.commiter = (commiter_name, commiter_email)
+        self.push_queue = push_queue
+
         super(Worker, self).__init__(*args, **kwargs)
 
     def execute(self, jobs):
@@ -33,7 +15,7 @@ class CommitWorker(Worker):
         remove = []
         message = []
 
-        for job in jobs:
+        for job in jobs['params']:
             add += job['add']
             remove += job['remove']
 
@@ -52,3 +34,5 @@ class CommitWorker(Worker):
 
         message = "\n".join(message)
         self.repository.commit(message, self.author, self.commiter)
+
+        self.push_queue(message=message)

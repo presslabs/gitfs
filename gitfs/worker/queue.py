@@ -1,18 +1,19 @@
+import Queue
 from ABC import ABCMeta, abstractmethod
 
 
-class Queue(object):
+class BaseQueue(object):
     __metaclass__ = ABCMeta
 
     def __init__(self, queue):
-        self.queue = queue
+        self.queue = Queue()
 
     @abstractmethod
     def __calll__(self, *args, **kwargs):
         raise NotImplemented()
 
 
-class CommitQueue(Queue):
+class CommitQueue(BaseQueue):
     def __call__(self, add=None, message=None, remove=None):
         if message is None:
             raise ValueError("Message shoduld not be None")
@@ -27,5 +28,18 @@ class CommitQueue(Queue):
                 'add': add,
                 'message': message,
                 'remove': remove,
+            }
+        })
+
+
+class PushQueue(BaseQueue):
+    def __call__(self, message=None):
+        if message is None:
+            raise ValueError("Invalid push job")
+
+        self.queue.put({
+            'job_type': 'push',
+            'params': {
+                'message': message,
             }
         })
