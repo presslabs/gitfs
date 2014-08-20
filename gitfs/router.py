@@ -56,8 +56,7 @@ class Router(object):
         self.uid = getpwnam(user).pw_uid
         self.gid = getpwnam(group).pw_gid
 
-        self.author = (kwargs['author_name'], kwargs['author_email'])
-        self.commiter = (kwargs['commiter_name'], kwargs['commiter_email'])
+        self.commit_queue = kwargs['commit_queue']
 
         self.mount_time = int(time.time())
 
@@ -136,6 +135,7 @@ class Router(object):
             kwargs['commiter'] = self.commiter
             kwargs['branch'] = self.branch
             kwargs['mount_time'] = self.mount_time
+            kwargs['queue'] = self.commit_queue
 
             args = set(groups) - set(kwargs.values())
 

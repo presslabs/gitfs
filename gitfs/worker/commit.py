@@ -2,8 +2,8 @@ from .base import Worker
 
 
 class CommitWorker(Worker):
-    def __init__(self, push_queue, author_name, author_email, commiter_name,
-                 commiter_email, *args, **kwargs):
+    def __init__(self, author_name, author_email, commiter_name,
+                 commiter_email, push_queue, *args, **kwargs):
         self.author = (author_name, author_email)
         self.commiter = (commiter_name, commiter_email)
         self.push_queue = push_queue
