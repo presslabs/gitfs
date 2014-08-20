@@ -131,8 +131,6 @@ class Router(object):
             kwargs['relative_path'] = relative_path
             kwargs['uid'] = self.uid
             kwargs['gid'] = self.gid
-            kwargs['author'] = self.author
-            kwargs['commiter'] = self.commiter
             kwargs['branch'] = self.branch
             kwargs['mount_time'] = self.mount_time
             kwargs['queue'] = self.commit_queue
