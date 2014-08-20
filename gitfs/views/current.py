@@ -108,11 +108,3 @@ class CurrentView(PassthroughFuse, View):
             self.queue(add=path, message=self.dirty[path]['message'])
 
         return os.close(fh)
-
-    def commit(self, path, message):
-        if path.startswith("/"):
-            path = path[1:]
-
-        self.repo.index.add(path)
-        self.repo(message, self.author, self.commiter)
-        self.repo.push("origin", self.branch)

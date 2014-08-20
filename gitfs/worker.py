@@ -1,3 +1,4 @@
+import Queue
 from threading import Thread
 
 
@@ -13,7 +14,7 @@ class Worker(Thread):
             try:
                 job = self.queue.get(timeout=self.timeout, block=True)
                 jobs.append(job)
-            except:
+            except Queue.Empty:
                 if jobs:
                     self.execute(jobs)
 
@@ -28,9 +29,26 @@ class CommitWorker(Worker):
         super(Worker, self).__init__(*args, **kwargs)
 
     def execute(self, jobs):
-        message = ""
+        add = []
+        remove = []
+        message = []
 
         for job in jobs:
-            pass
+            add += job['add']
+            remove += job['remove']
 
-        self.repository(message, self.author, self.commiter)
+        if len(add):
+            for path in set(add):
+                self.repository.index.add(path)
+            message.append("Updated %s items" % len(set(add)))
+
+        if len(remove):
+            for path in set(remove):
+                self.repository.index.remove(path)
+            message.append("Removed %s items" % len(set(remove)))
+
+        if len(jobs) == 1:
+            message = [jobs[0]['message']]
+
+        message = "\n".join(message)
+        self.repository.commit(message, self.author, self.commiter)
