@@ -1,12 +1,18 @@
 import __builtin__
-from pytest import fail
-from mock import MagicMock, patch, call
-from pygit2 import (Repository as _Repository, GIT_CHECKOUT_SAFE_CREATE,
-                    GIT_CHECKOUT_FORCE, GIT_BRANCH_REMOTE)
+from pytest import raises
+from mock import MagicMock, Mock, PropertyMock, patch, call
+from pygit2 import (GIT_CHECKOUT_SAFE_CREATE, GIT_CHECKOUT_FORCE,
+                    GIT_BRANCH_REMOTE, Repository as _Repository)
 
 from .base import RepositoryBaseTest
 from gitfs.utils import Repository
 
+
+from contextlib import contextmanager
+
+@contextmanager
+def patch_parent(klass):
+    yield type(klass.__name__, (Mock,), dict(klass.__dict__))
 
 class TestRepository(RepositoryBaseTest):
 
@@ -29,6 +35,7 @@ class TestRepository(RepositoryBaseTest):
 
     def _get_repository(self):
         with patch.multiple('gitfs.utils.repository',
+                            _Repository=MagicMock(),
                             clone_repository=MagicMock()):
             repo = Repository.clone(self.remote_url, self.repo_path, self.branch)
 
@@ -85,7 +92,21 @@ class TestRepository(RepositoryBaseTest):
         assert mocked_create_reference.call_count == 2
         mocked_create_reference_calls = [
             call('refs/heads/%s' % branch, branch_target, force=True),
-            call('refs/heads/%s' % branch, mocked_returned_commit, force=True),
-        ]
+            call('refs/heads/%s' % branch, mocked_returned_commit, force=True)]
         mocked_create_reference.has_calls(mocked_create_reference_calls)
 
+    def test_get_remote(self):
+        remote1 = MagicMock()
+        remote1.name = 'remote1'
+        remote2 = MagicMock()
+        remote2.name = 'remote2'
+
+        with patch('gitfs.utils.repository.Repository.remotes',
+                   new_callable=PropertyMock) as mocked_remotes:
+            mocked_remotes.return_value = [remote1, remote2]
+            repo = self._get_repository()
+            remote = repo.get_remote('remote2')
+            assert remote.name == 'remote2'
+
+            with raises(ValueError):
+                remote = repo.get_remote('unavailable_remote')
