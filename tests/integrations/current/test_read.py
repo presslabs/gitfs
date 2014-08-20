@@ -5,18 +5,18 @@ from tests.integrations.base import BaseTest
 
 class TestReadCurrentView(BaseTest):
     def test_listdirs(self):
-        dirs = set(os.listdir("%s/current" % self.mount_path))
+        dirs = set(os.listdir(self.current_path))
         assert dirs == set(['testing', 'me'])
 
     def test_read_from_a_file(self):
-        with open("%s/current/testing" % self.mount_path) as f:
+        with open("%s/testing" % self.current_path) as f:
             assert f.read() == "just testing around here\n"
 
     def test_get_correct_stats(self):
-        filename = "%s/current/testing" % self.mount_path
+        filename = "%s/testing" % self.current_path
         stats = os.stat(filename)
 
-        filename = "%s/testing_repo/testing" % self.repo_path
+        filename = "%s/testing" % self.repo_path
         real_stats = os.stat(filename)
 
         attrs = {

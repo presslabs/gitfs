@@ -10,7 +10,7 @@ class TestReadCommitView(BaseTest):
         files = os.listdir("%s/history/%s/%s" % (self.mount_path, self.today,
                            commits[-1]))
 
-        real_files = os.listdir("%s/testing_repo/" % self.repo_path)
+        real_files = os.listdir(self.repo_path)
         real_files.remove(".git")
         assert set(files) == set(real_files)
 
