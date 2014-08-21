@@ -1,6 +1,7 @@
 import re
 import os
 
+from gitfs.utils import with_lock
 from gitfs.filesystems.passthrough import PassthroughFuse, STATS
 
 from .view import View
@@ -15,14 +16,16 @@ class CurrentView(PassthroughFuse, View):
 
     def rename(self, old, new):
         new = re.sub(self.regex, '', new)
-        super(CurrentView, self).rename(old, new)
+        result = super(CurrentView, self).rename(old, new)
 
         message = "Rename %s to %s" % (old, new)
-        self.queue(**{
+        self._index(**{
             'remove': os.path.split(old)[1],
             'add': new,
             'message': message
         })
+
+        return result
 
     def symlink(self, name, target):
         result = os.symlink(target, self._full_path(name))
@@ -82,7 +85,7 @@ class CurrentView(PassthroughFuse, View):
         result = super(CurrentView, self).chmod(path, mode)
 
         message = 'Chmod to %s on %s' % (str(oct(mode))[3:-1], path)
-        self.queue(add=path, message=message)
+        self._index(add=path, message=message)
 
         return result
 
@@ -93,7 +96,7 @@ class CurrentView(PassthroughFuse, View):
         result = super(CurrentView, self).fsync(path, fdatasync, fh)
 
         message = 'Fsync %s' % path
-        self.queue(add=path, message=message)
+        self._index(add=path, message=message)
 
         return result
 
@@ -105,6 +108,23 @@ class CurrentView(PassthroughFuse, View):
 
         if path in self.dirty and self.dirty[path]['is_dirty']:
             self.dirty[path]['is_dirty'] = False
-            self.queue(add=path, message=self.dirty[path]['message'])
+            self._index(add=path, message=self.dirty[path]['message'])
 
         return os.close(fh)
+
+    def _index(self, message, add=None, remove=None):
+        add = self._sanitize(add)
+        remove = self._sanitize(remove)
+
+        if remove is not None:
+            self.repo.index.remove(self._sanitize(remove))
+
+        if add is not None:
+            self.repo.index.add(self._sanitize(add))
+
+        self.queue(add=add, remove=remove, message=message)
+
+    def _sanitize(self, path):
+        if path is not None and path.startswith("/"):
+            path = path[1:]
+        return path
