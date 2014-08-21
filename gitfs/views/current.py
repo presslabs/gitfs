@@ -17,13 +17,20 @@ class CurrentView(PassthroughFuse, View):
         new = re.sub(self.regex, '', new)
         super(CurrentView, self).rename(old, new)
 
-        self.repo.index.remove(os.path.split(old)[1])
-
         message = "Rename %s to %s" % (old, new)
-        self.commit(new, message)
+        self.queue(**{
+            'remove': os.path.split(old)[1],
+            'add': new,
+            'message': message
+        })
 
     def symlink(self, name, target):
-        return os.symlink(target, self._full_path(name))
+        result = os.symlink(target, self._full_path(name))
+
+        message = "Create symlink to %s for %s" % (target, name)
+        self.queue(add=name, message=message)
+
+        return result
 
     def readlink(self, path):
         return os.readlink(self._full_path(path))
@@ -74,9 +81,8 @@ class CurrentView(PassthroughFuse, View):
 
         result = super(CurrentView, self).chmod(path, mode)
 
-        str_mode = str(oct(mode))[3:-1]
-        message = 'Chmod to %s on %s' % (str_mode, path)
-        self.commit(path, message)
+        message = 'Chmod to %s on %s' % (str(oct(mode))[3:-1], path)
+        self.queue(add=path, message=message)
 
         return result
 
@@ -87,7 +93,7 @@ class CurrentView(PassthroughFuse, View):
         result = super(CurrentView, self).fsync(path, fdatasync, fh)
 
         message = 'Fsync %s' % path
-        self.commit(path, message)
+        self.queue(add=path, message=message)
 
         return result
 
@@ -97,17 +103,8 @@ class CurrentView(PassthroughFuse, View):
         the changed to upstream.
         """
 
-        # TODO:add them into a queue and commit/push them in another thread
         if path in self.dirty and self.dirty[path]['is_dirty']:
             self.dirty[path]['is_dirty'] = False
-            self.commit(path, self.dirty[path]['message'])
+            self.queue(add=path, message=self.dirty[path]['message'])
 
         return os.close(fh)
-
-    def commit(self, path, message):
-        if path.startswith("/"):
-            path = path[1:]
-
-        self.repo.index.add(path)
-        self.repo.commit(message, self.author, self.commiter)
-        self.repo.push("origin", self.branch)

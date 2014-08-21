@@ -8,6 +8,7 @@ from pygit2 import (
 from fuse import FuseOSError
 
 from gitfs.utils import split_path_into_components
+from gitfs.cache import lru_cache
 
 from .read_only import ReadOnlyView
 
@@ -57,6 +58,7 @@ class CommitView(ReadOnlyView):
         obj_name = os.path.split(path)[1]
         return self.repo.get_blob_data(self.commit.tree, obj_name)
 
+    @lru_cache(1000)
     def getattr(self, path, fh=None):
         '''
         Returns a dictionary with keys identical to the stat C structure of
@@ -73,6 +75,10 @@ class CommitView(ReadOnlyView):
             return
 
         attrs = super(CommitView, self).getattr(path, fh)
+        attrs.update({
+            'st_ctime': self.commit.commit_time,
+            'st_mtime': self.commit.commit_time,
+        })
 
         types = {
             GIT_FILEMODE_LINK: {'st_mode': S_IFLNK | 0444},
@@ -93,7 +99,6 @@ class CommitView(ReadOnlyView):
             if obj_type in [GIT_FILEMODE_BLOB, GIT_FILEMODE_BLOB_EXECUTABLE]:
                 attrs['st_size'] = self.repo.get_blob_size(self.commit.tree,
                                                            path)
-
         return attrs
 
     def access(self, path, amode):
@@ -106,6 +111,7 @@ class CommitView(ReadOnlyView):
 
         return 0
 
+    @lru_cache(1000)
     def readdir(self, path, fh):
         dir_tree = self.commit.tree
 

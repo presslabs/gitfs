@@ -14,4 +14,6 @@ class View(object):
         return {
             'st_uid': self.uid,
             'st_gid': self.gid,
+            'st_ctime': self.mount_time,
+            'st_mtime': self.mount_time,
         }
