@@ -8,6 +8,14 @@ from .base import RepositoryBaseTest
 from gitfs.utils import Repository
 
 
+"""
+TODO (still need to be tested):
+    * commit
+    * get_blob_data
+    * get_blob_size
+    * get_git_object
+    * get_git_object_type
+"""
 class TestRepository(RepositoryBaseTest):
 
     def setup(self):
