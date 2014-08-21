@@ -1,18 +1,12 @@
 import __builtin__
 from pytest import raises
 from mock import MagicMock, Mock, PropertyMock, patch, call
-from pygit2 import (GIT_CHECKOUT_SAFE_CREATE, GIT_CHECKOUT_FORCE,
+from pygit2 import (GIT_CHECKOUT_SAFE_CREATE, GIT_CHECKOUT_FORCE, GIT_SORT_TIME,
                     GIT_BRANCH_REMOTE, Repository as _Repository)
 
 from .base import RepositoryBaseTest
 from gitfs.utils import Repository
 
-
-from contextlib import contextmanager
-
-@contextmanager
-def patch_parent(klass):
-    yield type(klass.__name__, (Mock,), dict(klass.__dict__))
 
 class TestRepository(RepositoryBaseTest):
 
@@ -110,3 +104,44 @@ class TestRepository(RepositoryBaseTest):
 
             with raises(ValueError):
                 remote = repo.get_remote('unavailable_remote')
+
+    def test_get_commit_dates(self):
+        mocked_commit1 = MagicMock()
+        mocked_commit1.commit_time = '1408626757'
+        mocked_commit2 = MagicMock()
+        mocked_commit2.commit_time = '1408626757'
+
+        mocked_walk = MagicMock()
+        mocked_walk.return_value = [mocked_commit1, mocked_commit2]
+
+        mocked_lookup_reference = MagicMock()
+        mocked_lookup_reference.return_value.resolve.return_value.target = 'target'
+
+        mocked_datetime = MagicMock()
+
+        mocked_commit_date1 = MagicMock()
+        mocked_commit_date1.strftime.return_value = mocked_commit1.commit_time
+
+        mocked_commit_date2 = MagicMock()
+        mocked_commit_date2.strftime.return_value = mocked_commit2.commit_time
+
+        mocked_datetime.fromtimestamp.return_value.date.side_effect = [
+            mocked_commit_date1, mocked_commit_date2]
+
+        with patch.multiple('gitfs.utils.repository',
+                            _Repository=MagicMock(),
+                            datetime=mocked_datetime):
+            repo = self._get_repository()
+            repo.walk = mocked_walk
+            repo.lookup_reference = mocked_lookup_reference
+
+            commit_dates = repo.get_commit_dates()
+
+            assert mocked_lookup_reference.mock_calls == [call('HEAD'),
+                                                          call().resolve()]
+
+            assert mocked_walk.mock_calls == [call('target', GIT_SORT_TIME)]
+            datetime_calls = [call.fromtimestamp('1408626757'),
+                              call.fromtimestamp().date()]
+            mocked_datetime.assert_has_calls(datetime_calls)
+            mocked_commit_date.assert_has_calls([call.strftime('%Y-%m-%d')])
