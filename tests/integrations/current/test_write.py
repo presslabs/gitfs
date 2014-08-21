@@ -80,12 +80,7 @@ class TestWriteCurrentView(BaseTest):
         time.sleep(3)
 
         self.assert_new_commit()
-        self.assert_commit_message("Fsync /me")
-
-        time.sleep(1)
-
-        self.assert_new_commit()
-        self.assert_commit_message("Update /me")
+        self.assert_commit_message("Update 1 items")
 
     def test_create(self):
         filename = "%s/new_empty_file" % self.current_path

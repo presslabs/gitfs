@@ -22,9 +22,10 @@ class BaseTest(object):
         self.repo = Repository(self.repo_path)
 
     def assert_new_commit(self):
-        total_commits = self.COMMITS_DONE
+        total_commits = BaseTest.COMMITS_DONE + 1
         commits_len = len(self.commits)
         assert commits_len == total_commits
+        BaseTest.COMMITS_DONE += 1
 
     def assert_commit_message(self, message):
         commit = self.last_commit
