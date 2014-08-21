@@ -2,7 +2,6 @@ from gitfs.utils import split_path_into_components
 
 
 class TestPathUtils(object):
-
     def test_split_path_into_components(self):
         empty_path = ''
         empty_path2 = '/'
