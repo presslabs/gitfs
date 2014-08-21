@@ -11,31 +11,15 @@ class CommitWorker(Worker):
         super(CommitWorker, self).__init__(*args, **kwargs)
 
     def execute(self, jobs):
-        add = []
-        remove = []
-        message = []
-
-        for job in jobs:
-            add += job['params']['add']
-            remove += job['params']['remove']
-
         if len(jobs) == 1:
-            message = [jobs[0]['params']['message']]
+            message = jobs[0]['params']['message']
         else:
-            message = self._index_paths(add, 'add', "Updated %s items")
-            message += self._index_paths(remove, 'remove',
-                                         "\nRemoved %s items")
+            updates = set([])
+            for job in jobs:
+                updates = updates | set(job['params']['add'])
+                updates = updates | set(job['params']['remove'])
+
+            message = "Update %s items" % len(updates)
 
         self.repository.commit(message, self.author, self.commiter)
-
         self.push_queue(message=message)
-
-    def _index_paths(self, paths, operation, message):
-        if len(paths):
-            for path in set(paths):
-                if path.startswith("/"):
-                    path = path[1:]
-                getattr(self.repository.index, operation)(path)
-            return message % len(set(paths))
-        else:
-            return ""
