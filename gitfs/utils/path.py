@@ -9,7 +9,21 @@ def split_path_into_components(path):
     :param path: the path to be split
     :type path: str
     :returns: the list which contains the path components
+
+    .. note::
+        This function is by no means a function which treats all the possible
+    constructs. Since we build the paths, we assume the following format. The
+    path:
+        * has to start with the `/` character if is not empty.
+        * it cannot contain double slashes `//`
+        * it cannot end with trailing slashes `/`
+
+        Examples of correct paths:
+           * ``
+           * `/`
+           * `/a/b`
     """
+
     head, tail = os.path.split(path)
     if not tail:
         return []
