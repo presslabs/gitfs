@@ -1,4 +1,5 @@
 import __builtin__
+import os
 from pytest import raises
 from fuse import FuseOSError
 from mock import MagicMock, patch, call
@@ -45,3 +46,13 @@ class TestPassthrough(object):
                                             call('/the/root/path/good/relative/path', 777),
                                             call('/the/root/path/relative/path', 777)])
             assert mocked_access.call_count == 3
+
+    def test_chmod(self):
+        mocked_chmod = MagicMock()
+        with patch('gitfs.views.passthrough.os.chmod', mocked_chmod):
+            view = PassthroughView(repo_path=self.repo_path)
+
+            view.chmod('/magic/path', 777)
+
+            mocked_chmod.assert_called_once_with('/the/root/path/magic/path', 777)
+
