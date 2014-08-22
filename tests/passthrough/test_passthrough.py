@@ -49,6 +49,7 @@ class TestPassthrough(object):
 
     def test_chmod(self):
         mocked_chmod = MagicMock()
+
         with patch('gitfs.views.passthrough.os.chmod', mocked_chmod):
             view = PassthroughView(repo_path=self.repo_path)
 
