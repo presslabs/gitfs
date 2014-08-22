@@ -74,7 +74,7 @@ class Repository(_Repository):
         """Clone a repo in a give path and update the working directory with
         a checkout to head (GIT_CHECKOUT_SAFE_CREATE)
 
-        param str remote_url: URL of the repository to clone
+        :param str remote_url: URL of the repository to clone
 
         :param str path: Local path to clone into
 
