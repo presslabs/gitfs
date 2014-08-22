@@ -7,6 +7,29 @@ from mock import MagicMock, patch, call
 from gitfs.views import PassthroughView
 
 
+"""
+TODO:
+    def getattr(self, path, fh=None):
+    def readdir(self, path, fh):
+    def readlink(self, path):
+    def mknod(self, path, mode, dev):
+    def rmdir(self, path):
+    def mkdir(self, path, mode):
+    def statfs(self, path):
+    def unlink(self, path):
+    def symlink(self, target, name):
+    def rename(self, old, new):
+    def link(self, target, name):
+    def utimens(self, path, times=None):
+    def open(self, path, flags):
+    def create(self, path, mode, fi=None):
+    def read(self, path, length, offset, fh):
+    def write(self, path, buf, offset, fh):
+    def truncate(self, path, length, fh=None):
+    def flush(self, path, fh):
+    def release(self, path, fh):
+    def fsync(self, path, fdatasync, fh):
+"""
 class TestPassthrough(object):
 
     def setup(self):
