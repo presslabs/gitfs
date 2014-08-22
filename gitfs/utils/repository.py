@@ -74,7 +74,7 @@ class Repository(_Repository):
         """Clone a repo in a give path and update the working directory with
         a checkout to head (GIT_CHECKOUT_SAFE_CREATE)
 
-        :param str remote_url: URL of the repository to clone
+        param str remote_url: URL of the repository to clone
 
         :param str path: Local path to clone into
 
@@ -82,6 +82,7 @@ class Repository(_Repository):
         clone. The default is to use the remote's default branch.
 
         """
+
 
         repo = clone_repository(remote_url, path, checkout_branch=branch)
         repo.checkout_head(GIT_CHECKOUT_SAFE_CREATE)
@@ -262,7 +263,8 @@ class Repository(_Repository):
         """
 
         commit_dates = set()
-        for commit in self.walk(self.head.target, GIT_SORT_TIME):
+        for commit in self.walk(self.lookup_reference('HEAD').resolve().target,
+                                GIT_SORT_TIME):
             commit_date = datetime.fromtimestamp(commit.commit_time).date()
             commit_dates.add(commit_date.strftime('%Y-%m-%d'))
 
@@ -282,7 +284,8 @@ class Repository(_Repository):
 
         date = strptime(date, '%Y-%m-%d')
         commits = []
-        for commit in self.walk(self.head.target, GIT_SORT_TIME):
+        for commit in self.walk(self.lookup_reference('HEAD').resolve().target,
+                                GIT_SORT_TIME):
             commit_time = datetime.fromtimestamp(commit.commit_time)
             if commit_time.date() == date:
                 time = commit_time.time().strftime('%H:%M:%S')
