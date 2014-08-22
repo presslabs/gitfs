@@ -1,5 +1,5 @@
 import __builtin__
-from pytest import raises
+import pytest
 from mock import MagicMock, Mock, PropertyMock, patch, call
 from pygit2 import (GIT_CHECKOUT_SAFE_CREATE, GIT_CHECKOUT_FORCE, GIT_SORT_TIME,
                     GIT_BRANCH_REMOTE, Repository as _Repository)
@@ -110,7 +110,7 @@ class TestRepository(RepositoryBaseTest):
             remote = repo.get_remote('remote2')
             assert remote.name == 'remote2'
 
-            with raises(ValueError):
+            with pytest.raises(ValueError):
                 remote = repo.get_remote('unavailable_remote')
 
     def test_get_commit_dates(self):

@@ -1,5 +1,5 @@
+import pytest
 import datetime as dt
-from pytest import raises
 
 from gitfs.utils import strptime
 
@@ -23,5 +23,5 @@ class TestDateTimeUtils(object):
         assert strptime("1 Jan 70 1:30pm", "%d %b %y %I:%M%p") == date
         assert strptime("1 Jan 70 1:30pm", "%d %b %y %I:%M%p", to_datetime=True) == datetime
 
-        with raises(ValueError):
+        with pytest.raises(ValueError):
             strptime("31 Nov 14 01:02:03", "%d %b %y %H:%M:%S")
