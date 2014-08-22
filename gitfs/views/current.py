@@ -1,16 +1,13 @@
 import re
 import os
 
-from gitfs.filesystems.passthrough import PassthroughFuse, STATS
-
-from .view import View
+from .passthrough import PassthroughView, STATS
 
 
-class CurrentView(PassthroughFuse, View):
+class CurrentView(PassthroughView):
 
     def __init__(self, *args, **kwargs):
         super(CurrentView, self).__init__(*args, **kwargs)
-        self.root = self.repo_path
         self.dirty = {}
 
     def rename(self, old, new):
