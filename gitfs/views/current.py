@@ -1,7 +1,6 @@
 import re
 import os
 
-from gitfs.utils import with_lock
 from gitfs.filesystems.passthrough import PassthroughFuse, STATS
 
 from .view import View
