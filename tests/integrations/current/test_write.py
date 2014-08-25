@@ -21,7 +21,13 @@ class TestWriteCurrentView(BaseTest):
         # check if a commit was made
         self.assert_new_commit()
 
-        self.assert_blob(content, "new_file")
+        time.sleep(1)
+
+        self.repo.commits.update()
+        for day, li in enumerate(self.repo.commits):
+            print day, li
+
+        self.assert_blob(content, "/new_file")
         self.assert_commit_message("Update /new_file")
 
     def test_create_a_directory(self):

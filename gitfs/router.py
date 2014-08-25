@@ -3,7 +3,6 @@ import os
 import inspect
 import shutil
 import time
-import yappi
 
 from pwd import getpwnam
 
@@ -74,8 +73,6 @@ class Router(object):
         log.info('Done INIT')
 
     def destroy(self, path):
-        yappi.get_func_stats().print_all()
-        yappi.get_thread_stats().print_all()
         shutil.rmtree(self.repo_path)
 
     def __call__(self, operation, *args):

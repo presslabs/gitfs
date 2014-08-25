@@ -137,8 +137,7 @@ class TestRepository(RepositoryBaseTest):
             mocked_commit_date1, mocked_commit_date2]
 
         with patch.multiple('gitfs.utils.repository',
-                            _Repository=MagicMock(),
-                            datetime=mocked_datetime):
+                            _Repository=MagicMock()):
             repo = self._get_repository()
             repo.walk = mocked_walk
             repo.lookup_reference = mocked_lookup_reference

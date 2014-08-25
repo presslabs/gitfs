@@ -1,7 +1,6 @@
 import os
 from datetime import datetime
 
-from gitfs.utils import strptime
 from tests.integrations.base import BaseTest
 
 
@@ -30,9 +29,9 @@ class TestHistoryView(BaseTest):
 
         ctime = self._get_commit_time(0)
 
-        assert ctime == self._from_timestamp(stats.st_ctime, utc=True)
+        assert ctime == self._from_timestamp(stats.st_ctime)
         # TODO: because of cache, modified time is not changing...fix it
-        assert ctime == self._from_timestamp(stats.st_mtime, utc=True)
+        assert ctime == self._from_timestamp(stats.st_mtime)
 
     def test_stats_with_commits(self):
         commit = self.repo.get_commits_by_date(self.today)[0]
