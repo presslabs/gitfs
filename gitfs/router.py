@@ -193,5 +193,6 @@ class Router(object):
         return placeholder
 
     def _get_repo(self, repos_path):
-        match = re.search(r"(?P<repo_name>[\w\-\_]+)\.git", self.remote_url)
+        match = re.search(r"/(?P<repo_name>[\w\-\_]+)(\.git/?)?/?$",
+                          self.remote_url)
         return os.path.join(repos_path, match.group('repo_name'))
