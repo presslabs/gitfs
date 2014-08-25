@@ -2,13 +2,11 @@ import time
 import os
 from stat import S_IFDIR
 from errno import ENOENT
-from datetime import datetime
 
 from fuse import FuseOSError
 
 from gitfs.log import log
 from gitfs.cache import lru_cache
-from gitfs.utils import strptime
 
 from .read_only import ReadOnlyView
 
@@ -69,12 +67,11 @@ class HistoryView(ReadOnlyView):
             yield entry
 
     def _get_commit_time(self, index):
-        if getattr(self, 'date', None):
-            commit = sorted(self.repo.get_commits_by_date(self.date))
-            commit = commit[index]
-            date_repr = "%s %s" % (self.date, commit.split("-")[0])
-            date = strptime(date_repr, "%Y-%m-%d %H:%M:%S", True)
-            return (date - datetime(1970, 1, 1)).total_seconds()
+        date = getattr(self, 'date', None)
+
+        if date and date in self.repo.commits:
+            return self.repo.commits[date][index].timestamp
+
         return int(time.time())
 
     def _get_last_commit_time(self):

@@ -3,6 +3,7 @@ import os
 import inspect
 import shutil
 import time
+import yappi
 
 from pwd import getpwnam
 
@@ -61,7 +62,7 @@ class Router(object):
         self.commit_queue = kwargs['commit_queue']
         self.mount_time = int(time.time())
 
-        self.repo._update_commits()
+        self.repo.commits.update()
 
         log.info('Done INIT')
 
@@ -73,6 +74,8 @@ class Router(object):
         log.info('Done INIT')
 
     def destroy(self, path):
+        yappi.get_func_stats().print_all()
+        yappi.get_thread_stats().print_all()
         shutil.rmtree(self.repo_path)
 
     def __call__(self, operation, *args):
