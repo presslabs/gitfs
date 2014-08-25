@@ -22,4 +22,6 @@ class CommitWorker(Worker):
             message = "Update %s items" % len(updates)
 
         self.repository.commit(message, self.author, self.commiter)
+        self.repository.commits.update()
+
         self.push_queue(message=message)

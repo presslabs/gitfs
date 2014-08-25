@@ -2,6 +2,7 @@ from abc import ABCMeta
 
 from fuse import Operations, LoggingMixIn
 
+
 class View(LoggingMixIn, Operations):
     __metaclass__ = ABCMeta
 
@@ -18,4 +19,3 @@ class View(LoggingMixIn, Operations):
             'st_ctime': self.mount_time,
             'st_mtime': self.mount_time,
         }
-

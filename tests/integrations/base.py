@@ -20,6 +20,7 @@ class BaseTest(object):
         self.current_path = "%s/current" % self.mount_path
 
         self.repo = Repository(self.repo_path)
+        self.repo.commits.update()
 
     def assert_new_commit(self):
         total_commits = BaseTest.COMMITS_DONE + 1
@@ -28,6 +29,7 @@ class BaseTest(object):
         BaseTest.COMMITS_DONE += 1
 
     def assert_commit_message(self, message):
+        self.repo.commits.update()
         commit = self.last_commit
         assert commit.message == message
 
@@ -36,10 +38,13 @@ class BaseTest(object):
 
     @property
     def last_commit(self):
-        last_commit = self.commits[0]
-        return self.repo.revparse_single(last_commit.split('-')[1])
+        self.repo.commits.update()
+        last_commit = str(self.commits[-1])
+        commit = self.repo.revparse_single(last_commit.split('-')[1])
+        return commit
 
     @property
     def commits(self):
+        self.repo.commits.update()
         date = self.repo.get_commit_dates()
         return self.repo.get_commits_by_date(date[0])
