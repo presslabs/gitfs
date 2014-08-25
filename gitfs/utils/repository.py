@@ -9,6 +9,25 @@ from .path import split_path_into_components
 
 class Repository(_Repository):
 
+    def __init__(self, *args, **kwargs):
+        super(Repository, self).__init__(*args, **kwargs)
+        self.__commits = []
+
+    @property
+    def commits(self):
+        if not self.__commits:
+            self._update_commits()
+
+        return self.__commits
+
+    def _update_commits(self):
+        new_commits = []
+
+        for commit in self.walk(self.head.target, GIT_SORT_TIME):
+            new_commits.append((commit.commit_time, commit.hex))
+
+        self.__commits = new_commits
+
     def push(self, upstream, branch):
         """ Push changes from a branch to a remote
 
@@ -262,8 +281,8 @@ class Repository(_Repository):
         """
 
         commit_dates = set()
-        for commit in self.walk(self.head.target, GIT_SORT_TIME):
-            commit_date = datetime.fromtimestamp(commit.commit_time).date()
+        for commit in self.commits:
+            commit_date = datetime.fromtimestamp(commit[0]).date()
             commit_dates.add(commit_date.strftime('%Y-%m-%d'))
 
         return list(commit_dates)
@@ -281,10 +300,10 @@ class Repository(_Repository):
         """
 
         date = strptime(date, '%Y-%m-%d')
-        commits = []
-        for commit in self.walk(self.head.target, GIT_SORT_TIME):
-            commit_time = datetime.fromtimestamp(commit.commit_time)
+        parsed_commits = []
+        for commit in self.commits:
+            commit_time = datetime.fromtimestamp(commit[0])
             if commit_time.date() == date:
                 time = commit_time.time().strftime('%H:%M:%S')
-                commits.append("%s-%s" % (time, commit.hex[:10]))
-        return commits
+                parsed_commits.append("%s-%s" % (time, commit[1][:10]))
+        return parsed_commits

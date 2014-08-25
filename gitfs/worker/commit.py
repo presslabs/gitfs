@@ -1,3 +1,5 @@
+from gitfs.cache.commits import update_commits
+
 from .base import Worker
 
 
@@ -22,4 +24,6 @@ class CommitWorker(Worker):
             message = "Update %s items" % len(updates)
 
         self.repository.commit(message, self.author, self.commiter)
+        update_commits(self.repository)
+
         self.push_queue(message=message)

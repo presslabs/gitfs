@@ -10,7 +10,9 @@ from errno import EFAULT
 
 from fuse import Operations, FUSE, FuseOSError
 from gitfs.utils import Repository
+
 from gitfs.cache import LRUCache
+
 from gitfs.log import log
 
 
@@ -57,8 +59,9 @@ class Router(object):
         self.gid = getpwnam(group).pw_gid
 
         self.commit_queue = kwargs['commit_queue']
-
         self.mount_time = int(time.time())
+
+        self.repo._update_commits()
 
         log.info('Done INIT')
 

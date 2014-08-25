@@ -1,6 +1,7 @@
 import os
 from collections import deque
 
+
 def split_path_into_components(path):
     """
     Splits a path and returns a list of its constituents.
