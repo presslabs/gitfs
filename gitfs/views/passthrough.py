@@ -1,8 +1,7 @@
-
 import os
 from errno import EACCES
 
-from fuse import Operations, LoggingMixIn, FuseOSError
+from .view import View
 
 STATS = ('st_atime', 'st_ctime', 'st_gid', 'st_mode', 'st_mtime', 'st_nlink',
          'st_size', 'st_uid')
@@ -11,7 +10,11 @@ FS_STATS = ('f_bavail', 'f_bfree', 'f_blocks', 'f_bsize', 'f_favail',
             'f_ffree', 'f_files', 'f_flag', 'f_frsize', 'f_namemax')
 
 
-class PassthroughFuse(LoggingMixIn, Operations):
+class PassthroughView(View):
+
+    def __init__(self, *args, **kwargs):
+        super(PassthroughView, self).__init__(*args, **kwargs)
+        self.root = kwargs['repo_path']
 
     def _full_path(self, partial):
         if partial.startswith("/"):

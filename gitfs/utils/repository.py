@@ -23,7 +23,8 @@ class Repository(_Repository):
     def _update_commits(self):
         new_commits = []
 
-        for commit in self.walk(self.head.target, GIT_SORT_TIME):
+        for commit in self.walk(self.lookup_reference('HEAD').resolve().target,
+                                GIT_SORT_TIME):
             new_commits.append((commit.commit_time, commit.hex))
 
         self.__commits = new_commits

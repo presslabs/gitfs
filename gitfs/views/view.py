@@ -1,7 +1,8 @@
 from abc import ABCMeta
 
+from fuse import Operations, LoggingMixIn
 
-class View(object):
+class View(LoggingMixIn, Operations):
     __metaclass__ = ABCMeta
 
     def __init__(self, *args, **kwargs):
@@ -17,3 +18,4 @@ class View(object):
             'st_ctime': self.mount_time,
             'st_mtime': self.mount_time,
         }
+
