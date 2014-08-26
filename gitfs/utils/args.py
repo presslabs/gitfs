@@ -18,6 +18,8 @@ class Args(object):
             "author_email": "git@presslabs.com",
             "commiter_name": "Presslabs",
             "commiter_email": "git@presslabs.com",
+            "max_size": 10 * 1024,
+            "max_offset": 10 * 1024,
         }
         self.config = self.build_config(parser.parse_args())
 

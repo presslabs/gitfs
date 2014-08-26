@@ -57,14 +57,15 @@ class CurrentView(PassthroughView):
         """
 
         size = len(buf)
-        size += self.dirty[path]['size'] if path in self.dirty else 0
+        if path in self.dirty:
+            size += self.dirty[path]['size']
 
         if size > self.max_size or offset > self.max_offset:
             if path in self.dirty:
-                # delete the file
-                os.unlink(path)
                 # mark it as not dirty
                 self.dirty[path]['is_dirty'] = False
+                # delete it
+                self.dirty[path]['delete_it'] = True
 
             raise FuseOSError(errno.EFBIG)
 
@@ -91,7 +92,8 @@ class CurrentView(PassthroughView):
         result = super(CurrentView, self).create(path, mode, fi)
         self.dirty[path] = {
             'message': "Created %s" % path,
-            'is_dirty': True
+            'is_dirty': True,
+            'size': 0,
         }
 
         return result
@@ -125,9 +127,16 @@ class CurrentView(PassthroughView):
         the changed to upstream.
         """
 
-        if path in self.dirty and self.dirty[path]['is_dirty']:
-            self.dirty[path]['is_dirty'] = False
-            self._index(add=path, message=self.dirty[path]['message'])
+        if path in self.dirty:
+            if ('delete_it' in self.dirty[path] and
+               self.dirty[path]['delete_it']):
+                # delete the file
+                super(CurrentView, self).unlink(os.path.split(path)[1])
+                self.dirty[path]['delete_it'] = False
+
+            if self.dirty[path]['is_dirty']:
+                self.dirty[path]['is_dirty'] = False
+                self._index(add=path, message=self.dirty[path]['message'])
 
         return os.close(fh)
 

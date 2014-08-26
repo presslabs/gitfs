@@ -11,7 +11,7 @@ parser = argparse.ArgumentParser(prog='GitFS')
 parser.add_argument('remote_url', help='repo to be cloned')
 parser.add_argument('mount_point', help='where the repo should be mount')
 parser.add_argument('-o', help='other options: repos_path, user, ' +
-                               'group, branch')
+                               'group, branch, max_size, max_offset')
 args = Args(parser)
 
 
@@ -26,6 +26,8 @@ router = Router(remote_url=args.remote_url,
                 branch=args.branch,
                 user=args.user,
                 group=args.group,
+                max_size=args.max_size,
+                max_offset=args.max_offset,
                 commit_queue=commit_queue)
 
 # register all the routes

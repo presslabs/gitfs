@@ -111,7 +111,6 @@ class CommitView(ReadOnlyView):
 
         return 0
 
-    @lru_cache(1000)
     def readdir(self, path, fh):
         dir_tree = self.commit.tree
 
