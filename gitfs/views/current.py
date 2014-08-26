@@ -1,5 +1,8 @@
 import re
 import os
+import errno
+
+from fuse import FuseOSError
 
 from .passthrough import PassthroughView, STATS
 
@@ -47,11 +50,31 @@ class CurrentView(PassthroughView):
         return attrs
 
     def write(self, path, buf, offset, fh):
+        """
+            We don't like big big files, so we need to be really carefull
+            with them. First we check for offset, then for size. If any of this
+            is off limit, raise EFBIG error and delete the file.
+        """
+
+        size = len(buf)
+        size += self.dirty[path]['size'] if path in self.dirty else 0
+
+        if size > self.max_size or offset > self.max_offset:
+            if path in self.dirty:
+                # delete the file
+                os.unlink(path)
+                # mark it as not dirty
+                self.dirty[path]['is_dirty'] = False
+
+            raise FuseOSError(errno.EFBIG)
+
         result = super(CurrentView, self).write(path, buf, offset, fh)
         self.dirty[path] = {
             'message': 'Update %s' % path,
-            'is_dirty': True
+            'is_dirty': True,
+            'size': size
         }
+
         return result
 
     def mkdir(self, path, mode):
