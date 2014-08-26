@@ -24,6 +24,11 @@ class Repository(_Repository):
         remote = self.get_remote(upstream)
         remote.push("refs/heads/%s" % (branch))
 
+    def fetch(self, upstream, branch_name):
+        # fetch from remote
+        remote = self.get_remote(upstream)
+        remote.fetch()
+
     def pull(self, upstream, branch_name):
         """ Fetch from a remote and merge the result in local HEAD.
 

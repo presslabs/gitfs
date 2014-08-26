@@ -1,13 +1,12 @@
 import argparse
-from threading import RLock
 
 from fuse import FUSE
 
 from gitfs.utils import Args
 from gitfs.routes import routes
 from gitfs.router import Router
-from gitfs.worker import (CommitQueue, PushQueue, CommitWorker,
-                          PushWorker, PullWorker)
+from gitfs.worker import MergeQueue, MergeWorker, FetchWorker
+
 
 parser = argparse.ArgumentParser(prog='GitFS')
 parser.add_argument('remote_url', help='repo to be cloned')
@@ -17,9 +16,9 @@ parser.add_argument('-o', help='other options: repos_path, user, ' +
 args = Args(parser)
 
 
-# initialize workers and queue
-commit_queue = CommitQueue()
-push_queue = PushQueue()
+# initialize merge queue
+merge_queue = MergeQueue()
+merging = False
 
 # setting router
 router = Router(remote_url=args.remote_url,
@@ -30,26 +29,21 @@ router = Router(remote_url=args.remote_url,
                 group=args.group,
                 max_size=args.max_size,
                 max_offset=args.max_offset,
-                commit_queue=commit_queue)
+                merge_queue=merge_queue,
+                merging=merging)
 
 # register all the routes
 router.register(routes)
 
-# we need a lock for pull/push
-lock = RLock()
-
 # setup workers
-commit_worker = CommitWorker(args.author_name, args.author_email,
-                             args.commiter_name, args.commiter_email,
-                             push_queue, commit_queue, router.repo)
-push_worker = PushWorker("origin", args.branch, lock, push_queue, router.repo,
-                         timeout=3)
-pull_worker = PullWorker("origin", args.branch, router.repo, lock)
+merge_worker = MergeWorker(args.author_name, args.author_email,
+                           args.commiter_name, args.commiter_email,
+                           merging, merge_queue, router.repo, args.upstream,
+                           args.branch)
+fetch_worker = FetchWorker("origin", args.branch, router.repo, merging)
 
-# start workers
-push_worker.start()
-commit_worker.start()
-pull_worker.start()
+merge_worker.start()
+fetch_worker.start()
 
 # ready to mount it
 FUSE(router, args.mount_point, foreground=args.foreground, nonempty=True,

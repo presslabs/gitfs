@@ -12,7 +12,7 @@ class BaseQueue(object):
         return self.queue.get(*args, **kwargs)
 
 
-class CommitQueue(BaseQueue):
+class MergeQueue(BaseQueue):
     def __call__(self, add=None, message=None, remove=None):
         if message is None:
             raise ValueError("Message shoduld not be None")
@@ -37,16 +37,3 @@ class CommitQueue(BaseQueue):
             variable = [variable]
 
         return variable
-
-
-class PushQueue(BaseQueue):
-    def __call__(self, message=None):
-        if message is None:
-            raise ValueError("Invalid push job")
-
-        self.queue.put({
-            'job_type': 'push',
-            'params': {
-                'message': message,
-            }
-        })

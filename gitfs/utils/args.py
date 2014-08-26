@@ -12,6 +12,7 @@ class Args(object):
             "group": self.get_current_group(),
             "foreground": True,
             "branch": "master",
+            "upstream": "origin",
             "allow_other": False,
             "allow_root": False,
             "author_name": "Presslabs",
