@@ -1,11 +1,13 @@
 import argparse
+from threading import RLock
 
 from fuse import FUSE
 
 from gitfs.utils import Args
 from gitfs.routes import routes
 from gitfs.router import Router
-from gitfs.worker import CommitQueue, PushQueue, CommitWorker, PushWorker
+from gitfs.worker import (CommitQueue, PushQueue, CommitWorker,
+                          PushWorker, PullWorker)
 
 parser = argparse.ArgumentParser(prog='GitFS')
 parser.add_argument('remote_url', help='repo to be cloned')
@@ -33,15 +35,21 @@ router = Router(remote_url=args.remote_url,
 # register all the routes
 router.register(routes)
 
+# we need a lock for pull/push
+lock = RLock()
+
 # setup workers
 commit_worker = CommitWorker(args.author_name, args.author_email,
                              args.commiter_name, args.commiter_email,
                              push_queue, commit_queue, router.repo)
-push_worker = PushWorker("origin", args.branch, push_queue, router.repo,
-                         timeout=5)
+push_worker = PushWorker("origin", args.branch, lock, push_queue, router.repo,
+                         timeout=3)
+pull_worker = PullWorker("origin", args.branch, router.repo, lock)
+
 # start workers
 push_worker.start()
 commit_worker.start()
+pull_worker.start()
 
 # ready to mount it
 FUSE(router, args.mount_point, foreground=args.foreground, nonempty=True,
