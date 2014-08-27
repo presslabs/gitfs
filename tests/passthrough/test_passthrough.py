@@ -9,21 +9,8 @@ from gitfs.views import PassthroughView
 
 """
 TODO:
-    def mkdir(self, path, mode):
     def statfs(self, path):
-    def unlink(self, path):
-    def symlink(self, target, name):
-    def rename(self, old, new):
-    def link(self, target, name):
-    def utimens(self, path, times=None):
-    def open(self, path, flags):
-    def create(self, path, mode, fi=None):
-    def read(self, path, length, offset, fh):
-    def write(self, path, buf, offset, fh):
     def truncate(self, path, length, fh=None):
-    def flush(self, path, fh):
-    def release(self, path, fh):
-    def fsync(self, path, fdatasync, fh):
 """
 
 
@@ -291,6 +278,52 @@ class TestPassthrough(object):
                 result = view.read("/magic/path", 10, 10, 0)
 
                 assert result == "magic"
-                path = '/the/root/path/magic/path'
                 mocked_read.assert_called_once_with(0, 10)
                 mocked_lseek.assert_called_once_with(0, 10, os.SEEK_SET)
+
+    def test_write(self):
+        mocked_write = MagicMock()
+        mocked_lseek = MagicMock()
+        mocked_write.return_value = "magic"
+
+        with patch('gitfs.views.passthrough.os.write', mocked_write):
+            with patch('gitfs.views.passthrough.os.lseek', mocked_lseek):
+                view = PassthroughView(repo_path=self.repo_path)
+                result = view.write("/magic/path", 10, 10, 0)
+
+                assert result == "magic"
+                mocked_write.assert_called_once_with(0, 10)
+                mocked_lseek.assert_called_once_with(0, 10, os.SEEK_SET)
+
+    def test_flush(self):
+        mocked_fsync = MagicMock()
+        mocked_fsync.return_value = "magic"
+
+        with patch('gitfs.views.passthrough.os.fsync', mocked_fsync):
+            view = PassthroughView(repo_path=self.repo_path)
+            result = view.flush("/magic/path", 0)
+
+            assert result == "magic"
+            mocked_fsync.assert_called_once_with(0)
+
+    def test_release(self):
+        mocked_close = MagicMock()
+        mocked_close.return_value = "magic"
+
+        with patch('gitfs.views.passthrough.os.close', mocked_close):
+            view = PassthroughView(repo_path=self.repo_path)
+            result = view.release("/magic/path", 0)
+
+            assert result == "magic"
+            mocked_close.assert_called_once_with(0)
+
+    def test_fsync(self):
+        mocked_fsync = MagicMock()
+        mocked_fsync.return_value = "magic"
+
+        with patch('gitfs.views.passthrough.os.fsync', mocked_fsync):
+            view = PassthroughView(repo_path=self.repo_path)
+            result = view.fsync("/magic/path", "data", 0)
+
+            assert result == "magic"
+            mocked_fsync.assert_called_once_with(0)
