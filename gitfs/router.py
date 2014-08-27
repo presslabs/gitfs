@@ -60,6 +60,7 @@ class Router(object):
 
         self.merge_queue = kwargs['merge_queue']
         self.merging = kwargs['merging']
+        self.read_only = kwargs['read_only']
         self.mount_time = int(time.time())
 
         self.max_size = kwargs['max_size']
@@ -144,6 +145,7 @@ class Router(object):
             kwargs['max_size'] = self.max_size
             kwargs['max_offset'] = self.max_offset
             kwargs['merging'] = self.merging
+            kwargs['read_only'] = self.read_only
 
             args = set(groups) - set(kwargs.values())
 

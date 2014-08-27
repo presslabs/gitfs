@@ -15,6 +15,7 @@ class CurrentView(PassthroughView):
         super(CurrentView, self).__init__(*args, **kwargs)
         self.dirty = {}
 
+    @while_not("read_only")
     @while_not("merging")
     def rename(self, old, new):
         new = re.sub(self.regex, '', new)
@@ -52,6 +53,7 @@ class CurrentView(PassthroughView):
 
         return attrs
 
+    @while_not("read_only")
     @while_not("merging")
     def write(self, path, buf, offset, fh):
         """
@@ -82,6 +84,7 @@ class CurrentView(PassthroughView):
 
         return result
 
+    @while_not("read_only")
     @while_not("merging")
     def mkdir(self, path, mode):
         result = super(CurrentView, self).mkdir(path, mode)
@@ -93,6 +96,7 @@ class CurrentView(PassthroughView):
 
         return result
 
+    @while_not("read_only")
     @while_not("merging")
     def create(self, path, mode, fi=None):
         result = super(CurrentView, self).create(path, mode, fi)
@@ -104,6 +108,7 @@ class CurrentView(PassthroughView):
 
         return result
 
+    @while_not("read_only")
     @while_not("merging")
     def chmod(self, path, mode):
         """
@@ -117,6 +122,7 @@ class CurrentView(PassthroughView):
 
         return result
 
+    @while_not("read_only")
     @while_not("merging")
     def fsync(self, path, fdatasync, fh):
         """
@@ -129,6 +135,7 @@ class CurrentView(PassthroughView):
 
         return result
 
+    @while_not("read_only")
     @while_not("merging")
     def release(self, path, fh):
         """
