@@ -159,3 +159,15 @@ class TestPassthrough(object):
             assert result == "my_link"
             path = '/the/root/path/magic/path'
             mocked_os.readlink.assert_called_once_with(path)
+
+    def test_mknod(self):
+        mocked_mknod = MagicMock()
+        mocked_mknod.return_value = "new_node"
+
+        with patch('gitfs.views.passthrough.os.mknod', mocked_mknod):
+            view = PassthroughView(repo_path=self.repo_path)
+            result = view.mknod("/magic/path", "mode", "dev")
+
+            assert result == "new_node"
+            path = '/the/root/path/magic/path'
+            mocked_mknod.assert_called_once_with(path, "mode", "dev")
