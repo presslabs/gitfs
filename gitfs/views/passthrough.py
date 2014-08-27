@@ -117,4 +117,4 @@ class PassthroughView(View):
         return os.close(fh)
 
     def fsync(self, path, fdatasync, fh):
-        return self.flush(path, fh)
+        return os.fsync(fh)
