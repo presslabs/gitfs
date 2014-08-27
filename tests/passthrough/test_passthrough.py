@@ -97,8 +97,9 @@ class TestPassthrough(object):
         mocked_lstat = MagicMock()
         mock_result = MagicMock()
 
-        STATS = ('st_atime', 'st_ctime', 'st_gid', 'st_mode', 'st_mtime', 'st_nlink', 'st_size', 'st_uid')
-        for stat in STATS:
+        stats = ('st_atime', 'st_ctime', 'st_gid', 'st_mode', 'st_mtime',
+                 'st_nlink', 'st_size', 'st_uid')
+        for stat in stats:
             setattr(mock_result, stat, "mock_stat")
 
         mocked_lstat.return_value = mock_result
@@ -110,4 +111,20 @@ class TestPassthrough(object):
             mocked_lstat.assert_called_once_with("/the/root/path/magic/path")
 
             assert result == dict((key, getattr(mock_result, key))
-                                  for key in STATS)
+                                  for key in stats)
+
+    def test_readdir(self):
+        mocked_os = MagicMock()
+        mocked_os.path.is_dir.return_value = True
+        mocked_os.path.join = os.path.join
+        mocked_os.listdir.return_value = ['one_dir', 'one_file', '.git']
+
+        with patch.multiple('gitfs.views.passthrough', os=mocked_os):
+            view = PassthroughView(repo_path=self.repo_path)
+            result = view.readdir("/magic/path", 0)
+            dirents = [directory for directory in result]
+
+            assert dirents == ['.', '..', 'one_dir', 'one_file']
+            path = '/the/root/path/magic/path'
+            mocked_os.path.isdir.assert_called_once_with(path)
+            mocked_os.listdir.assert_called_once_with(path)
