@@ -16,5 +16,6 @@ class FetchWorker(Thread):
     def run(self):
         while True:
             time.sleep(self.timeout)
+            print "fetch %s" % str(not self.merging.is_set())
             if not self.merging.is_set():
                 self.repository.fetch(self.upstream, self.branch)

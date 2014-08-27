@@ -38,7 +38,9 @@ class MergeWorker(Thread):
     def merge(self):
         # TODO: implement merging logic here
         self.merging.set()
+        print "merging"
         time.sleep(3)
+        print "done merging"
         self.merging.clear()
 
     def push(self):

@@ -4,6 +4,8 @@ import errno
 
 from fuse import FuseOSError
 
+from gitfs.worker.decorators import while_not
+
 from .passthrough import PassthroughView, STATS
 
 
@@ -13,6 +15,7 @@ class CurrentView(PassthroughView):
         super(CurrentView, self).__init__(*args, **kwargs)
         self.dirty = {}
 
+    @while_not("merging")
     def rename(self, old, new):
         new = re.sub(self.regex, '', new)
         result = super(CurrentView, self).rename(old, new)
@@ -49,6 +52,7 @@ class CurrentView(PassthroughView):
 
         return attrs
 
+    @while_not("merging")
     def write(self, path, buf, offset, fh):
         """
             We don't like big big files, so we need to be really carefull
@@ -78,6 +82,7 @@ class CurrentView(PassthroughView):
 
         return result
 
+    @while_not("merging")
     def mkdir(self, path, mode):
         result = super(CurrentView, self).mkdir(path, mode)
 
@@ -88,6 +93,7 @@ class CurrentView(PassthroughView):
 
         return result
 
+    @while_not("merging")
     def create(self, path, mode, fi=None):
         result = super(CurrentView, self).create(path, mode, fi)
         self.dirty[path] = {
@@ -98,6 +104,7 @@ class CurrentView(PassthroughView):
 
         return result
 
+    @while_not("merging")
     def chmod(self, path, mode):
         """
         Executes chmod on the file at os level and then it commits the change.
@@ -110,6 +117,7 @@ class CurrentView(PassthroughView):
 
         return result
 
+    @while_not("merging")
     def fsync(self, path, fdatasync, fh):
         """
         Each time you fsync, a new commit and push are made
@@ -121,6 +129,7 @@ class CurrentView(PassthroughView):
 
         return result
 
+    @while_not("merging")
     def release(self, path, fh):
         """
         Check for path if something was written to. If so, commit and push
