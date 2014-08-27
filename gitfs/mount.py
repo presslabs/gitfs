@@ -13,7 +13,8 @@ parser = argparse.ArgumentParser(prog='GitFS')
 parser.add_argument('remote_url', help='repo to be cloned')
 parser.add_argument('mount_point', help='where the repo should be mount')
 parser.add_argument('-o', help='other options: repos_path, user, ' +
-                               'group, branch, max_size, max_offset')
+                               'group, branch, max_size, max_offset, ' +
+                               'fetch_timeout, merge_timeout')
 args = Args(parser)
 
 
@@ -42,9 +43,10 @@ router.register(routes)
 merge_worker = MergeWorker(args.author_name, args.author_email,
                            args.commiter_name, args.commiter_email,
                            merging, read_only, merge_queue, router.repo,
-                           args.upstream, args.branch)
-fetch_worker = FetchWorker("origin", args.branch, router.repo, merging,
-                           read_only)
+                           args.upstream, args.branch,
+                           timeout=args.merge_timeout)
+fetch_worker = FetchWorker(args.upstream, args.branch, router.repo, merging,
+                           read_only, timeout=args.fetch_timeout)
 
 merge_worker.start()
 fetch_worker.start()

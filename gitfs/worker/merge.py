@@ -1,9 +1,7 @@
-import time
 from threading import Thread
 from .decorators import while_not
 
 import pygit2
-from pygit2 import Repository
 
 
 class MergeWorker(Thread):
