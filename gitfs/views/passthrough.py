@@ -64,8 +64,7 @@ class PassthroughView(View):
         return os.mknod(self._full_path(path), mode, dev)
 
     def rmdir(self, path):
-        full_path = self._full_path(path)
-        return os.rmdir(full_path)
+        return os.rmdir(self._full_path(path))
 
     def mkdir(self, path, mode):
         return os.mkdir(self._full_path(path), mode)

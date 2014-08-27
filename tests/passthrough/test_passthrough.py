@@ -171,3 +171,15 @@ class TestPassthrough(object):
             assert result == "new_node"
             path = '/the/root/path/magic/path'
             mocked_mknod.assert_called_once_with(path, "mode", "dev")
+
+    def test_rmdir(self):
+        mocked_rmdir = MagicMock()
+        mocked_rmdir.return_value = "rm_dir"
+
+        with patch('gitfs.views.passthrough.os.rmdir', mocked_rmdir):
+            view = PassthroughView(repo_path=self.repo_path)
+            result = view.rmdir("/magic/path")
+
+            assert result == "rm_dir"
+            path = '/the/root/path/magic/path'
+            mocked_rmdir.assert_called_once_with(path)
