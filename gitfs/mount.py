@@ -1,4 +1,5 @@
 import argparse
+import threading
 
 from fuse import FUSE
 
@@ -18,7 +19,7 @@ args = Args(parser)
 
 # initialize merge queue
 merge_queue = MergeQueue()
-merging = False
+merging = threading.Event()
 
 # setting router
 router = Router(remote_url=args.remote_url,

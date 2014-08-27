@@ -1,3 +1,4 @@
+import time
 from threading import Thread
 
 
@@ -17,6 +18,7 @@ class MergeWorker(Thread):
 
         self.timeout = timeout
         self.merging = merging
+        print "self.merging %s, merging %s" % (id(self.merging), id(merging))
 
         super(MergeWorker, self).__init__(*args, **kwargs)
 
@@ -35,7 +37,9 @@ class MergeWorker(Thread):
 
     def merge(self):
         # TODO: implement merging logic here
-        self.merging = True
+        self.merging.set()
+        time.sleep(3)
+        self.merging.clear()
 
     def push(self):
         # TODO: we need to block the fs if this will fail
