@@ -156,6 +156,16 @@ class CurrentView(PassthroughView):
 
         return os.close(fh)
 
+    @while_not("read_only")
+    @while_not("merging")
+    def unlink(self, path):
+        result = super(CurrentView, self).unlink(path)
+
+        message = 'Deleted %s' % path
+        self._index(remove=path, message=message)
+
+        return result
+
     def _index(self, message, add=None, remove=None):
         add = self._sanitize(add)
         remove = self._sanitize(remove)

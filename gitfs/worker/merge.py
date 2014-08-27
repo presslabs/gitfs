@@ -40,6 +40,7 @@ class MergeWorker(Thread):
     @while_not("read_only")
     def merge(self):
         self.merging.set()
+        """
         # rename the master branch
         old_master = self.repository.lookup_branch(self.branch,
                                                    pygit2.GIT_BRANCH_LOCAL)
@@ -53,6 +54,7 @@ class MergeWorker(Thread):
         local_master = self.repository.create_branch("master", remote_commit)
 
         print "done merging"
+        """
         self.merging.clear()
 
     def get_commits(self, merging_branch, remote_branch, local_branch):
