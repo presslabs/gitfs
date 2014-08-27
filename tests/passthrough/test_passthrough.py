@@ -115,8 +115,8 @@ class TestPassthrough(object):
 
     def test_readdir(self):
         mocked_os = MagicMock()
-        mocked_os.path.is_dir.return_value = True
         mocked_os.path.join = os.path.join
+        mocked_os.path.is_dir.return_value = True
         mocked_os.listdir.return_value = ['one_dir', 'one_file', '.git']
 
         with patch.multiple('gitfs.views.passthrough', os=mocked_os):
@@ -128,3 +128,34 @@ class TestPassthrough(object):
             path = '/the/root/path/magic/path'
             mocked_os.path.isdir.assert_called_once_with(path)
             mocked_os.listdir.assert_called_once_with(path)
+
+    def test_readlink_with_slash(self):
+        mocked_os = MagicMock()
+        mocked_os.path.join = os.path.join
+
+        mocked_os.readlink.return_value = "/my_link"
+        mocked_os.path.relpath.return_value = "with_slash"
+
+        with patch('gitfs.views.passthrough.os', mocked_os):
+            view = PassthroughView(repo_path=self.repo_path)
+            result = view.readlink("/magic/path")
+
+            assert result == "with_slash"
+            path = '/the/root/path/magic/path'
+            mocked_os.readlink.assert_called_once_with(path)
+            mocked_os.path.relpath.assert_called_once_with("/my_link",
+                                                           self.repo_path)
+
+    def test_readlink_without_slash(self):
+        mocked_os = MagicMock()
+        mocked_os.path.join = os.path.join
+
+        mocked_os.readlink.return_value = "my_link"
+
+        with patch('gitfs.views.passthrough.os', mocked_os):
+            view = PassthroughView(repo_path=self.repo_path)
+            result = view.readlink("/magic/path")
+
+            assert result == "my_link"
+            path = '/the/root/path/magic/path'
+            mocked_os.readlink.assert_called_once_with(path)
