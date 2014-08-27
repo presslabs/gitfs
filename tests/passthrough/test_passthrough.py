@@ -7,13 +7,6 @@ from mock import MagicMock, patch, call
 from gitfs.views import PassthroughView
 
 
-"""
-TODO:
-    def statfs(self, path):
-    def truncate(self, path, length, fh=None):
-"""
-
-
 class TestPassthrough(object):
 
     def setup(self):
@@ -91,6 +84,26 @@ class TestPassthrough(object):
             result = view.getattr('/magic/path', 0)
 
             mocked_lstat.assert_called_once_with("/the/root/path/magic/path")
+
+            assert result == dict((key, getattr(mock_result, key))
+                                  for key in stats)
+
+    def test_stats(self):
+        mocked_statvfs = MagicMock()
+        mock_result = MagicMock()
+
+        stats = ('f_bavail', 'f_bfree', 'f_blocks', 'f_bsize', 'f_favail',
+                 'f_ffree', 'f_files', 'f_flag', 'f_frsize', 'f_namemax')
+        for stat in stats:
+            setattr(mock_result, stat, "mock_stat")
+
+        mocked_statvfs.return_value = mock_result
+
+        with patch('gitfs.views.passthrough.os.statvfs', mocked_statvfs):
+            view = PassthroughView(repo_path=self.repo_path)
+            result = view.statfs('/magic/path')
+
+            mocked_statvfs.assert_called_once_with("/the/root/path/magic/path")
 
             assert result == dict((key, getattr(mock_result, key))
                                   for key in stats)
@@ -327,3 +340,15 @@ class TestPassthrough(object):
 
             assert result == "magic"
             mocked_fsync.assert_called_once_with(0)
+
+    def test_truncate(self):
+        mocked_open = MagicMock()
+        mocked_file = MagicMock(spec=file)
+
+        with patch('gitfs.views.passthrough.open', create=True) as mocked_open:
+            mocked_open().__enter__.return_value = mocked_file
+            view = PassthroughView(repo_path=self.repo_path)
+            view.truncate("/magic/path", 0, 0)
+
+            mocked_open.has_calls([call("/the/root/path/magic/path", "r+")])
+            mocked_file.truncate.assert_called_once_with(0)
