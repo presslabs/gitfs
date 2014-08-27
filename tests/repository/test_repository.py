@@ -16,6 +16,8 @@ TODO (still need to be tested):
     * get_git_object
     * get_git_object_type
 """
+
+
 class TestRepository(RepositoryBaseTest):
 
     def setup(self):
@@ -30,7 +32,6 @@ class TestRepository(RepositoryBaseTest):
         __builtin__.original_super = super
         __builtin__.super = mock_super
 
-
     def teardown(self):
         __builtin__.super = __builtin__.original_super
         del __builtin__.original_super
@@ -39,7 +40,8 @@ class TestRepository(RepositoryBaseTest):
         with patch.multiple('gitfs.utils.repository',
                             _Repository=MagicMock(),
                             clone_repository=MagicMock()):
-            repo = Repository.clone(self.remote_url, self.repo_path, self.branch)
+            repo = Repository.clone(self.remote_url, self.repo_path,
+                                    self.branch)
 
         return repo
 
@@ -55,7 +57,8 @@ class TestRepository(RepositoryBaseTest):
         repo.push(remote, branch)
 
         mocked_get_remote.assert_called_once_with(remote)
-        assert mocked_remote.method_calls == [call.push("refs/heads/%s" % (branch))]
+        assert mocked_remote.method_calls == [call.push("refs/heads/%s" %
+                                                        (branch))]
 
     def test_pull(self):
         remote = "origin"
@@ -87,7 +90,7 @@ class TestRepository(RepositoryBaseTest):
         mocked_get_remote.assert_called_once_with(remote)
         assert mocked_remote.method_calls == [call.fetch()]
         mocked_lookup_branch.assert_called_once_with("%s/%s" % (remote, branch),
-                                    GIT_BRANCH_REMOTE)
+                                                     GIT_BRANCH_REMOTE)
         mocked_merge.assert_called_once_with(branch_target)
         mocked_checkout_head.assert_called_once_with(GIT_CHECKOUT_FORCE)
         mocked_clean_state_files.assert_called_once_with()
@@ -112,43 +115,3 @@ class TestRepository(RepositoryBaseTest):
 
             with pytest.raises(ValueError):
                 remote = repo.get_remote('unavailable_remote')
-
-    def test_get_commit_dates(self):
-        mocked_commit1 = MagicMock()
-        mocked_commit1.commit_time = '1408626757'
-        mocked_commit2 = MagicMock()
-        mocked_commit2.commit_time = '1408626757'
-
-        mocked_walk = MagicMock()
-        mocked_walk.return_value = [mocked_commit1, mocked_commit2]
-
-        mocked_lookup_reference = MagicMock()
-        mocked_lookup_reference.return_value.resolve.return_value.target = 'target'
-
-        mocked_datetime = MagicMock()
-
-        mocked_commit_date1 = MagicMock()
-        mocked_commit_date1.strftime.return_value = mocked_commit1.commit_time
-
-        mocked_commit_date2 = MagicMock()
-        mocked_commit_date2.strftime.return_value = mocked_commit2.commit_time
-
-        mocked_datetime.fromtimestamp.return_value.date.side_effect = [
-            mocked_commit_date1, mocked_commit_date2]
-
-        with patch.multiple('gitfs.utils.repository',
-                            _Repository=MagicMock()):
-            repo = self._get_repository()
-            repo.walk = mocked_walk
-            repo.lookup_reference = mocked_lookup_reference
-
-            commit_dates = repo.get_commit_dates()
-
-            #assert mocked_lookup_reference.mock_calls == [call('HEAD'),
-                                                          #call().resolve()]
-
-            #assert mocked_walk.mock_calls == [call('target', GIT_SORT_TIME)]
-            #datetime_calls = [call.fromtimestamp('1408626757'),
-                              #call.fromtimestamp().date()]
-            #mocked_datetime.assert_has_calls(datetime_calls)
-            #mocked_commit_date.assert_has_calls([call.strftime('%Y-%m-%d')])

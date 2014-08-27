@@ -30,6 +30,8 @@ TODO:
     def release(self, path, fh):
     def fsync(self, path, fdatasync, fh):
 """
+
+
 class TestPassthrough(object):
 
     def setup(self):
@@ -44,11 +46,9 @@ class TestPassthrough(object):
 
         self.repo_path = '/the/root/path'
 
-
     def teardown(self):
         __builtin__.super = __builtin__.original_super
         del __builtin__.original_super
-
 
     def test_access(self):
         mocked_access = MagicMock()
@@ -65,9 +65,10 @@ class TestPassthrough(object):
             with raises(FuseOSError):
                 view.access('/relative/path', 777)
 
-            mocked_access.assert_has_calls([call('/the/root/path/good/relative/path', 777),
-                                            call('/the/root/path/good/relative/path', 777),
-                                            call('/the/root/path/relative/path', 777)])
+            asserted_calls = [call('/the/root/path/good/relative/path', 777),
+                              call('/the/root/path/good/relative/path', 777),
+                              call('/the/root/path/relative/path', 777)]
+            mocked_access.assert_has_calls(asserted_calls)
             assert mocked_access.call_count == 3
 
     def test_chmod(self):
@@ -78,7 +79,8 @@ class TestPassthrough(object):
 
             view.chmod('/magic/path', 777)
 
-            mocked_chmod.assert_called_once_with('/the/root/path/magic/path', 777)
+            mocked_chmod.assert_called_once_with('/the/root/path/magic/path',
+                                                 777)
 
     def test_chown(self):
         mocked_chown = MagicMock()
@@ -88,5 +90,24 @@ class TestPassthrough(object):
 
             view.chown('/magic/path', 1000, 1000)
 
-            mocked_chown.assert_called_once_with('/the/root/path/magic/path', 1000, 1000)
+            mocked_chown.assert_called_once_with('/the/root/path/magic/path',
+                                                 1000, 1000)
 
+    def test_getattr(self):
+        mocked_lstat = MagicMock()
+        mock_result = MagicMock()
+
+        STATS = ('st_atime', 'st_ctime', 'st_gid', 'st_mode', 'st_mtime', 'st_nlink', 'st_size', 'st_uid')
+        for stat in STATS:
+            setattr(mock_result, stat, "mock_stat")
+
+        mocked_lstat.return_value = mock_result
+
+        with patch('gitfs.views.passthrough.os.lstat', mocked_lstat):
+            view = PassthroughView(repo_path=self.repo_path)
+            result = view.getattr('/magic/path', 0)
+
+            mocked_lstat.assert_called_once_with("/the/root/path/magic/path")
+
+            assert result == dict((key, getattr(mock_result, key))
+                                  for key in STATS)
