@@ -1,8 +1,7 @@
 import __builtin__
 import pytest
-from mock import MagicMock, Mock, PropertyMock, patch, call
-from pygit2 import (GIT_CHECKOUT_SAFE_CREATE, GIT_CHECKOUT_FORCE, GIT_SORT_TIME,
-                    GIT_BRANCH_REMOTE, Repository as _Repository)
+from mock import MagicMock, PropertyMock, patch, call
+from pygit2 import GIT_CHECKOUT_FORCE, GIT_BRANCH_REMOTE
 
 from .base import RepositoryBaseTest
 from gitfs.utils import Repository
@@ -89,7 +88,8 @@ class TestRepository(RepositoryBaseTest):
 
         mocked_get_remote.assert_called_once_with(remote)
         assert mocked_remote.method_calls == [call.fetch()]
-        mocked_lookup_branch.assert_called_once_with("%s/%s" % (remote, branch),
+        asserted_branch = "%s/%s" % (remote, branch),
+        mocked_lookup_branch.assert_called_once_with(asserted_branch,
                                                      GIT_BRANCH_REMOTE)
         mocked_merge.assert_called_once_with(branch_target)
         mocked_checkout_head.assert_called_once_with(GIT_CHECKOUT_FORCE)
