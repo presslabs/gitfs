@@ -40,7 +40,7 @@ class MergeWorker(Thread):
     @while_not("read_only")
     def merge(self):
         self.merging.set()
-        """
+
         # rename the master branch
         old_master = self.repository.lookup_branch(self.branch,
                                                    pygit2.GIT_BRANCH_LOCAL)
@@ -51,39 +51,64 @@ class MergeWorker(Thread):
                                                       pygit2.GIT_BRANCH_REMOTE)
 
         remote_commit = remote_master.get_object()
+
         local_master = self.repository.create_branch("master", remote_commit)
 
+        self.repository.create_reference("refs/heads/master",
+                                         local_master.target, force=True)
+
+        ref = self.repository.lookup_reference("refs/heads/master")
+        self.repository.checkout(ref)
+
+        for merging_commit, local_commit in self.yield_commits(merging_local,
+                                                               local_master):
+            if merging_commit is None:
+                continue
+
+            if merging_commit.hex != local_commit.hex:
+
+                self.repository.merge(merging_commit.hex)
+                message = "Merging: %s" % merging_commit.message
+                commit = self.repository.commit(message,
+                                                self.author,
+                                                self.commiter)
+                self.repository.commits.update()
+                self.repository.create_reference("refs/heads/master", commit,
+                                                 force=True)
+                self.repository.checkout_head()
+                self.repository.state_cleanup()
+
         print "done merging"
-        """
+
         self.merging.clear()
 
-    def get_commits(self, merging_branch, remote_branch, local_branch):
-        merging_iterator = self.repository.walk(merging_branch.target,
-                                                pygit2.GIT_SORT_TIME)
-        remote_iterator = self.repository.walk(remote_branch.target,
+    def get_commits(self, merging_branch, remote_branch):
+        commits = []
+        for merging_commit, remote_commit in self.yield_commits(merging_branch,
+                                                                remote_branch):
+            if merging_commit != remote_commit:
+                commits.append((merging_commit, remote_commit))
+        return commits
+
+    def yield_commits(self, first_branch, second_branch):
+        first_iterator = self.repository.walk(first_branch.target,
+                                              pygit2.GIT_SORT_TIME)
+        second_iterator = self.repository.walk(second_branch.target,
                                                pygit2.GIT_SORT_TIME)
 
-        try:
-            merging_commit = merging_iterator.next()
-        except:
-            merging_commit = None
+        for first_commit in first_iterator:
+            try:
+                second_commit = second_iterator.next()
+            except:
+                second_commit = None
+            yield (first_commit, second_commit)
 
-        try:
-            remote_commit = remote_iterator.next()
-        except:
-            remote_commit = None
-
-        if merging_commit == remote_commit:
-            last_common_commit = remote_commit
-
-        while merging_commit.hex == remote_commit.hex:
-            if merging_commit == remote_commit:
-                last_common_commit = remote_commit
-
-            merging_commit = merging_iterator.next()
-            remote_commit = remote_iterator.next()
-
-        local_branch.target = last_common_commit
+        while second_commit is not None:
+            try:
+                second_commit = second_iterator.next()
+            except:
+                second_commit = None
+            yield (None, second_commit)
 
     @while_not("read_only")
     def push(self):

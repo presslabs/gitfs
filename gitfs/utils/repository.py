@@ -93,7 +93,7 @@ class Repository(_Repository):
         """
 
         repo = clone_repository(remote_url, path, checkout_branch=branch)
-        repo.checkout_head(GIT_CHECKOUT_SAFE_CREATE)
+        repo.checkout_head()
         return cls(path)
 
     def get_remote(self, name):
