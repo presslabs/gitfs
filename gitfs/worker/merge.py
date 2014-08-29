@@ -1,7 +1,9 @@
 from threading import Thread
-from .decorators import while_not
 
 import pygit2
+
+from gitfs.utils.commits import CommitsList
+from .decorators import while_not
 
 
 class MergeWorker(Thread):
@@ -60,55 +62,71 @@ class MergeWorker(Thread):
         ref = self.repository.lookup_reference("refs/heads/master")
         self.repository.checkout(ref)
 
-        for merging_commit, local_commit in self.yield_commits(merging_local,
-                                                               local_master):
-            if merging_commit is None:
-                continue
+        parent, merging_commits, local_commits = self.find_diverge_commits(merging_local, local_master)
 
-            if merging_commit.hex != local_commit.hex:
-
-                self.repository.merge(merging_commit.hex)
-                message = "Merging: %s" % merging_commit.message
-                commit = self.repository.commit(message,
-                                                self.author,
-                                                self.commiter)
-                self.repository.commits.update()
-                self.repository.create_reference("refs/heads/master", commit,
-                                                 force=True)
-                self.repository.checkout_head()
-                self.repository.state_cleanup()
+        for commit in merging_commits:
+            self.repository.merge(commit.hex)
+            message = "Merging: %s" % commit.message
+            commit = self.repository.commit(message,
+                                            self.author,
+                                            self.commiter)
+            self.repository.commits.update()
+            self.repository.create_reference("refs/heads/master", commit,
+                                             force=True)
+            self.repository.checkout_head()
+            self.repository.state_cleanup()
 
         print "done merging"
 
         self.merging.clear()
 
-    def get_commits(self, merging_branch, remote_branch):
-        commits = []
-        for merging_commit, remote_commit in self.yield_commits(merging_branch,
-                                                                remote_branch):
-            if merging_commit != remote_commit:
-                commits.append((merging_commit, remote_commit))
-        return commits
+    def find_diverge_commits(self, first_branch, second_branch):
+        sort = pygit2.GIT_SORT_TOPOLOGICAL
 
-    def yield_commits(self, first_branch, second_branch):
-        first_iterator = self.repository.walk(first_branch.target,
-                                              pygit2.GIT_SORT_TIME)
-        second_iterator = self.repository.walk(second_branch.target,
-                                               pygit2.GIT_SORT_TIME)
+        first_iterator = self.repository.walk(first_branch.target, sort)
+        second_iterator = self.repository.walk(second_branch.target, sort)
 
-        for first_commit in first_iterator:
+        first_commits = CommitsList()
+        second_commits = CommitsList()
+
+        try:
+            first_commit = first_iterator.next()
+        except:
+            first_commit = None
+
+        try:
+            second_commit = second_iterator.next()
+        except:
+            second_commit = None
+
+        while (first_commit not in second_commits and second_commit
+               not in first_commits):
+
+            if first_commit not in first_commits:
+                first_commits.append(first_commit)
+            if second_commit not in second_commits:
+                second_commits.append(second_commit)
+
+            try:
+                first_commit = first_iterator.next()
+            except:
+                pass
+
             try:
                 second_commit = second_iterator.next()
             except:
-                second_commit = None
-            yield (first_commit, second_commit)
+                pass
 
-        while second_commit is not None:
-            try:
-                second_commit = second_iterator.next()
-            except:
-                second_commit = None
-            yield (None, second_commit)
+        if first_commit in second_commits:
+            index = second_commits.index(first_commit)
+            second_commits = second_commits[index:]
+            common_parent = first_commit
+        else:
+            index = first_commits.index(second_commit)
+            first_commits = first_commits[index:]
+            common_parent = second_commit
+
+        return common_parent, first_commits, second_commits
 
     @while_not("read_only")
     def push(self):
