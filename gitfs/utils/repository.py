@@ -1,9 +1,10 @@
 from pygit2 import (Repository as _Repository, clone_repository, Signature,
-                    GIT_BRANCH_REMOTE, GIT_CHECKOUT_FORCE, GIT_FILEMODE_TREE,
-                    GIT_SORT_TOPOLOGICAL)
+                    GIT_BRANCH_REMOTE, GIT_CHECKOUT_FORCE, GIT_FILEMODE_TREE)
 
 from gitfs.cache import CommitCache
-from .path import split_path_into_components 
+from .path import split_path_into_components
+
+
 class Repository(_Repository):
 
     def __init__(self, *args, **kwargs):
@@ -281,7 +282,7 @@ class Repository(_Repository):
         """
         return map(str, self.commits[date])
 
-    def walk_branches(self, sort=GIT_SORT_TOPOLOGICAL, *branches):
+    def walk_branches(self, sort, *branches):
         """
         Simple iterator which take a sorting strategy and some branch and
         iterates through those branches one commit at a time, yielding a list
@@ -300,7 +301,7 @@ class Repository(_Repository):
         stop_iteration = [False for branch in branches]
 
         commits = []
-        for index, iterator in iterators:
+        for index, iterator in enumerate(iterators):
             try:
                 commit = iterator.next()
             except:
@@ -310,7 +311,7 @@ class Repository(_Repository):
         yield (commit for commit in commits)
 
         while not all(stop_iteration):
-            for index, iterator in iterators:
+            for index, iterator in enumerate(iterators):
                 try:
                     commit = iterator.next()
                     commits[index] = commit

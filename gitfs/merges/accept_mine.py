@@ -1,9 +1,9 @@
 import pygit2
 
-from .base import BaseMerger
+from .base import Merger
 
 
-class AcceptMine(BaseMerger):
+class AcceptMine(Merger):
     def _create_local_copy(self, branch_name):
         old_branch = self.repository.lookup_branch(branch_name,
                                                    pygit2.GIT_BRANCH_LOCAL)
@@ -18,7 +18,7 @@ class AcceptMine(BaseMerger):
         self.repository.create_reference("refs/heads/%s" % branch,
                                          local.target, force=True)
 
-        ref = self.repository.lookup_reference("refs/heads/" % branch)
+        ref = self.repository.lookup_reference("refs/heads/%s" % branch)
         self.repository.checkout(ref)
 
         return local
@@ -37,7 +37,7 @@ class AcceptMine(BaseMerger):
         for commit in diverge_commits.first_commits:
             self.repository.merge(commit.hex)
 
-            message = "Merging: %s" % commit.message
+            message = "%s " % commit.message
             commit = self.repository.commit(message, self.author,
                                             self.commiter)
 

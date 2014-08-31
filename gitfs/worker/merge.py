@@ -23,7 +23,9 @@ class MergeWorker(Thread):
         self.merging = merging
         self.read_only = read_only
 
-        self.strategy = AcceptMine() or strategy
+        default = AcceptMine(repository, author=self.author,
+                             commiter=self.commiter)
+        self.strategy = default
 
         super(MergeWorker, self).__init__(*args, **kwargs)
 
@@ -45,7 +47,7 @@ class MergeWorker(Thread):
         self.merging.set()
 
         # TODO: check if we can merge
-        self.strategy(self.branch, self.upstream)
+        self.strategy(self.branch, self.branch, self.upstream)
         print "done merging"
         # TODO: update commits cache
 
