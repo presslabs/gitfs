@@ -1,6 +1,6 @@
-from pygit2 import (Repository as _Repository, clone_repository,
-                    GIT_CHECKOUT_SAFE_CREATE, Signature, GIT_BRANCH_REMOTE,
-                    GIT_CHECKOUT_FORCE, GIT_FILEMODE_TREE)
+from pygit2 import (Repository as _Repository, clone_repository, Signature,
+                    GIT_BRANCH_REMOTE, GIT_CHECKOUT_FORCE, GIT_FILEMODE_TREE,
+                    GIT_SORT_TOPOLOGICAL)
 
 from gitfs.cache import CommitCache
 
@@ -283,3 +283,41 @@ class Repository(_Repository):
         :rtype: list
         """
         return map(str, self.commits[date])
+
+    def walk_branches(self, sort=GIT_SORT_TOPOLOGICAL, *branches):
+        """
+        Simple iterator which take a sorting strategy and some branch and
+        iterates through those branches one commit at a time, yielding a list
+        of commits
+
+        :param sort: a sorting option `GIT_SORT_NONE, GIT_SORT_TOPOLOGICAL,
+        GIT_SORT_TIME, GIT_SORT_REVERSE`. Default is 'GIT_SORT_TOPOLOGICAL'
+        :param branches: branch to iterate through
+        :type branches: list
+        :returns: yields a list of commits corresponding to given branches
+        :rtype: list
+
+        """
+
+        iterators = [self.walk(branch.target) for branch in branches]
+        stop_iteration = [False for branch in branches]
+
+        commits = []
+        for index, iterator in iterators:
+            try:
+                commit = iterator.next()
+            except:
+                commit = None
+            commits.append(commit)
+
+        yield (commit for commit in commits)
+
+        while not all(stop_iteration):
+            for index, iterator in iterators:
+                try:
+                    commit = iterator.next()
+                    commits[index] = commit
+                except:
+                    stop_iteration[index] = True
+
+            yield (commit for commit in commits)
