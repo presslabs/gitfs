@@ -81,6 +81,7 @@ class MergeWorker(Thread):
             self.repository.state_cleanup()
 
         print "done merging"
+        # TODO: update commits cache
 
         self.merging.clear()
 
