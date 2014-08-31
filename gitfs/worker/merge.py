@@ -1,7 +1,5 @@
 from threading import Thread
 
-import pygit2
-
 from gitfs.merges import AcceptMine
 
 from .decorators import while_not
@@ -47,39 +45,7 @@ class MergeWorker(Thread):
         self.merging.set()
 
         # TODO: check if we can merge
-        # TODO: move this logic in merger
-        old_master = self.repository.lookup_branch(self.branch,
-                                                   pygit2.GIT_BRANCH_LOCAL)
-        merging_local = old_master.rename("merging_local", True)
-
-        remote_master = "%s/%s" % (self.upstream, self.branch)
-        remote_master = self.repository.lookup_branch(remote_master,
-                                                      pygit2.GIT_BRANCH_REMOTE)
-
-        remote_commit = remote_master.get_object()
-
-        local_master = self.repository.create_branch("master", remote_commit)
-
-        self.repository.create_reference("refs/heads/master",
-                                         local_master.target, force=True)
-
-        ref = self.repository.lookup_reference("refs/heads/master")
-        self.repository.checkout(ref)
-
-        parent, merging_commits, local_commits = self.find_diverge_commits(merging_local, local_master)
-
-        for commit in merging_commits:
-            self.repository.merge(commit.hex)
-            message = "Merging: %s" % commit.message
-            commit = self.repository.commit(message,
-                                            self.author,
-                                            self.commiter)
-            self.repository.commits.update()
-            self.repository.create_reference("refs/heads/master", commit,
-                                             force=True)
-            self.repository.checkout_head()
-            self.repository.state_cleanup()
-
+        self.strategy(self.branch, self.upstream)
         print "done merging"
         # TODO: update commits cache
 

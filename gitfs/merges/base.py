@@ -1,4 +1,10 @@
+from collection import namedtuple
+
 from gitfs.utils.commits import CommitsList
+
+
+DivergeCommits = namedtuple("DivergeCommits", "common_parent",
+                            "first_commits", "second_commits")
 
 
 class Merger(object):
@@ -31,4 +37,4 @@ class Merger(object):
             first_commits = first_commits[index:]
             common_parent = second_commit
 
-        return common_parent, first_commits, second_commits
+        return DivergeCommits(common_parent, first_commits, second_commits)

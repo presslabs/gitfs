@@ -3,10 +3,7 @@ from pygit2 import (Repository as _Repository, clone_repository, Signature,
                     GIT_SORT_TOPOLOGICAL)
 
 from gitfs.cache import CommitCache
-
-from .path import split_path_into_components
-
-
+from .path import split_path_into_components 
 class Repository(_Repository):
 
     def __init__(self, *args, **kwargs):

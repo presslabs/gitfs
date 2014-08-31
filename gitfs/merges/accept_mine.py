@@ -48,4 +48,5 @@ class AcceptMine(BaseMerger):
             self.repository.checkout_head()
             self.repository.state_cleanup()
 
+        # update commits cache
         self.repository.commits.update()
