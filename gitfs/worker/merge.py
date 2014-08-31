@@ -2,14 +2,15 @@ from threading import Thread
 
 import pygit2
 
-from gitfs.utils.commits import CommitsList
+from gitfs.merges import AcceptMine
+
 from .decorators import while_not
 
 
 class MergeWorker(Thread):
     def __init__(self, author_name, author_email, commiter_name,
                  commiter_email, merging, read_only, merge_queue, repository,
-                 upstream, branch, timeout=5, *args, **kwargs):
+                 upstream, branch, strategy=None, timeout=5, *args, **kwargs):
         super(MergeWorker, self).__init__(*args, **kwargs)
 
         self.author = (author_name, author_email)
@@ -23,6 +24,8 @@ class MergeWorker(Thread):
         self.timeout = timeout
         self.merging = merging
         self.read_only = read_only
+
+        self.strategy = AcceptMine() or strategy
 
         super(MergeWorker, self).__init__(*args, **kwargs)
 
@@ -43,7 +46,8 @@ class MergeWorker(Thread):
     def merge(self):
         self.merging.set()
 
-        # rename the master branch
+        # TODO: check if we can merge
+        # TODO: move this logic in merger
         old_master = self.repository.lookup_branch(self.branch,
                                                    pygit2.GIT_BRANCH_LOCAL)
         merging_local = old_master.rename("merging_local", True)
@@ -79,54 +83,6 @@ class MergeWorker(Thread):
         print "done merging"
 
         self.merging.clear()
-
-    def find_diverge_commits(self, first_branch, second_branch):
-        sort = pygit2.GIT_SORT_TOPOLOGICAL
-
-        first_iterator = self.repository.walk(first_branch.target, sort)
-        second_iterator = self.repository.walk(second_branch.target, sort)
-
-        first_commits = CommitsList()
-        second_commits = CommitsList()
-
-        try:
-            first_commit = first_iterator.next()
-        except:
-            first_commit = None
-
-        try:
-            second_commit = second_iterator.next()
-        except:
-            second_commit = None
-
-        while (first_commit not in second_commits and second_commit
-               not in first_commits):
-
-            if first_commit not in first_commits:
-                first_commits.append(first_commit)
-            if second_commit not in second_commits:
-                second_commits.append(second_commit)
-
-            try:
-                first_commit = first_iterator.next()
-            except:
-                pass
-
-            try:
-                second_commit = second_iterator.next()
-            except:
-                pass
-
-        if first_commit in second_commits:
-            index = second_commits.index(first_commit)
-            second_commits = second_commits[index:]
-            common_parent = first_commit
-        else:
-            index = first_commits.index(second_commit)
-            first_commits = first_commits[index:]
-            common_parent = second_commit
-
-        return common_parent, first_commits, second_commits
 
     @while_not("read_only")
     def push(self):
