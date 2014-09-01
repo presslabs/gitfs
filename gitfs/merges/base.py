@@ -16,6 +16,25 @@ class Merger(object):
             setattr(self, arg, kwargs[arg])
 
     def find_diverge_commits(self, first_branch, second_branch):
+        """
+        Take two branches and find diverge commits.
+
+             2--3--4--5
+            /
+        1--+              Return:
+            \               - common parent: 1
+             6              - first list of commits: (2, 3, 4, 5)
+                            - second list of commits: (6)
+
+        :param first_branch: first branch to look for common parent
+        :type first_branch: `pygit2.Branch`
+        :param second_branch: second branch to look for common parent
+        :type second_branch: `pygit2.Branch`
+        :returns: a namedtuple with common parent, a list of first's branch
+        commits and another list with second's branch commits
+        :rtype: DivergeCommits (namedtuple)
+        """
+
         common_parent = None
         first_commits = CommitsList()
         second_commits = CommitsList()
