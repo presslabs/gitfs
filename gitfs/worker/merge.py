@@ -1,5 +1,6 @@
 from threading import Thread
 
+from gitfs.utils.decorators import retry
 from gitfs.merges import AcceptMine
 
 from .decorators import while_not
@@ -64,12 +65,13 @@ class MergeWorker(Thread):
 
         self.merging.clear()
 
+    @retry(3)
     def push(self):
-        try:
-            self.repository.push(self.upstream, self.branch)
-            self.read_only.clear()
-        except:
-            self.read_only.set()
+        self.read_only.set()
+
+        self.repository.push(self.upstream, self.branch)
+
+        self.read_only.clear()
 
     def commit(self, jobs):
         if len(jobs) == 1:
