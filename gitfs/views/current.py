@@ -14,6 +14,7 @@ class CurrentView(PassthroughView):
     def __init__(self, *args, **kwargs):
         super(CurrentView, self).__init__(*args, **kwargs)
         self.dirty = {}
+        self.dirties = 0
 
     @while_not("read_only")
     @while_not("merging")
@@ -69,9 +70,15 @@ class CurrentView(PassthroughView):
         if size > self.max_size or offset > self.max_offset:
             if path in self.dirty:
                 # mark it as not dirty
+                self.dirties -= 1
                 self.dirty[path]['is_dirty'] = False
                 # delete it
                 self.dirty[path]['delete_it'] = True
+
+                if self.dirties > 0:
+                    self.somebody_is_writing.set()
+                else:
+                    self.somebody_is_writing.clear()
 
             raise FuseOSError(errno.EFBIG)
 
@@ -81,6 +88,7 @@ class CurrentView(PassthroughView):
             'is_dirty': True,
             'size': size
         }
+        self.dirties += 1
 
         return result
 
@@ -105,6 +113,7 @@ class CurrentView(PassthroughView):
             'is_dirty': True,
             'size': 0,
         }
+        self.dirties += 1
 
         return result
 
@@ -151,8 +160,14 @@ class CurrentView(PassthroughView):
                 self.dirty[path]['delete_it'] = False
 
             if self.dirty[path]['is_dirty']:
+                self.dirties -= 1
                 self.dirty[path]['is_dirty'] = False
                 self._index(add=path, message=self.dirty[path]['message'])
+
+        if self.dirties > 0:
+            self.somebody_is_writing.set()
+        else:
+            self.somebody_is_writing.clear()
 
         return os.close(fh)
 
