@@ -19,8 +19,6 @@ class FetchWorker(Thread):
             time.sleep(self.timeout)
             if not self.merging.is_set() and not self.read_only.is_set():
                 try:
-                    print "fetching"
                     self.repository.fetch(self.upstream, self.branch)
                 except:
-                    print "fetch failed...go read_only"
                     self.read_only.set()

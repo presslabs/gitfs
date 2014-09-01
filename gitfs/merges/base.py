@@ -57,11 +57,11 @@ class Merger(object):
 
         if first_commit in second_commits:
             index = second_commits.index(first_commit)
-            second_commits = second_commits[index:]
+            second_commits = second_commits[:index]
             common_parent = first_commit
-        else:
+        if second_commit in first_commits:
             index = first_commits.index(second_commit)
-            first_commits = first_commits[index:]
+            first_commits = first_commits[:index]
             common_parent = second_commit
 
         return DivergeCommits(common_parent, first_commits, second_commits)

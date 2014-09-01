@@ -37,7 +37,7 @@ class AcceptMine(Merger):
 
         # actual merging
         for commit in diverge_commits.first_commits:
-            print commit, commit.message
+            print commit.message
             self.repository.merge(commit.hex)
 
             # resolve conflicts
@@ -45,7 +45,8 @@ class AcceptMine(Merger):
 
             message = "%s " % commit.message
             commit = self.repository.commit(message, self.author,
-                                            self.commiter)
+                                            self.commiter,
+                                            "refs/heads/%s" % local_branch)
 
             self.repository.create_reference("refs/heads/%s" % local_branch,
                                              commit,
@@ -53,9 +54,6 @@ class AcceptMine(Merger):
 
             self.repository.checkout_head()
             self.repository.state_cleanup()
-
-        # update commits cache
-        self.repository.commits.update()
 
     def solve_conflicts(self, conflicts):
         if conflicts:
@@ -68,7 +66,6 @@ class AcceptMine(Merger):
                     self.repository.index.add(ours.path)
                 # otherwise, overwrite all file with our content
                 else:
-                    print "aici ar trebui sa fie", self._full_path(ours.path)
                     with open(self._full_path(ours.path), "w") as f:
                         f.write(self.repository.get(ours.id).data)
                     self.repository.index.add(ours.path)

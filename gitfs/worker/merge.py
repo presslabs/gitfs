@@ -47,10 +47,8 @@ class MergeWorker(Thread):
     @while_not("read_only")
     def fetch(self):
         try:
-            print "fetching"
             self.repository.fetch(self.upstream, self.branch)
         except:
-            print "fetch failed...go read_only"
             self.read_only.set()
 
     @while_not("read_only")
@@ -59,19 +57,16 @@ class MergeWorker(Thread):
 
         # TODO: check if we can merge
         self.strategy(self.branch, self.branch, self.upstream)
-        print "done merging"
-        # TODO: update commits cache
+        # update commits cache
+        self.repository.commits.update()
 
         self.merging.clear()
 
     @while_not("read_only")
     def push(self):
         try:
-            print "pushing"
             self.repository.push(self.upstream, self.branch)
-            print "pushed"
         except:
-            print "pushed failed, go read_only"
             self.read_only.set()
 
     def commit(self, jobs):
