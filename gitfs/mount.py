@@ -43,7 +43,7 @@ router.register(routes)
 merge_worker = MergeWorker(args.author_name, args.author_email,
                            args.commiter_name, args.commiter_email,
                            merging, read_only, merge_queue, router.repo,
-                           args.upstream, args.branch,
+                           args.upstream, args.branch, router.repo_path,
                            timeout=args.merge_timeout)
 fetch_worker = FetchWorker(args.upstream, args.branch, router.repo, merging,
                            read_only, timeout=args.fetch_timeout)

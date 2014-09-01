@@ -52,6 +52,9 @@ class Merger(object):
             if second_commit not in second_commits:
                 second_commits.append(second_commit)
 
+            if second_commit.hex == first_commit.hex:
+                break
+
         if first_commit in second_commits:
             index = second_commits.index(first_commit)
             second_commits = second_commits[index:]

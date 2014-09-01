@@ -21,7 +21,7 @@ class Args(object):
             "commiter_email": "git@presslabs.com",
             "max_size": 10 * 1024,
             "max_offset": 10 * 1024,
-            "fetch_timeout": 5,
+            "fetch_timeout": 500,
             "merge_timeout": 2,
         }
         self.config = self.build_config(parser.parse_args())

@@ -8,7 +8,8 @@ from .decorators import while_not
 class MergeWorker(Thread):
     def __init__(self, author_name, author_email, commiter_name,
                  commiter_email, merging, read_only, merge_queue, repository,
-                 upstream, branch, strategy=None, timeout=5, *args, **kwargs):
+                 upstream, branch, repo_path, strategy=None, timeout=5,
+                 *args, **kwargs):
         super(MergeWorker, self).__init__(*args, **kwargs)
 
         self.author = (author_name, author_email)
@@ -24,7 +25,7 @@ class MergeWorker(Thread):
         self.read_only = read_only
 
         default = AcceptMine(repository, author=self.author,
-                             commiter=self.commiter)
+                             commiter=self.commiter, repo_path=repo_path)
         self.strategy = default
 
         super(MergeWorker, self).__init__(*args, **kwargs)
@@ -38,9 +39,19 @@ class MergeWorker(Thread):
             except:
                 if jobs:
                     self.commit(jobs)
+                    self.fetch()
                     self.merge()
                     self.push()
                 jobs = []
+
+    @while_not("read_only")
+    def fetch(self):
+        try:
+            print "fetching"
+            self.repository.fetch(self.upstream, self.branch)
+        except:
+            print "fetch failed...go read_only"
+            self.read_only.set()
 
     @while_not("read_only")
     def merge(self):
