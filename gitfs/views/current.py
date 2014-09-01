@@ -22,6 +22,7 @@ class CurrentView(PassthroughView):
         new = re.sub(self.regex, '', new)
         result = super(CurrentView, self).rename(old, new)
 
+        self.dirties += 2
         message = "Rename %s to %s" % (old, new)
         self._index(**{
             'remove': os.path.split(old)[1],
@@ -75,11 +76,6 @@ class CurrentView(PassthroughView):
                 # delete it
                 self.dirty[path]['delete_it'] = True
 
-                if self.dirties > 0:
-                    self.somebody_is_writing.set()
-                else:
-                    self.somebody_is_writing.clear()
-
             raise FuseOSError(errno.EFBIG)
 
         result = super(CurrentView, self).write(path, buf, offset, fh)
@@ -126,6 +122,7 @@ class CurrentView(PassthroughView):
 
         result = super(CurrentView, self).chmod(path, mode)
 
+        self.dirties += 1
         message = 'Chmod to %s on %s' % (str(oct(mode))[3:-1], path)
         self._index(add=path, message=message)
 
@@ -139,6 +136,7 @@ class CurrentView(PassthroughView):
         """
         result = super(CurrentView, self).fsync(path, fdatasync, fh)
 
+        self.dirties += 1
         message = 'Fsync %s' % path
         self._index(add=path, message=message)
 
@@ -160,14 +158,9 @@ class CurrentView(PassthroughView):
                 self.dirty[path]['delete_it'] = False
 
             if self.dirty[path]['is_dirty']:
-                self.dirties -= 1
                 self.dirty[path]['is_dirty'] = False
+                self.dirties += 1
                 self._index(add=path, message=self.dirty[path]['message'])
-
-        if self.dirties > 0:
-            self.somebody_is_writing.set()
-        else:
-            self.somebody_is_writing.clear()
 
         return os.close(fh)
 
@@ -186,10 +179,19 @@ class CurrentView(PassthroughView):
         remove = self._sanitize(remove)
 
         if remove is not None:
+            self.dirties -= 1
             self.repo.index.remove(self._sanitize(remove))
 
         if add is not None:
+            self.dirties -= 1
             self.repo.index.add(self._sanitize(add))
+
+        if self.dirties > 0:
+            self.somebody_is_writing.set()
+            print "set"
+        else:
+            self.somebody_is_writing.clear()
+            print "clean", self.dirties, "\n"
 
         self.queue(add=add, remove=remove, message=message)
 

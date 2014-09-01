@@ -3,7 +3,7 @@ from setuptools import setup
 requires_list = [
     'cffi==0.8.6',
     'fusepy==2.0.2',
-    'pygit2==0.21.0',
+    'pygit2==0.21.2',
 ]
 
 setup(name='git-fs',

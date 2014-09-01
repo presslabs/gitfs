@@ -42,8 +42,9 @@ class MergeWorker(Thread):
                 if jobs:
                     self.commit(jobs)
                     self.fetch()
-                    self.merge()
-                    self.push()
+                    if not self.somebody_is_writing.is_set():
+                        self.merge()
+                        self.push()
                 jobs = []
 
     @while_not("read_only")
@@ -54,7 +55,6 @@ class MergeWorker(Thread):
             self.read_only.set()
 
     @while_not("read_only")
-    @while_not("somebody_is_writing")
     def merge(self):
         self.merging.set()
 
