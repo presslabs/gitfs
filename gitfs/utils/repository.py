@@ -1,5 +1,5 @@
 from pygit2 import (Repository as _Repository, clone_repository, Signature,
-                    GIT_BRANCH_REMOTE, GIT_CHECKOUT_FORCE, GIT_FILEMODE_TREE)
+                    GIT_FILEMODE_TREE)
 
 from gitfs.cache import CommitCache
 from .path import split_path_into_components
@@ -26,37 +26,6 @@ class Repository(_Repository):
         # fetch from remote
         remote = self.get_remote(upstream)
         remote.fetch()
-
-    def pull(self, upstream, branch_name):
-        """ Fetch from a remote and merge the result in local HEAD.
-
-        Examples::
-
-                repo.pull("origin", "master")
-        """
-
-        # fetch from remote
-        remote = self.get_remote(upstream)
-        remote.fetch()
-
-        # merge with new changes
-        branch = self.lookup_branch("%s/%s" % (upstream, branch_name),
-                                    GIT_BRANCH_REMOTE)
-        self.merge(branch.target)
-        self.create_reference("refs/heads/%s" % branch_name,
-                              branch.target, force=True)
-
-        # TODO: get commiter from env
-        # create commit
-        commit = self.commit("Merging", "Vlad", "vladtemian@gmail.com")
-
-        # update head to newly created commit
-        self.create_reference("refs/heads/%s" % branch_name,
-                              commit, force=True)
-        self.checkout_head(GIT_CHECKOUT_FORCE)
-
-        # cleanup the merging state
-        self.clean_state_files()
 
     def commit(self, message, author, commiter, ref="HEAD"):
         """ Wrapper for create_commit. It creates a commit from a given ref
