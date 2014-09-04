@@ -14,7 +14,7 @@ class CurrentView(PassthroughView):
     def __init__(self, *args, **kwargs):
         super(CurrentView, self).__init__(*args, **kwargs)
         self.dirty = {}
-        self.dirties = 0
+        self.writing = set([])
 
     @while_not("read_only")
     @while_not("merging")
@@ -22,7 +22,6 @@ class CurrentView(PassthroughView):
         new = re.sub(self.regex, '', new)
         result = super(CurrentView, self).rename(old, new)
 
-        self.dirties += 2
         message = "Rename %s to %s" % (old, new)
         self._index(**{
             'remove': os.path.split(old)[1],
@@ -32,6 +31,7 @@ class CurrentView(PassthroughView):
 
         return result
 
+    @while_not("merging")
     def symlink(self, name, target):
         result = os.symlink(target, self._full_path(name))
 
@@ -56,7 +56,6 @@ class CurrentView(PassthroughView):
         return attrs
 
     @while_not("read_only")
-    @while_not("merging")
     def write(self, path, buf, offset, fh):
         """
             We don't like big big files, so we need to be really carefull
@@ -71,7 +70,6 @@ class CurrentView(PassthroughView):
         if size > self.max_size or offset > self.max_offset:
             if path in self.dirty:
                 # mark it as not dirty
-                self.dirties -= 1
                 self.dirty[path]['is_dirty'] = False
                 # delete it
                 self.dirty[path]['delete_it'] = True
@@ -84,7 +82,6 @@ class CurrentView(PassthroughView):
             'is_dirty': True,
             'size': size
         }
-        self.dirties += 1
 
         return result
 
@@ -103,14 +100,13 @@ class CurrentView(PassthroughView):
     @while_not("read_only")
     @while_not("merging")
     def create(self, path, mode, fi=None):
+        self.somebody_is_writing.set()
         result = super(CurrentView, self).create(path, mode, fi)
         self.dirty[path] = {
             'message': "Created %s" % path,
             'is_dirty': True,
             'size': 0,
         }
-        self.dirties += 1
-
         return result
 
     @while_not("read_only")
@@ -122,7 +118,7 @@ class CurrentView(PassthroughView):
 
         result = super(CurrentView, self).chmod(path, mode)
 
-        self.dirties += 1
+        self.somebody_is_writing.set()
         message = 'Chmod to %s on %s' % (str(oct(mode))[3:-1], path)
         self._index(add=path, message=message)
 
@@ -134,13 +130,25 @@ class CurrentView(PassthroughView):
         """
         Each time you fsync, a new commit and push are made
         """
+        self.somebody_is_writing.set()
         result = super(CurrentView, self).fsync(path, fdatasync, fh)
 
-        self.dirties += 1
         message = 'Fsync %s' % path
         self._index(add=path, message=message)
 
         return result
+
+    def open(self, path, flags):
+        if self.merging.is_set():
+            return 0
+
+        full_path = self._full_path(path)
+        fh = os.open(full_path, flags)
+
+        if flags & (os.O_WRONLY | os.O_RDWR | os.O_APPEND | os.O_CREAT):
+            self.writing.add(fh)
+
+        return fh
 
     @while_not("read_only")
     @while_not("merging")
@@ -159,8 +167,16 @@ class CurrentView(PassthroughView):
 
             if self.dirty[path]['is_dirty']:
                 self.dirty[path]['is_dirty'] = False
-                self.dirties += 1
+                self.somebody_is_writing.set()
                 self._index(add=path, message=self.dirty[path]['message'])
+
+        if fh in self.writing:
+            self.writing.remove(fh)
+
+        if not len(self.writing):
+            self.somebody_is_writing.clear()
+        else:
+            self.somebody_is_writing.set()
 
         return os.close(fh)
 
@@ -179,19 +195,10 @@ class CurrentView(PassthroughView):
         remove = self._sanitize(remove)
 
         if remove is not None:
-            self.dirties -= 1
             self.repo.index.remove(self._sanitize(remove))
 
         if add is not None:
-            self.dirties -= 1
             self.repo.index.add(self._sanitize(add))
-
-        if self.dirties > 0:
-            self.somebody_is_writing.set()
-            print "set"
-        else:
-            self.somebody_is_writing.clear()
-            print "clean", self.dirties, "\n"
 
         self.queue(add=add, remove=remove, message=message)
 

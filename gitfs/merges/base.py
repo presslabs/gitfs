@@ -59,6 +59,7 @@ class Merger(object):
             index = second_commits.index(first_commit)
             second_commits = second_commits[:index]
             common_parent = first_commit
+
         if second_commit in first_commits:
             index = first_commits.index(second_commit)
             first_commits = first_commits[:index]

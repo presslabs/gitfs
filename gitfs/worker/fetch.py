@@ -20,6 +20,6 @@ class FetchWorker(Thread):
     def run(self):
         while True:
             time.sleep(self.timeout)
-            if not self.merging.is_set():
-                self.read_only.set()
-                self.repository.fetch(self.upstream, self.branch)
+            self.read_only.set()
+            self.repository.fetch(self.upstream, self.branch)
+            self.read_only.clear()

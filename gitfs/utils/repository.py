@@ -30,10 +30,14 @@ class Repository(_Repository):
         remote = self.get_remote(upstream)
         remote.fetch()
 
-    def commit(self, message, author, commiter, ref="HEAD"):
+    def commit(self, message, author, commiter, parents=None, ref="HEAD"):
         """ Wrapper for create_commit. It creates a commit from a given ref
         (default is HEAD)
         """
+
+        status = self.status()
+        if not status:
+            return None
 
         # sign the author
         author = Signature(author[0], author[1])
@@ -44,9 +48,11 @@ class Repository(_Repository):
         self.index.write()
 
         # get parent
-        parent = self.revparse_single(ref)
+        if parents is None:
+            parents = [self.revparse_single(ref).id]
+
         return self.create_commit(ref, author, commiter, message,
-                                  tree, [parent.id])
+                                  tree, parents)
 
     @classmethod
     def clone(cls, remote_url, path, branch=None):

@@ -22,7 +22,7 @@ class MergeWorker(Thread):
         self.branch = branch
 
         self.timeout = timeout
-        self.merging = merging
+        self.want_to_merge = merging
         self.read_only = read_only
         self.somebody_is_writing = somebody_is_writing
 
@@ -39,12 +39,19 @@ class MergeWorker(Thread):
                 job = self.merge_queue.get(timeout=self.timeout, block=True)
                 jobs.append(job)
             except:
+                print jobs, self.somebody_is_writing.is_set()
                 if jobs:
                     self.commit(jobs)
+                    self.want_to_merge.set()
+                elif (self.want_to_merge.is_set() and
+                      not self.somebody_is_writing.is_set()):
                     self.fetch()
-                    if not self.somebody_is_writing.is_set():
-                        self.merge()
-                        self.push()
+                    self.merge()
+                    print "done merging"
+                    self.push()
+                    self.read_only.clear()
+                    print "pushed"
+                    self.want_to_merge.clear()
                 jobs = []
 
     @while_not("read_only")
@@ -52,25 +59,19 @@ class MergeWorker(Thread):
         try:
             self.repository.fetch(self.upstream, self.branch)
         except:
+            print "now in read-only"
             self.read_only.set()
 
     @while_not("read_only")
     def merge(self):
-        self.merging.set()
-
         self.strategy(self.branch, self.branch, self.upstream)
-
-        # update commits cache
         self.repository.commits.update()
-
-        self.merging.clear()
+        self.want_to_merge.clear()
 
     @retry(3)
     def push(self):
         self.read_only.set()
-
         self.repository.push(self.upstream, self.branch)
-
         self.read_only.clear()
 
     def commit(self, jobs):
@@ -86,3 +87,4 @@ class MergeWorker(Thread):
 
         self.repository.commit(message, self.author, self.commiter)
         self.repository.commits.update()
+        self.repository.checkout_head()
