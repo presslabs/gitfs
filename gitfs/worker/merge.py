@@ -1,6 +1,7 @@
 from gitfs.utils.decorators import retry
 
 from gitfs.merges import AcceptMine
+from gitfs.utils.decorators import while_not
 from gitfs.worker.fetch import FetchWorker
 
 
@@ -47,6 +48,12 @@ class MergeWorker(FetchWorker):
                     self.merge()
                     self.want_to_merge.clear()
                     self.push()
+
+    @while_not("read_only")
+    def merge(self):
+        self.strategy(self.branch, self.branch, self.upstream)
+        self.repository.commits.update()
+        self.want_to_merge.clear()
 
     @retry(3)
     def push(self):

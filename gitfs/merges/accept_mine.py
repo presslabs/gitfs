@@ -49,7 +49,7 @@ class AcceptMine(Merger):
                                                 self.commiter, ref=reference,
                                                 parents=parents)
             # if index is not empty
-            if not new_commit:
+            if new_commit is not None:
                 self.repository.create_reference(reference,
                                                  new_commit, force=True)
 

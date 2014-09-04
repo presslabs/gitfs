@@ -1,5 +1,6 @@
 import re
 import os
+import time
 import errno
 
 from fuse import FuseOSError
@@ -55,7 +56,6 @@ class CurrentView(PassthroughView):
 
         return attrs
 
-    @while_not("want_to_merge")
     @while_not("read_only")
     def write(self, path, buf, offset, fh):
         """
@@ -140,16 +140,23 @@ class CurrentView(PassthroughView):
         return result
 
     def open(self, path, flags):
+        write_mode = flags & (os.O_WRONLY | os.O_RDWR |
+                              os.O_APPEND | os.O_CREAT)
+
+        if self.want_to_merge.is_set() and write_mode:
+            print "want to write"
+            while self.want_to_merge.is_set():
+                time.sleep(2)
+
         full_path = self._full_path(path)
         fh = os.open(full_path, flags)
 
-        if flags & (os.O_WRONLY | os.O_RDWR | os.O_APPEND | os.O_CREAT):
+        if write_mode:
             self.writing.add(fh)
 
         return fh
 
     @while_not("read_only")
-    @while_not("want_to_merge")
     def release(self, path, fh):
         """
         Check for path if something was written to. If so, commit and push

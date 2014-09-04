@@ -300,5 +300,5 @@ class Repository(_Repository):
 
     def remote_head(self, upstream, branch):
         ref = "%s/%s" % (upstream, branch)
-        remote = self.repository.lookup_branch(ref, GIT_BRANCH_REMOTE)
+        remote = self.lookup_branch(ref, GIT_BRANCH_REMOTE)
         return remote.get_object()
