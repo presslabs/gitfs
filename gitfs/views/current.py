@@ -198,7 +198,7 @@ class CurrentView(PassthroughView):
         if add is not None:
             self.repo.index.add(self._sanitize(add))
 
-        self.queue(add=add, remove=remove, message=message)
+        self.queue.commit(add=add, remove=remove, message=message)
 
     def _sanitize(self, path):
         if path is not None and path.startswith("/"):

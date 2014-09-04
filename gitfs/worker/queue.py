@@ -5,15 +5,19 @@ class BaseQueue(object):
     def __init__(self):
         self.queue = Queue()
 
-    def __calll__(self, *args, **kwargs):
+    def commit(self, *args, **kwargs):
         raise NotImplemented()
 
     def get(self, *args, **kwargs):
         return self.queue.get(*args, **kwargs)
 
 
-class CommitQueue(BaseQueue):
-    def __call__(self, add=None, message=None, remove=None):
+class MergeQueue(BaseQueue):
+
+    def add(self, job):
+        self.queue.put(job)
+
+    def commit(self, add=None, message=None, remove=None):
         if message is None:
             raise ValueError("Message shoduld not be None")
 
@@ -22,7 +26,7 @@ class CommitQueue(BaseQueue):
             raise ValueError(message)
 
         self.queue.put({
-            'job_type': 'commit',
+            'type': 'commit',
             'params': {
                 'add': self._to_list(add),
                 'message': message,

@@ -60,7 +60,7 @@ fetch_worker = FetchWorker(upstream=args.upstream,
                            branch=args.branch,
                            repository=router.repo,
                            read_only=read_only,
-                           repo_path=router.repo_path,
+                           merge_queue=merge_queue,
                            timeout=args.fetch_timeout)
 
 merge_worker.start()
