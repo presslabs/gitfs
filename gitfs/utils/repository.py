@@ -1,8 +1,8 @@
 from pygit2 import (Repository as _Repository, clone_repository, Signature,
-                    GIT_FILEMODE_TREE)
+                    GIT_FILEMODE_TREE, GIT_BRANCH_REMOTE)
 
 from gitfs.cache import CommitCache
-from .path import split_path_into_components
+from gitfs.utils.path import split_path_into_components
 
 
 class Repository(_Repository):
@@ -297,3 +297,8 @@ class Repository(_Repository):
                     stop_iteration[index] = True
 
             yield (commit for commit in commits)
+
+    def remote_head(self, upstream, branch):
+        ref = "%s/%s" % (upstream, branch)
+        remote = self.repository.lookup_branch(ref, GIT_BRANCH_REMOTE)
+        return remote.get_object()

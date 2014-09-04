@@ -1,6 +1,5 @@
 import time
 
-import pygit2
 from gitfs.worker.peasant import Peasant
 
 
@@ -11,20 +10,16 @@ class FetchWorker(Peasant):
             self.fetch()
 
     def fetch(self):
-        remote_commit = self.remote_commit
+        remote_commit = self.repository.remote_head(self.upstream, self.branch)
 
         try:
             self.repository.fetch(self.upstream, self.branch)
 
-            if remote_commit.hex != self.remote_commit.hex:
-                self.merge_queue.merge({"type": "merge"})
+            new_remote_commit = self.repository.remote_head(self.upstream,
+                                                            self.branch)
+            if remote_commit.hex != new_remote_commit.hex:
+                self.merge_queue.add({"type": "merge"})
 
             self.read_only.clear()
         except:
             self.read_only.set()
-
-    @property
-    def remote_commit(self):
-        ref = "%s/%s" % (self.upstream, self.branch)
-        remote = self.repository.lookup_branch(ref, pygit2.GIT_BRANCH_REMOTE)
-        return remote.get_object()
