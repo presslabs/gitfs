@@ -20,9 +20,10 @@ args = Args(parser)
 
 # initialize merge queue
 merge_queue = MergeQueue()
-merging = threading.Event()
+want_to_merge = threading.Event()
 read_only = threading.Event()
 somebody_is_writing = threading.Event()
+merging = threading.Event()
 
 # setting router
 router = Router(remote_url=args.remote_url,
@@ -34,7 +35,7 @@ router = Router(remote_url=args.remote_url,
                 max_size=args.max_size,
                 max_offset=args.max_offset,
                 merge_queue=merge_queue,
-                merging=merging,
+                want_to_merge=want_to_merge,
                 somebody_is_writing=somebody_is_writing,
                 read_only=read_only)
 
@@ -44,12 +45,23 @@ router.register(routes)
 # setup workers
 merge_worker = MergeWorker(args.author_name, args.author_email,
                            args.commiter_name, args.commiter_email,
-                           merging, somebody_is_writing, read_only,
-                           merge_queue, router.repo, args.upstream,
-                           args.branch, router.repo_path,
+                           want_to_merge=want_to_merge,
+                           somebody_is_writing=somebody_is_writing,
+                           read_only=read_only,
+                           merge_queue=merge_queue,
+                           merging=merging,
+                           repository=router.repo,
+                           upstream=args.upstream,
+                           branch=args.branch,
+                           repo_path=router.repo_path,
                            timeout=args.merge_timeout)
-fetch_worker = FetchWorker(args.upstream, args.branch, router.repo, merging,
-                           read_only, timeout=args.fetch_timeout)
+
+fetch_worker = FetchWorker(upstream=args.upstream,
+                           branch=args.branch,
+                           repository=router.repo,
+                           read_only=read_only,
+                           repo_path=router.repo_path,
+                           timeout=args.fetch_timeout)
 
 merge_worker.start()
 fetch_worker.start()

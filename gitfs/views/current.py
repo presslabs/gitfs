@@ -17,7 +17,7 @@ class CurrentView(PassthroughView):
         self.writing = set([])
 
     @while_not("read_only")
-    @while_not("merging")
+    @while_not("want_to_merge")
     def rename(self, old, new):
         new = re.sub(self.regex, '', new)
         result = super(CurrentView, self).rename(old, new)
@@ -31,7 +31,7 @@ class CurrentView(PassthroughView):
 
         return result
 
-    @while_not("merging")
+    @while_not("want_to_merge")
     def symlink(self, name, target):
         result = os.symlink(target, self._full_path(name))
 
@@ -55,6 +55,7 @@ class CurrentView(PassthroughView):
 
         return attrs
 
+    @while_not("want_to_merge")
     @while_not("read_only")
     def write(self, path, buf, offset, fh):
         """
@@ -86,7 +87,7 @@ class CurrentView(PassthroughView):
         return result
 
     @while_not("read_only")
-    @while_not("merging")
+    @while_not("want_to_merge")
     def mkdir(self, path, mode):
         result = super(CurrentView, self).mkdir(path, mode)
 
@@ -98,7 +99,7 @@ class CurrentView(PassthroughView):
         return result
 
     @while_not("read_only")
-    @while_not("merging")
+    @while_not("want_to_merge")
     def create(self, path, mode, fi=None):
         self.somebody_is_writing.set()
         result = super(CurrentView, self).create(path, mode, fi)
@@ -110,7 +111,7 @@ class CurrentView(PassthroughView):
         return result
 
     @while_not("read_only")
-    @while_not("merging")
+    @while_not("want_to_merge")
     def chmod(self, path, mode):
         """
         Executes chmod on the file at os level and then it commits the change.
@@ -125,7 +126,7 @@ class CurrentView(PassthroughView):
         return result
 
     @while_not("read_only")
-    @while_not("merging")
+    @while_not("want_to_merge")
     def fsync(self, path, fdatasync, fh):
         """
         Each time you fsync, a new commit and push are made
@@ -139,9 +140,6 @@ class CurrentView(PassthroughView):
         return result
 
     def open(self, path, flags):
-        if self.merging.is_set():
-            return 0
-
         full_path = self._full_path(path)
         fh = os.open(full_path, flags)
 
@@ -151,7 +149,7 @@ class CurrentView(PassthroughView):
         return fh
 
     @while_not("read_only")
-    @while_not("merging")
+    @while_not("want_to_merge")
     def release(self, path, fh):
         """
         Check for path if something was written to. If so, commit and push
@@ -181,7 +179,7 @@ class CurrentView(PassthroughView):
         return os.close(fh)
 
     @while_not("read_only")
-    @while_not("merging")
+    @while_not("want_to_merge")
     def unlink(self, path):
         result = super(CurrentView, self).unlink(path)
 

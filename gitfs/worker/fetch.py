@@ -1,25 +1,22 @@
 import time
-from threading import Thread
 
-from gitfs.utils.decorators import retry
+from gitfs.worker.peasant import Peasant
 
 
-class FetchWorker(Thread):
-    def __init__(self, upstream, branch, repository, merging, read_only,
-                 timeout=5, *args, **kwargs):
-        super(FetchWorker, self).__init__(*args, **kwargs)
-
-        self.repository = repository
-        self.upstream = upstream
-        self.branch = branch
-        self.merging = merging
-        self.read_only = read_only
-        self.timeout = timeout
-
-    @retry(1)
+class FetchWorker(Peasant):
     def run(self):
         while True:
             time.sleep(self.timeout)
-            self.read_only.set()
             self.repository.fetch(self.upstream, self.branch)
+
+            if not self.want_to_merge.is_set():
+                self.want_to_merge.set()
+            elif not self.somebody_is_writing.is_set():
+                self.merge()
+
+    def fetch(self):
+        try:
             self.read_only.clear()
+            self.repository.fetch(self.upstream, self.branch)
+        except:
+            self.read_only.set()

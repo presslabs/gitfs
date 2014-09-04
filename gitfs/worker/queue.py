@@ -12,7 +12,7 @@ class BaseQueue(object):
         return self.queue.get(*args, **kwargs)
 
 
-class MergeQueue(BaseQueue):
+class CommitQueue(BaseQueue):
     def __call__(self, add=None, message=None, remove=None):
         if message is None:
             raise ValueError("Message shoduld not be None")

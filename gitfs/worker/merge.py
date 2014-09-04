@@ -1,72 +1,52 @@
-from threading import Thread
-
 from gitfs.utils.decorators import retry
+
 from gitfs.merges import AcceptMine
+from gitfs.worker.fetch import FetchWorker
 
-from .decorators import while_not
 
-
-class MergeWorker(Thread):
+class MergeWorker(FetchWorker):
     def __init__(self, author_name, author_email, commiter_name,
-                 commiter_email, merging, somebody_is_writing, read_only,
-                 merge_queue, repository, upstream, branch, repo_path,
-                 strategy=None, timeout=5, *args, **kwargs):
+                 commiter_email, strategy=None, *args, **kwargs):
         super(MergeWorker, self).__init__(*args, **kwargs)
 
         self.author = (author_name, author_email)
         self.commiter = (commiter_name, commiter_email)
 
-        self.merge_queue = merge_queue
-        self.repository = repository
-        self.upstream = upstream
-        self.branch = branch
-
-        self.timeout = timeout
-        self.want_to_merge = merging
-        self.read_only = read_only
-        self.somebody_is_writing = somebody_is_writing
-
-        default = AcceptMine(repository, author=self.author,
-                             commiter=self.commiter, repo_path=repo_path)
-        self.strategy = default
-
-        super(MergeWorker, self).__init__(*args, **kwargs)
+        strategy = strategy or AcceptMine(self.repository, author=self.author,
+                                          commiter=self.commiter,
+                                          repo_path=self.repo_path)
+        self.strategy = strategy
 
     def run(self):
-        jobs = []
+        commits = []
+        merges = []
+
         while True:
             try:
                 job = self.merge_queue.get(timeout=self.timeout, block=True)
-                jobs.append(job)
+                if job['type'] == 'commit':
+                    commits.append(job)
+                elif job['type'] == 'merge':
+                    merges.append(job)
             except:
-                print jobs, self.somebody_is_writing.is_set()
-                if jobs:
-                    self.commit(jobs)
+                if commits and merges:
+                    self.commit(commits)
                     self.want_to_merge.set()
+                    commits = []
+                    merges = []
+                elif merges:
+                    self.want_to_merge.set()
+                    merges = []
+                elif commits:
+                    self.commit(commits)
+                    self.want_to_merge.set()
+                    commits = []
                 elif (self.want_to_merge.is_set() and
                       not self.somebody_is_writing.is_set()):
                     self.fetch()
                     self.merge()
-                    print "done merging"
-                    self.push()
-                    self.read_only.clear()
-                    print "pushed"
                     self.want_to_merge.clear()
-                jobs = []
-
-    @while_not("read_only")
-    def fetch(self):
-        try:
-            self.repository.fetch(self.upstream, self.branch)
-        except:
-            print "now in read-only"
-            self.read_only.set()
-
-    @while_not("read_only")
-    def merge(self):
-        self.strategy(self.branch, self.branch, self.upstream)
-        self.repository.commits.update()
-        self.want_to_merge.clear()
+                    self.push()
 
     @retry(3)
     def push(self):

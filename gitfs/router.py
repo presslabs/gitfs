@@ -59,7 +59,7 @@ class Router(object):
         self.gid = getpwnam(group).pw_gid
 
         self.merge_queue = kwargs['merge_queue']
-        self.merging = kwargs['merging']
+        self.want_to_merge = kwargs['want_to_merge']
         self.read_only = kwargs['read_only']
         self.somebody_is_writing = kwargs['somebody_is_writing']
         self.mount_time = int(time.time())
@@ -145,7 +145,7 @@ class Router(object):
             kwargs['queue'] = self.merge_queue
             kwargs['max_size'] = self.max_size
             kwargs['max_offset'] = self.max_offset
-            kwargs['merging'] = self.merging
+            kwargs['want_to_merge'] = self.want_to_merge
             kwargs['read_only'] = self.read_only
             kwargs['somebody_is_writing'] = self.somebody_is_writing
 

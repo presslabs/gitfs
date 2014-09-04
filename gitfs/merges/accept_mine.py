@@ -66,7 +66,6 @@ class AcceptMine(Merger):
         ref.delete()
 
     def solve_conflicts(self, conflicts):
-        print "conflicts: ", conflicts
         if conflicts:
             for common, theirs, ours in conflicts:
                 # if we deleted the file and they didn't, remove the file
