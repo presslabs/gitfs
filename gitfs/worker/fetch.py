@@ -10,14 +10,10 @@ class FetchWorker(Peasant):
             self.fetch()
 
     def fetch(self):
-        remote_commit = self.repository.remote_head(self.upstream, self.branch)
-
         try:
-            self.repository.fetch(self.upstream, self.branch)
+            behind = self.repository.fetch(self.upstream, self.branch)
 
-            new_remote_commit = self.repository.remote_head(self.upstream,
-                                                            self.branch)
-            if remote_commit.hex != new_remote_commit.hex:
+            if behind:
                 self.merge_queue.add({"type": "merge"})
 
             self.read_only.clear()

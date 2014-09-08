@@ -26,9 +26,17 @@ class Repository(_Repository):
         """
         Fetch from remote
         """
+        remote_commit = self.repository.remote_head(upstream, branch_name)
 
         remote = self.get_remote(upstream)
         remote.fetch()
+
+        new_remote_commit = self.repository.remote_head(upstream, branch_name)
+
+        if remote_commit.hex != new_remote_commit.hex:
+            return True
+
+        return False
 
     def commit(self, message, author, commiter, parents=None, ref="HEAD"):
         """ Wrapper for create_commit. It creates a commit from a given ref
