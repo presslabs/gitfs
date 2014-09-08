@@ -18,7 +18,7 @@ class AcceptMine(Merger):
 
         local = self.repository.create_branch(branch, remote_commit)
         ref = self.repository.lookup_reference("refs/heads/%s" % branch)
-        self.repository.checkout(ref)
+        self.repository.checkout(ref, strategy=pygit2.GIT_CHECKOUT_FORCE)
 
         return local
 
@@ -33,13 +33,23 @@ class AcceptMine(Merger):
         diverge_commits = self.find_diverge_commits(local_copy, local)
 
         reference = "refs/heads/%s" % local_branch
+        self.repository.checkout(reference,
+                                 strategy=pygit2.GIT_CHECKOUT_FORCE)
 
         # actual merging
         for commit in diverge_commits.first_commits:
-            self.repository.merge(commit.hex)
+            print "Want to merge this:", commit.message
+            try:
+                self.repository.merge(commit.hex)
+            except:
+                print "commit", reference
+                print "commits diverge", diverge_commits.first_commits
+                print "remote commit", local.target
+                print "commit to merge", commit
 
             # resolve conflicts
             self.solve_conflicts(self.repository.index.conflicts)
+            print "conflicte %s" % self.repository.index.conflicts
 
             # create new commit
             ref = self.repository.lookup_reference(reference)

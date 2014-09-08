@@ -108,6 +108,7 @@ class CurrentView(PassthroughView):
             'is_dirty': True,
             'size': 0,
         }
+        self.somebody_is_writing.clear()
         return result
 
     @while_not("read_only")
@@ -119,9 +120,11 @@ class CurrentView(PassthroughView):
 
         result = super(CurrentView, self).chmod(path, mode)
 
+        print "CHMOOOOD"
         self.somebody_is_writing.set()
         message = 'Chmod to %s on %s' % (str(oct(mode))[3:-1], path)
         self._index(add=path, message=message)
+        self.somebody_is_writing.clear()
 
         return result
 

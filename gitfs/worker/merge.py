@@ -1,3 +1,5 @@
+import pygit2
+
 from gitfs.merges import AcceptMine
 from gitfs.worker.fetch import FetchWorker
 
@@ -45,22 +47,31 @@ class MergeWorker(FetchWorker):
         """
 
         if commits and merges:
+            print "commit sau merges"
             self.commit(commits)
             self.want_to_merge.set()
+            print "want to merge"
             commits = []
             merges = []
         elif merges:
+            print "merges"
             self.want_to_merge.set()
+            print "want to merge"
             merges = []
         elif commits:
+            print "commit"
             self.commit(commits)
             self.want_to_merge.set()
+            print "want to merge"
             commits = []
         elif (self.want_to_merge.is_set() and
               not self.somebody_is_writing.is_set()):
+            print "merge"
             self.merge()
             self.want_to_merge.clear()
+            print "no more merge"
             self.push()
+            print "done push"
 
         return commits, merges
 
@@ -78,17 +89,23 @@ class MergeWorker(FetchWorker):
         self.read_only.set()
 
         try:
+            print "try to push"
             self.repository.push(self.upstream, self.branch)
+            print "push done"
             self.read_only.clear()
         except:
+            print "push failed"
             self.fetch()
 
     @retry(each=3)
     def fetch(self):
+        print "try to fetch"
         behind = self.repository.fetch(self.upstream, self.brach)
         if behind:
+            print "behind"
             self.merge_queue.add({'type': 'merge'})
         else:
+            print "ok...pushing"
             self.push()
 
     def commit(self, jobs):
@@ -102,6 +119,7 @@ class MergeWorker(FetchWorker):
 
             message = "Update %s items" % len(updates)
 
+        print "commiting %s" % message
         self.repository.commit(message, self.author, self.commiter)
         self.repository.commits.update()
-        self.repository.checkout_head()
+        self.repository.checkout_head(strategy=pygit2.GIT_CHECKOUT_FORCE)

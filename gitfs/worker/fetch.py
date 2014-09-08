@@ -10,12 +10,15 @@ class FetchWorker(Peasant):
             self.fetch()
 
     def fetch(self):
+        print "no more read-only"
+        self.read_only.clear()
+
         try:
+            print "fetch"
             behind = self.repository.fetch(self.upstream, self.branch)
 
             if behind:
+                print "behind"
                 self.merge_queue.add({"type": "merge"})
-
-            self.read_only.clear()
         except:
             self.read_only.set()
