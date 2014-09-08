@@ -1,8 +1,7 @@
-from gitfs.utils.decorators import retry
-
 from gitfs.merges import AcceptMine
-from gitfs.utils.decorators import while_not
 from gitfs.worker.fetch import FetchWorker
+
+from gitfs.utils.decorators import retry
 
 
 class MergeWorker(FetchWorker):
@@ -65,16 +64,14 @@ class MergeWorker(FetchWorker):
 
         return commits, merges
 
-    @while_not("read_only")
     def merge(self):
         self.strategy(self.branch, self.branch, self.upstream)
         self.repository.commits.update()
 
-    @retry(3)
     def push(self):
         """
         Try to push. The push can fail in two cases:
-        1. The remote is done, so we need to retry.
+        1. The remote is down, so we need to retry.
         2. We are behind, so we need to fetch + merge and then try again
         """
 
@@ -84,7 +81,15 @@ class MergeWorker(FetchWorker):
             self.repository.push(self.upstream, self.branch)
             self.read_only.clear()
         except:
-            pass
+            self.fetch()
+
+    @retry(each=3)
+    def fetch(self):
+        behind = self.repository.fetch(self.upstream, self.brach)
+        if behind:
+            self.merge_queue.add({'type': 'merge'})
+        else:
+            self.push()
 
     def commit(self, jobs):
         if len(jobs) == 1:
