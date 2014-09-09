@@ -283,10 +283,10 @@ class Repository(object):
         stop_iteration = [False for branch in branches]
 
         commits = []
-        for index, iterator in enumerate(iterators):
+        for iterator in iterators:
             try:
                 commit = iterator.next()
-            except:
+            except StopIteration:
                 commit = None
             commits.append(commit)
 
@@ -300,7 +300,8 @@ class Repository(object):
                 except:
                     stop_iteration[index] = True
 
-            yield (commit for commit in commits)
+            if not all(stop_iteration):
+                yield (commit for commit in commits)
 
     def remote_head(self, upstream, branch):
         ref = "%s/%s" % (upstream, branch)

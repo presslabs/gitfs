@@ -2,7 +2,7 @@ import time
 
 import pytest
 from mock import MagicMock, patch, call
-from pygit2 import GIT_BRANCH_REMOTE
+from pygit2 import GIT_BRANCH_REMOTE, GIT_SORT_TIME
 
 from gitfs.utils import Repository
 from .base import RepositoryBaseTest
@@ -152,3 +152,54 @@ class TestRepository(RepositoryBaseTest):
         repo = Repository(mocked_repo)
         with pytest.raises(ValueError):
             repo.get_remote("origin")
+
+    def test_walk_branches(self):
+        """
+        Given 2 branches, this method whould return the commits step by step:
+            [(commit_1_branch_1, commit_1_branch_2),
+             (commit_2_branch_1, commit_2_branch_2),
+             (commit_3_branch_1, commit_3_branch_2),
+                            .
+                            .
+                            .
+             (commit_n_branch_1, commit_n_branch_2)]
+        """
+
+        class BranchWalker(object):
+            commit_number = 1
+
+            def __init__(self, step=1, max_commit_number=10):
+                self.step = step
+                self.max_commit_number = max_commit_number
+
+            def next(self):
+                number = self.commit_number
+                if self.commit_number >= self.max_commit_number:
+                    raise StopIteration()
+                self.commit_number += self.step
+                return number
+
+            def __iter__(self):
+                yield self.commit_number
+                self.commit_number += self.step
+                if self.commit_number >= self.max_commit_number:
+                    raise StopIteration()
+
+        mocked_repo = MagicMock()
+
+        def mocked_walk(target):
+            return BranchWalker() if target == "first" else BranchWalker(2)
+        mocked_repo.walk = mocked_walk
+
+        repo = Repository(mocked_repo)
+
+        counter_1 = 1
+        counter_2 = 1
+        branches = (MagicMock(target='first'), MagicMock(target='second'))
+        for commit_1, commit_2 in repo.walk_branches(GIT_SORT_TIME, *branches):
+            assert commit_1 == counter_1
+            assert commit_2 == counter_2
+
+            if counter_2 < 9:
+                counter_2 += 2
+            counter_1 += 1
