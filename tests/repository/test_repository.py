@@ -310,3 +310,14 @@ class TestRepository(RepositoryBaseTest):
 
         assert repo.get_blob_size("tree", "path") == 42
         mocked_git_object.has_calls([call("tree", "path")])
+
+    def test_get_blob_data(self):
+        mocked_repo = MagicMock()
+        mocked_git_object = MagicMock()
+        mocked_git_object().data = "some data"
+
+        repo = Repository(mocked_repo)
+        repo.get_git_object = mocked_git_object
+
+        assert repo.get_blob_data("tree", "path") == "some data"
+        mocked_git_object.has_calls([call("tree", "path")])
