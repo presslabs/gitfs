@@ -1,5 +1,6 @@
 import time
 
+import pytest
 from mock import MagicMock, patch, call
 from pygit2 import GIT_BRANCH_REMOTE
 
@@ -128,3 +129,26 @@ class TestRepository(RepositoryBaseTest):
         ref = "%s/%s" % (upstream, branch)
         mocked_repo.lookup_branch.assert_called_once_with(ref,
                                                           GIT_BRANCH_REMOTE)
+
+    def test_get_remote(self):
+        upstream = "origin"
+
+        mocked_repo = MagicMock()
+        mocked_remote = MagicMock()
+
+        mocked_remote.name = upstream
+        mocked_repo.remotes = [mocked_remote]
+
+        repo = Repository(mocked_repo)
+        assert repo.get_remote(upstream) == mocked_remote
+
+    def test_get_remote_with_missing_remote(self):
+        mocked_repo = MagicMock()
+        mocked_remote = MagicMock()
+
+        mocked_remote.name = "fork"
+        mocked_repo.remotes = [mocked_remote]
+
+        repo = Repository(mocked_repo)
+        with pytest.raises(ValueError):
+            repo.get_remote("origin")
