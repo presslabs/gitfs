@@ -212,3 +212,12 @@ class TestRepository(RepositoryBaseTest):
 
         repo = Repository(mocked_repo, commits)
         assert repo.get_commits_by_date('now') == ['1', '2', '3']
+
+    def test_get_commit_dates(self):
+        mocked_repo = MagicMock()
+        commits = {
+            'now': [1, 2, 3]
+        }
+
+        repo = Repository(mocked_repo, commits)
+        assert repo.get_commit_dates() == ['now']
