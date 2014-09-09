@@ -93,3 +93,18 @@ class TestRepository(RepositoryBaseTest):
         commit = repo.commit("message", author, commiter)
 
         assert commit is None
+
+    def test_clone(self):
+        mocked_repo = MagicMock()
+
+        remote_url = "git@github.com:test/test.git"
+        path = "/path/to/repo"
+
+        with patch('gitfs.utils.repository.clone_repository') as mocked_clone:
+            mocked_clone.return_value = mocked_repo
+
+            Repository.clone(remote_url, path)
+
+            mocked_clone.assert_called_once_with(remote_url, path,
+                                                 checkout_branch=None)
+            assert mocked_repo.checkout_head.call_count == 1
