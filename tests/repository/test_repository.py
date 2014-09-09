@@ -281,3 +281,21 @@ class TestRepository(RepositoryBaseTest):
         result = repo._get_git_object([mocked_tree], "entry",
                                       ['tree', 'entry'])
         assert result == [mocked_entry]
+
+    def test_get_git_object_proxy(self):
+        mocked_entry = MagicMock()
+        mocked_entry.name = 'entry'
+        mocked_entry.filemode = 'git_file'
+
+        mocked_repo = MagicMock()
+        mocked_repo.__getitem__.return_value = "succed"
+        repo = Repository(mocked_repo)
+
+        mock_path = 'gitfs.utils.repository.split_path_into_components'
+        with patch(mock_path) as mocked_split_path:
+            mocked_split_path.return_value = ['entry']
+
+            result = repo.get_git_object([mocked_entry], "path")
+
+            assert result == "succed"
+            mocked_split_path.assert_called_once_with("path")
