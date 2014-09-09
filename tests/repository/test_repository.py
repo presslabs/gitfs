@@ -1,6 +1,7 @@
 import time
 
-from mock import MagicMock, PropertyMock, patch, call
+from mock import MagicMock, patch, call
+from pygit2 import GIT_BRANCH_REMOTE
 
 from gitfs.utils import Repository
 from .base import RepositoryBaseTest
@@ -108,3 +109,22 @@ class TestRepository(RepositoryBaseTest):
             mocked_clone.assert_called_once_with(remote_url, path,
                                                  checkout_branch=None)
             assert mocked_repo.checkout_head.call_count == 1
+
+    def test_remote_head(self):
+        upstream = "origin"
+        branch = "master"
+
+        mocked_repo = MagicMock()
+        mocked_remote = MagicMock()
+
+        mocked_remote.get_object.return_value = "simple_remote"
+        mocked_repo.lookup_branch.return_value = mocked_remote
+
+        repo = Repository(mocked_repo)
+
+        assert repo.remote_head(upstream, branch) == "simple_remote"
+        assert mocked_remote.get_object.call_count == 1
+
+        ref = "%s/%s" % (upstream, branch)
+        mocked_repo.lookup_branch.assert_called_once_with(ref,
+                                                          GIT_BRANCH_REMOTE)
