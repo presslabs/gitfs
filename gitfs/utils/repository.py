@@ -1,15 +1,25 @@
-from pygit2 import (Repository as _Repository, clone_repository, Signature,
-                    GIT_FILEMODE_TREE, GIT_BRANCH_REMOTE)
+from pygit2 import (clone_repository, Signature, GIT_FILEMODE_TREE,
+                    GIT_BRANCH_REMOTE)
 
 from gitfs.cache import CommitCache
 from gitfs.utils.path import split_path_into_components
 
 
-class Repository(_Repository):
+class Repository(object):
 
-    def __init__(self, *args, **kwargs):
-        super(Repository, self).__init__(*args, **kwargs)
-        self.commits = CommitCache(self)
+    def __init__(self, repository, commits=None):
+        self._repo = repository
+        self.commits = commits or CommitCache(self)
+
+    def __getattr__(self, attr):
+        """
+        Proxy method for pygit2.Repository
+        """
+
+        if attr not in self.__dict__:
+            return getattr(self._repo, attr)
+        else:
+            return self.__dict__[attr]
 
     def push(self, upstream, branch):
         """ Push changes from a branch to a remote
@@ -24,14 +34,15 @@ class Repository(_Repository):
 
     def fetch(self, upstream, branch_name):
         """
-        Fetch from remote
+        Fetch from remote and return True if we are behind or False otherwise
         """
-        remote_commit = self.repository.remote_head(upstream, branch_name)
+
+        remote_commit = self.remote_head(upstream, branch_name)
 
         remote = self.get_remote(upstream)
         remote.fetch()
 
-        new_remote_commit = self.repository.remote_head(upstream, branch_name)
+        new_remote_commit = self.remote_head(upstream, branch_name)
 
         if remote_commit.hex != new_remote_commit.hex:
             return True
@@ -43,7 +54,7 @@ class Repository(_Repository):
         (default is HEAD)
         """
 
-        status = self.status()
+        status = self._repo.status()
         if not status:
             return None
 
@@ -52,15 +63,15 @@ class Repository(_Repository):
         commiter = Signature(commiter[0], commiter[1])
 
         # write index localy
-        tree = self.index.write_tree()
-        self.index.write()
+        tree = self._repo.index.write_tree()
+        self._repo.index.write()
 
         # get parent
         if parents is None:
-            parents = [self.revparse_single(ref).id]
+            parents = [self._repo.revparse_single(ref).id]
 
-        return self.create_commit(ref, author, commiter, message,
-                                  tree, parents)
+        return self._repo.create_commit(ref, author, commiter, message,
+                                        tree, parents)
 
     @classmethod
     def clone(cls, remote_url, path, branch=None):
@@ -78,22 +89,7 @@ class Repository(_Repository):
 
         repo = clone_repository(remote_url, path, checkout_branch=branch)
         repo.checkout_head()
-        return cls(path)
-
-    def get_remote(self, name):
-        """ Retrieve a remote by name. Raise a ValueError if the remote was not
-        added to repo
-
-        Examples::
-
-                repo.get_remote("fork")
-        """
-        remote = [remote for remote in self.remotes
-                  if remote.name == name]
-        if not remote:
-            raise ValueError("Missing remote")
-
-        return remote[0]
+        return cls(repo)
 
     def _is_searched_entry(self, entry_name, searched_entry, path_components):
         """
@@ -137,7 +133,7 @@ class Repository(_Repository):
                                        path_components):
                 return entry.filemode
             elif entry.filemode == GIT_FILEMODE_TREE:
-                filemode = self._get_git_object_type(self[entry.id],
+                filemode = self._get_git_object_type(self._repo[entry.id],
                                                      entry_name,
                                                      path_components[1:])
                 if filemode:
@@ -283,7 +279,7 @@ class Repository(_Repository):
 
         """
 
-        iterators = [self.walk(branch.target) for branch in branches]
+        iterators = [self._repo.walk(branch.target) for branch in branches]
         stop_iteration = [False for branch in branches]
 
         commits = []
@@ -308,5 +304,22 @@ class Repository(_Repository):
 
     def remote_head(self, upstream, branch):
         ref = "%s/%s" % (upstream, branch)
-        remote = self.lookup_branch(ref, GIT_BRANCH_REMOTE)
+        remote = self._repo.lookup_branch(ref, GIT_BRANCH_REMOTE)
         return remote.get_object()
+
+    def get_remote(self, name):
+        """ Retrieve a remote by name. Raise a ValueError if the remote was not
+        added to repo
+
+        Examples::
+
+                repo.get_remote("fork")
+        """
+
+        remote = [remote for remote in self._repo.remotes
+                  if remote.name == name]
+
+        if not remote:
+            raise ValueError("Missing remote")
+
+        return remote[0]

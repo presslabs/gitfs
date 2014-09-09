@@ -48,10 +48,11 @@ class TestWriteCurrentView(BaseTest):
         filename = "%s/testing" % self.current_path
         os.chmod(filename, 0766)
 
-        time.sleep(3)
+        time.sleep(6)
 
         # check if the right mode was set
         stats = os.stat(filename)
+        print stats.st_mode == 0100766
         assert stats.st_mode == 0100766
 
         self.assert_new_commit()
