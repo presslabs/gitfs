@@ -203,3 +203,12 @@ class TestRepository(RepositoryBaseTest):
             if counter_2 < 9:
                 counter_2 += 2
             counter_1 += 1
+
+    def test_get_commits_by_dates(self):
+        mocked_repo = MagicMock()
+        commits = {
+            'now': [1, 2, 3]
+        }
+
+        repo = Repository(mocked_repo, commits)
+        assert repo.get_commits_by_date('now') == ['1', '2', '3']
