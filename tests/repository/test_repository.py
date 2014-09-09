@@ -2,7 +2,7 @@ import time
 
 import pytest
 from mock import MagicMock, patch, call
-from pygit2 import GIT_BRANCH_REMOTE, GIT_SORT_TIME
+from pygit2 import GIT_BRANCH_REMOTE, GIT_SORT_TIME, GIT_FILEMODE_TREE
 
 from gitfs.utils import Repository
 from .base import RepositoryBaseTest
@@ -221,3 +221,28 @@ class TestRepository(RepositoryBaseTest):
 
         repo = Repository(mocked_repo, commits)
         assert repo.get_commit_dates() == ['now']
+
+    def test_is_searched_entry(self):
+        mocked_repo = MagicMock()
+        repo = Repository(mocked_repo)
+
+        result = repo._is_searched_entry("entry", "entry", ["entry"])
+        assert result
+
+    def test_get_git_object_type(self):
+        mocked_entry = MagicMock()
+        mocked_entry.name = 'entry'
+        mocked_entry.filemode = 'git_file'
+
+        mocked_tree = MagicMock()
+        mocked_tree.name = 'tree'
+        mocked_tree.filemode = GIT_FILEMODE_TREE
+        mocked_tree.id = 1
+
+        mocked_repo = MagicMock()
+        mocked_repo.__getitem__.return_value = [mocked_entry]
+        repo = Repository(mocked_repo)
+
+        result = repo._get_git_object_type([mocked_tree], "entry",
+                                           ['tree', 'entry'])
+        assert result == "git_file"

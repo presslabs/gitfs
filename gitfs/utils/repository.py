@@ -189,9 +189,9 @@ class Repository(object):
         git_obj = None
         for entry in tree:
             if self._is_searched_entry(entry.name, obj_name, path_components):
-                return self[entry.id]
+                return self._repo[entry.id]
             elif entry.filemode == GIT_FILEMODE_TREE:
-                git_obj = self._get_git_object(self[entry.id], obj_name,
+                git_obj = self._get_git_object(self._repo[entry.id], obj_name,
                                                path_components[1:])
                 if git_obj:
                     return git_obj
