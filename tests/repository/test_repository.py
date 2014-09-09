@@ -299,3 +299,14 @@ class TestRepository(RepositoryBaseTest):
 
             assert result == "succed"
             mocked_split_path.assert_called_once_with("path")
+
+    def test_get_blob_size(self):
+        mocked_repo = MagicMock()
+        mocked_git_object = MagicMock()
+        mocked_git_object().size = 42
+
+        repo = Repository(mocked_repo)
+        repo.get_git_object = mocked_git_object
+
+        assert repo.get_blob_size("tree", "path") == 42
+        mocked_git_object.has_calls([call("tree", "path")])
