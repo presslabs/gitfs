@@ -50,5 +50,21 @@ class TestMergeWorker(object):
         commits, merges = worker.on_idle(None, "merges")
 
         assert mocked_want_to_merge.set.call_count == 1
-        assert commits == None
+        assert commits is None
         assert merges == []
+
+    def test_on_idle_with_commits_and_no_merges(self):
+        mocked_want_to_merge = MagicMock()
+        mocked_commit = MagicMock()
+
+        worker = MergeWorker("name", "email", "name", "email",
+                             strategy="strategy",
+                             want_to_merge=mocked_want_to_merge)
+        worker.commit = mocked_commit
+
+        commits, merges = worker.on_idle("commits", None)
+
+        mocked_commit.assert_called_once_with("commits")
+        assert mocked_want_to_merge.set.call_count == 1
+        assert commits == []
+        assert merges is None
