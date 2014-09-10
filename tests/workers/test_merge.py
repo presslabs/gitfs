@@ -21,3 +21,19 @@ class TestMergeWorker(object):
 
         mocked_queue.get.assert_called_once_with(timeout=1, block=True)
         mocked_idle.assert_called_once_with([], [])
+
+    def test_on_idle_with_commits_and_merges(self):
+        mocked_want_to_merge = MagicMock()
+        mocked_commit = MagicMock()
+
+        worker = MergeWorker("name", "email", "name", "email",
+                             strategy="strategy",
+                             want_to_merge=mocked_want_to_merge)
+        worker.commit = mocked_commit
+
+        commits, merges = worker.on_idle("commits", "merges")
+
+        mocked_commit.assert_called_once_with("commits")
+        assert mocked_want_to_merge.set.call_count == 1
+        assert commits == []
+        assert merges == []
