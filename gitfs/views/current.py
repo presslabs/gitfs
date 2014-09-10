@@ -40,7 +40,7 @@ class CurrentView(PassthroughView):
         result = os.symlink(target, self._full_path(name))
 
         message = "Create symlink to %s for %s" % (target, name)
-        self.queue(add=name, message=message)
+        self._index(add=name, message=message)
 
         return result
 

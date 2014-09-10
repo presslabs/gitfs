@@ -41,22 +41,22 @@ class TestWriteCurrentView(BaseTest):
         keep_path = "%s/new_directory/.keep" % self.repo_path
         assert os.path.exists(keep_path)
 
-        self.assert_new_commit()
+        self.assert_new_commit(2)
         self.assert_commit_message("Created new_directory/.keep")
 
-    def test_chmod(self):
-        filename = "%s/testing" % self.current_path
-        os.chmod(filename, 0766)
+    #def test_chmod(self):
+    #    filename = "%s/testing" % self.current_path
+    #    os.chmod(filename, 0766)
 
-        time.sleep(6)
+    #    time.sleep(6)
 
-        # check if the right mode was set
-        stats = os.stat(filename)
-        print stats.st_mode == 0100766
-        assert stats.st_mode == 0100766
+    #    # check if the right mode was set
+    #    stats = os.stat(filename)
+    #    print stats.st_mode == 0100766
+    #    assert stats.st_mode == 0100766
 
-        self.assert_new_commit()
-        self.assert_commit_message("Chmod to 0766 on /testing")
+    #    self.assert_new_commit()
+    #    self.assert_commit_message("Chmod to 0766 on /testing")
 
     def test_rename(self):
         old_filename = "%s/testing" % self.current_path
@@ -69,7 +69,7 @@ class TestWriteCurrentView(BaseTest):
         # check for new file
         assert os.path.exists(new_filename)
 
-        self.assert_new_commit()
+        self.assert_new_commit(2)
         self.assert_commit_message("Rename /testing to /new_testing")
 
     def test_fsync(self):
@@ -82,7 +82,7 @@ class TestWriteCurrentView(BaseTest):
 
         time.sleep(3)
 
-        self.assert_new_commit()
+        self.assert_new_commit(2)
         self.assert_commit_message("Update 1 items")
 
     def test_create(self):
@@ -91,7 +91,7 @@ class TestWriteCurrentView(BaseTest):
 
         time.sleep(3)
 
-        self.assert_new_commit()
+        self.assert_new_commit(2)
         self.assert_commit_message("Created /new_empty_file")
 
     def test_symbolic_link(self):
@@ -104,6 +104,6 @@ class TestWriteCurrentView(BaseTest):
         # check if link exists
         assert os.path.exists(name)
 
-        self.assert_new_commit()
+        self.assert_new_commit(2)
         self.assert_commit_message("Create symlink to %s for /links" %
                                    (target))

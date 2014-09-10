@@ -1,6 +1,7 @@
 import os
 from datetime import datetime
 
+from pygit2 import Repository as _Repository
 from gitfs.utils.repository import Repository
 
 
@@ -19,14 +20,14 @@ class BaseTest(object):
 
         self.current_path = "%s/current" % self.mount_path
 
-        self.repo = Repository(self.repo_path)
+        self.repo = Repository(_Repository(self.repo_path))
         self.repo.commits.update()
 
-    def assert_new_commit(self):
-        total_commits = BaseTest.COMMITS_DONE + 1
+    def assert_new_commit(self, step=1):
+        total_commits = BaseTest.COMMITS_DONE + step
         commits_len = len(self.commits)
         assert commits_len == total_commits
-        BaseTest.COMMITS_DONE += 1
+        BaseTest.COMMITS_DONE += step
 
     def assert_commit_message(self, message):
         self.repo.commits.update()

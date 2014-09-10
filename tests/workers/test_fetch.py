@@ -72,5 +72,5 @@ class TestFetchWorker(object):
         worker.fetch()
 
         assert mocked_read_only.clear.call_count == 1
-        mocked_repo.fetch.assert_called_once_with("origin", "master")
         assert mocked_read_only.set.call_count == 1
+        mocked_repo.fetch.assert_called_once_with("origin", "master")
