@@ -90,3 +90,18 @@ class TestMergeWorker(object):
         assert mocked_want_to_merge.clear.call_count == 1
         assert commits is None
         assert merges is None
+
+    def test_merge(self):
+        mocked_strategy = MagicMock()
+        mocked_repo = MagicMock()
+        upstream = "origin"
+        branch = "master"
+
+        worker = MergeWorker("name", "email", "name", "email",
+                             strategy=mocked_strategy,
+                             repository=mocked_repo,
+                             upstream=upstream, branch=branch)
+        worker.merge()
+
+        mocked_strategy.assert_called_once_with(branch, branch, upstream)
+        assert mocked_repo.commits.update.call_count == 1
