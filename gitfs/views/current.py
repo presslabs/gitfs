@@ -20,6 +20,9 @@ class CurrentView(PassthroughView):
     @while_not("read_only")
     @while_not("want_to_merge")
     def rename(self, old, new):
+        if ".git" in old or ".git" in new:
+            raise FuseOSError(errno.ENOENT)
+
         new = re.sub(self.regex, '', new)
         result = super(CurrentView, self).rename(old, new)
 
@@ -42,9 +45,15 @@ class CurrentView(PassthroughView):
         return result
 
     def readlink(self, path):
+        if ".git" in path:
+            raise FuseOSError(errno.ENOENT)
+
         return os.readlink(self._full_path(path))
 
     def getattr(self, path, fh=None):
+        if ".git" in path:
+            raise FuseOSError(errno.ENOENT)
+
         full_path = self._full_path(path)
         st = os.lstat(full_path)
 
@@ -63,6 +72,9 @@ class CurrentView(PassthroughView):
             with them. First we check for offset, then for size. If any of this
             is off limit, raise EFBIG error and delete the file.
         """
+
+        if ".git" in path:
+            raise FuseOSError(errno.ENOENT)
 
         size = len(buf)
         if path in self.dirty:
@@ -89,6 +101,9 @@ class CurrentView(PassthroughView):
     @while_not("read_only")
     @while_not("want_to_merge")
     def mkdir(self, path, mode):
+        if ".git" in path:
+            raise FuseOSError(errno.ENOENT)
+
         result = super(CurrentView, self).mkdir(path, mode)
 
         path = "%s/.keep" % os.path.split(path)[1]
@@ -101,6 +116,9 @@ class CurrentView(PassthroughView):
     @while_not("read_only")
     @while_not("want_to_merge")
     def create(self, path, mode, fi=None):
+        if ".git" in path:
+            raise FuseOSError(errno.ENOENT)
+
         self.somebody_is_writing.set()
         result = super(CurrentView, self).create(path, mode, fi)
         self.dirty[path] = {
@@ -118,6 +136,9 @@ class CurrentView(PassthroughView):
         Executes chmod on the file at os level and then it commits the change.
         """
 
+        if ".git" in path:
+            raise FuseOSError(errno.ENOENT)
+
         result = super(CurrentView, self).chmod(path, mode)
 
         print "CHMOOOOD"
@@ -134,6 +155,10 @@ class CurrentView(PassthroughView):
         """
         Each time you fsync, a new commit and push are made
         """
+
+        if ".git" in path:
+            raise FuseOSError(errno.ENOENT)
+
         self.somebody_is_writing.set()
         result = super(CurrentView, self).fsync(path, fdatasync, fh)
 
@@ -143,6 +168,9 @@ class CurrentView(PassthroughView):
         return result
 
     def open(self, path, flags):
+        if ".git" in path:
+            raise FuseOSError(errno.ENOENT)
+
         write_mode = flags & (os.O_WRONLY | os.O_RDWR |
                               os.O_APPEND | os.O_CREAT)
 
