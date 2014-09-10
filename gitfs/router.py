@@ -8,6 +8,7 @@ from pwd import getpwnam
 
 from errno import EFAULT
 
+from pygit2.credentials import Keypair
 from fuse import Operations, FUSE, FuseOSError
 from gitfs.utils import Repository
 
@@ -52,8 +53,12 @@ class Router(object):
         self.fuse_class_ops = fuse_ops - operations_ops
 
         log.info('Cloning into %s' % self.repo_path)
+
+        credentials = Keypair("git", "/home/wok/.ssh/one_more.pub",
+                              "/home/wok/.ssh/one_more", "")
         self.repo = Repository.clone(self.remote_url, self.repo_path,
-                                     self.branch)
+                                     self.branch, credentials)
+        self.repo.credentials = credentials
 
         self.uid = getpwnam(user).pw_uid
         self.gid = getpwnam(group).pw_gid

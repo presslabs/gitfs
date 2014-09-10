@@ -74,7 +74,7 @@ class Repository(object):
                                         tree, parents)
 
     @classmethod
-    def clone(cls, remote_url, path, branch=None):
+    def clone(cls, remote_url, path, branch=None, credentials=None):
         """Clone a repo in a give path and update the working directory with
         a checkout to head (GIT_CHECKOUT_SAFE_CREATE)
 
@@ -87,7 +87,8 @@ class Repository(object):
 
         """
 
-        repo = clone_repository(remote_url, path, checkout_branch=branch)
+        repo = clone_repository(remote_url, path, checkout_branch=branch,
+                                credentials=credentials)
         repo.checkout_head()
         return cls(repo)
 
@@ -322,5 +323,8 @@ class Repository(object):
 
         if not remote:
             raise ValueError("Missing remote")
+
+        if hasattr(self, 'credentials'):
+            remote[0].credentials = self.credentials
 
         return remote[0]

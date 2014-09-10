@@ -10,8 +10,6 @@ class FetchWorker(Peasant):
             self.fetch()
 
     def fetch(self):
-        print "no more read-only"
-        self.read_only.clear()
 
         try:
             print "fetch"
@@ -20,5 +18,9 @@ class FetchWorker(Peasant):
             if behind:
                 print "behind"
                 self.merge_queue.add({"type": "merge"})
-        except:
+            if self.read_only.is_set():
+                self.read_only.clear()
+                print "no more read-only"
+        except Exception as e:
+            print e
             self.read_only.set()
