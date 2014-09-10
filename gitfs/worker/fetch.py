@@ -21,6 +21,5 @@ class FetchWorker(Peasant):
             if self.read_only.is_set():
                 self.read_only.clear()
                 print "no more read-only"
-        except Exception as e:
-            print e
+        except:
             self.read_only.set()
