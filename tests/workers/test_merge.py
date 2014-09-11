@@ -105,3 +105,28 @@ class TestMergeWorker(object):
 
         mocked_strategy.assert_called_once_with(branch, branch, upstream)
         assert mocked_repo.commits.update.call_count == 1
+
+    def test_push(self):
+        mocked_strategy = MagicMock()
+        mocked_repo = MagicMock()
+        mocked_fetch = MagicMock(side_effect=ValueError)
+        mocked_read_only = MagicMock()
+        upstream = "origin"
+        branch = "master"
+
+        mocked_read_only.clear.side_effect = ValueError
+
+        worker = MergeWorker("name", "email", "name", "email",
+                             strategy=mocked_strategy,
+                             repository=mocked_repo,
+                             read_only=mocked_read_only,
+                             upstream=upstream, branch=branch)
+        worker.fetch = mocked_fetch
+
+        with pytest.raises(ValueError):
+            worker.push()
+
+        mocked_repo.push.assert_called_once_with("origin", "master")
+        assert mocked_fetch.call_count == 1
+        assert mocked_read_only.clear.call_count == 1
+        assert mocked_read_only.set.call_count == 1
