@@ -34,3 +34,11 @@ class TestPassthrodugh(object):
              pass_view.chmod("path", "mode")
 
              mocked_os.chmod.asserted_called_once_with("/root/path", "mode")
+
+    def test_chown(self):
+         with patch('gitfs.views.passthrough.os') as mocked_os:
+             pass_view = PassthroughView(repo_path="/root")
+
+             pass_view.chown("path", 1, 1)
+
+             mocked_os.chown.asserted_called_once_with("/root/path", 1, 1)
