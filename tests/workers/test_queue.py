@@ -37,3 +37,32 @@ class TestMergeQueue(object):
     def test_to_list(self):
         queue = MergeQueue()
         assert queue._to_list("a") == ["a"]
+
+    def test_commit_witth_no_message(self):
+        queue = MergeQueue()
+
+        with pytest.raises(ValueError):
+            queue.commit()
+
+    def test_commit_witth_no_add_and_no_remove(self):
+        queue = MergeQueue()
+
+        with pytest.raises(ValueError):
+            queue.commit(message="message")
+
+    def test_commit(self):
+        mocked_queue = MagicMock()
+
+        queue = MergeQueue()
+        queue.queue = mocked_queue
+
+        queue.commit(message="message", add="add", remove="remove")
+
+        mocked_queue.put.assert_called_once_with({
+            'type': 'commit',
+            'params': {
+                'add': ["add"],
+                'message': "message",
+                'remove': ["remove"],
+            }
+        })
