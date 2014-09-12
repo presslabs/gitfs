@@ -49,3 +49,23 @@ class TestHistory(object):
 
             with pytest.raises(FuseOSError):
                  history.getattr("/not-ok", 1)
+
+    def test_access_with_invalid_path_and_no_date(self):
+        history = HistoryView()
+
+        with pytest.raises(FuseOSError):
+            history.access("path", "mode")
+
+    def test_access_with_valid_path_and_no_date(self):
+        history = HistoryView()
+        assert history.access("/", "mode") == 0
+
+    def test_access_with_date_and_valid_path(self):
+        mocked_repo = MagicMock()
+        mocked_repo.get_commit_dates.return_value = ["tomorrow"]
+
+        history = HistoryView(repo=mocked_repo)
+        history.date = "now"
+
+        with pytest.raises(FuseOSError):
+            history.access("/", "mode")

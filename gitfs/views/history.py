@@ -39,7 +39,7 @@ class HistoryView(ReadOnlyView):
 
         return attrs
 
-    def access(self, path, amode):
+    def access(self, path, mode):
         if getattr(self, 'date', None):
             log.info('PATH: %s', path)
             if path == '/':
