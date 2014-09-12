@@ -1,7 +1,7 @@
 import pygit2
 
 import pytest
-from mock import patch, MagicMock
+from mock import MagicMock
 
 from gitfs.worker.merge import MergeWorker
 
