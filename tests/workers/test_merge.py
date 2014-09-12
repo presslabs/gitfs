@@ -130,3 +130,47 @@ class TestMergeWorker(object):
         assert mocked_fetch.call_count == 1
         assert mocked_read_only.clear.call_count == 1
         assert mocked_read_only.set.call_count == 1
+
+    def test_fetch_when_we_are_ahead(self):
+        mocked_strategy = MagicMock()
+        mocked_repo = MagicMock()
+        mocked_push = MagicMock()
+        mocked_queue = MagicMock()
+
+        upstream = "origin"
+        branch = "master"
+
+        mocked_repo.fetch.return_value = False
+        worker = MergeWorker("name", "email", "name", "email",
+                             strategy=mocked_strategy,
+                             repository=mocked_repo,
+                             merge_queue=mocked_queue,
+                             upstream=upstream, branch=branch)
+        worker.push = mocked_push
+
+        worker.fetch()
+
+        mocked_repo.fetch.assert_called_once_with(upstream, branch)
+        assert mocked_push.call_count == 1
+
+    def test_fetch_when_we_are_behind(self):
+        mocked_strategy = MagicMock()
+        mocked_repo = MagicMock()
+        mocked_push = MagicMock()
+        mocked_queue = MagicMock()
+
+        upstream = "origin"
+        branch = "master"
+
+        mocked_repo.fetch.return_value = True
+        worker = MergeWorker("name", "email", "name", "email",
+                             strategy=mocked_strategy,
+                             repository=mocked_repo,
+                             merge_queue=mocked_queue,
+                             upstream=upstream, branch=branch)
+        worker.push = mocked_push
+
+        worker.fetch()
+
+        mocked_repo.fetch.assert_called_once_with(upstream, branch)
+        mocked_queue.add.assert_called_once_with({'type': 'merge'})

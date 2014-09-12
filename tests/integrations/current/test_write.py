@@ -44,7 +44,7 @@ class TestWriteCurrentView(BaseTest):
         self.assert_new_commit(2)
         self.assert_commit_message("Created new_directory/.keep")
 
-    #def test_chmod(self):
+    # def test_chmod(self):
     #    filename = "%s/testing" % self.current_path
     #    os.chmod(filename, 0766)
 

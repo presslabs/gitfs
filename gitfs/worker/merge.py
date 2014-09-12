@@ -100,7 +100,7 @@ class MergeWorker(FetchWorker):
     @retry(each=3)
     def fetch(self):
         print "try to fetch"
-        behind = self.repository.fetch(self.upstream, self.brach)
+        behind = self.repository.fetch(self.upstream, self.branch)
         if behind:
             print "behind"
             self.merge_queue.add({'type': 'merge'})
