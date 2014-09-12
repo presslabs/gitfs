@@ -1,0 +1,2 @@
+class TestReadOnly(object):
+    pass
