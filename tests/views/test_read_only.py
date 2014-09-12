@@ -16,3 +16,11 @@ class TestReadOnly(object):
 
         with pytest.raises(FuseOSError):
             view.chown("path", 1, 1)
+
+    def test_always_return_0(self):
+        view = ReadOnlyView()
+
+        for method in ["open", "flush", "releasedir", "release", "access"]:
+            assert getattr(view, method)("path", 1) == 0
+
+        assert view.opendir("path") == 0
