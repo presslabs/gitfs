@@ -1,3 +1,5 @@
+import pygit2
+
 import pytest
 from mock import patch, MagicMock
 
@@ -174,3 +176,44 @@ class TestMergeWorker(object):
 
         mocked_repo.fetch.assert_called_once_with(upstream, branch)
         mocked_queue.add.assert_called_once_with({'type': 'merge'})
+
+    def test_commit_with_just_one_job(self):
+        mocked_repo = MagicMock()
+
+        message = 'just a simple message'
+        jobs = [{'params': {'message': message}}]
+        author = ("name", "email")
+
+        worker = MergeWorker(author[0], author[1], author[0], author[1],
+                             strategy="strategy",
+                             repository=mocked_repo)
+        worker.commit(jobs)
+
+        mocked_repo.commit.assert_called_once_with(message, author, author)
+        assert mocked_repo.commits.update.call_count == 1
+
+        strategy = pygit2.GIT_CHECKOUT_FORCE
+        mocked_repo.checkout_head.assert_called_once_with(strategy=strategy)
+
+    def test_commit_with_more_than_one_job(self):
+        mocked_repo = MagicMock()
+
+        message = 'just a simple message'
+        jobs = [{'params': {'message': message, 'add': ['path1', 'path2'],
+                            'remove': []}},
+                {'params': {'message': message, 'remove': ['path2'],
+                            'add': []}}]
+        author = ("name", "email")
+
+        worker = MergeWorker(author[0], author[1], author[0], author[1],
+                             strategy="strategy",
+                             repository=mocked_repo)
+        worker.commit(jobs)
+
+        asserted_message = "Update 2 items"
+        mocked_repo.commit.assert_called_once_with(asserted_message, author,
+                                                   author)
+        assert mocked_repo.commits.update.call_count == 1
+
+        strategy = pygit2.GIT_CHECKOUT_FORCE
+        mocked_repo.checkout_head.assert_called_once_with(strategy=strategy)
