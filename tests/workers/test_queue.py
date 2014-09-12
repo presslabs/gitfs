@@ -1,7 +1,7 @@
 import pytest
 from mock import patch, MagicMock
 
-from gitfs.worker.queue import BaseQueue
+from gitfs.worker.queue import BaseQueue, MergeQueue
 
 
 class TestBaseQueue(object):
@@ -21,3 +21,15 @@ class TestBaseQueue(object):
             queue = BaseQueue()
             assert queue.get("args", arg="kwarg") == "get"
             mocked_queue.get.assert_called_once_with("args", arg="kwarg")
+
+
+class TestMergeQueue(object):
+    def test_add(self):
+        mocked_queue = MagicMock()
+
+        queue = MergeQueue()
+        queue.queue = mocked_queue
+
+        queue.add("job")
+
+        mocked_queue.put.assert_called_once_with("job")
