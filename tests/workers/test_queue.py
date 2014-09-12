@@ -33,3 +33,7 @@ class TestMergeQueue(object):
         queue.add("job")
 
         mocked_queue.put.assert_called_once_with("job")
+
+    def test_to_list(self):
+        queue = MergeQueue()
+        assert queue._to_list("a") == ["a"]
