@@ -31,3 +31,7 @@ class TestIndexView(object):
             'st_mtime': "now",
         }
         assert result == asserted_result
+
+    def test_readdir(self):
+        view = IndexView()
+        assert view.readdir("path", 1) == ['.', '..', 'current', 'history']
