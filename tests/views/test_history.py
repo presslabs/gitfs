@@ -69,3 +69,15 @@ class TestHistory(object):
 
         with pytest.raises(FuseOSError):
             history.access("/", "mode")
+
+    def test_access_with_date_and_invalid_path(self):
+        mocked_repo = MagicMock()
+        mocked_repo.get_commits_by_date.return_value = ["tomorrow"]
+
+        history = HistoryView(repo=mocked_repo)
+        history.date = "now"
+
+        with pytest.raises(FuseOSError):
+            history.access("/non", "mode")
+
+        mocked_repo.get_commits_by_date.assert_called_once_with("now")
