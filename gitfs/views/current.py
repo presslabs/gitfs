@@ -5,7 +5,7 @@ import errno
 
 from fuse import FuseOSError
 
-from gitfs.worker.decorators import while_not
+from gitfs.utils.decorators import while_not
 
 from .passthrough import PassthroughView, STATS
 

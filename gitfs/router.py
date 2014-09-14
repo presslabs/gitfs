@@ -54,8 +54,8 @@ class Router(object):
 
         log.info('Cloning into %s' % self.repo_path)
 
-        credentials = Keypair("git", "/home/wok/.ssh/one_more.pub",
-                              "/home/wok/.ssh/one_more", "")
+        credentials = Keypair("git", "",
+                              "", "")
         self.repo = Repository.clone(self.remote_url, self.repo_path,
                                      self.branch, credentials)
         self.repo.credentials = credentials

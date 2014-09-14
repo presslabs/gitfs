@@ -98,7 +98,8 @@ class TestRepository(RepositoryBaseTest):
             Repository.clone(remote_url, path)
 
             mocked_clone.assert_called_once_with(remote_url, path,
-                                                 checkout_branch=None)
+                                                 checkout_branch=None,
+                                                 credentials=None)
             assert mocked_repo.checkout_head.call_count == 1
 
     def test_remote_head(self):
