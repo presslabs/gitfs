@@ -104,3 +104,42 @@ class TestHistory(object):
         dirs = [entry for entry in history.readdir("path", 0)]
         assert dirs == asserted_dirs
         mocked_repo.get_commits_by_date.assert_called_once_with("now")
+
+    def test_get_commit_time_without_date(self):
+        mocked_repo = MagicMock()
+
+        with patch("gitfs.views.history.time") as mocked_time:
+            mocked_time.time.return_value = "1"
+
+            history = HistoryView(repo=mocked_repo)
+            assert history._get_commit_time(0) == 1
+
+    def test_get_commit_time_with_valid_date(self):
+        mocked_repo = MagicMock()
+        mocked_commit = MagicMock()
+
+        mocked_commit.timestamp = 0
+        mocked_repo.commits = {"now": [mocked_commit]}
+
+        with patch("gitfs.views.history.time") as mocked_time:
+            mocked_time.time.return_value = "1"
+
+            history = HistoryView(repo=mocked_repo)
+            history.date = "now"
+
+            assert history._get_commit_time(0) == 0
+
+    def test_get_commit_time_with_invalid_date(self):
+        mocked_repo = MagicMock()
+        mocked_commit = MagicMock()
+
+        mocked_commit.timestamp = 1
+        mocked_repo.commits = {"now": [mocked_commit]}
+
+        with patch("gitfs.views.history.time") as mocked_time:
+            mocked_time.time.return_value = "1"
+
+            history = HistoryView(repo=mocked_repo)
+            history.date = "not-now"
+
+            assert history._get_commit_time(0) == 1
