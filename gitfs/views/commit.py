@@ -118,8 +118,7 @@ class CommitView(ReadOnlyView):
         # to the directory that we are in.
         tree_name = os.path.split(path)[1]
         if tree_name:
-            subtree = self.repo.get_git_object(self.commit.tree, path)
-            dir_tree = subtree
+            dir_tree = self.repo.get_git_object(self.commit.tree, path)
 
         dir_entries = ['.', '..'] + [entry.name for entry in dir_tree]
         for entry in dir_entries:
