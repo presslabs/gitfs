@@ -41,3 +41,14 @@ class TestCommitView(object):
 
             mocked_os.path.split.assert_called_once_with("/path")
             mocked_repo.get_git_object.assert_called_once_with("tree", "/path")
+
+    def test_access_with_missing_relative_path(self):
+        mocked_repo = MagicMock()
+        mocked_commit = MagicMock()
+
+        mocked_repo.revparse_single.return_value = mocked_commit
+
+        view = CommitView(repo=mocked_repo, commit_sha1="sha1")
+        view.relative_path = None
+
+        assert view.access("path", "mode") == 0
