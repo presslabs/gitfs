@@ -81,3 +81,13 @@ class TestHistory(object):
             history.access("/non", "mode")
 
         mocked_repo.get_commits_by_date.assert_called_once_with("now")
+
+    def test_readdir_without_date(self):
+        mocked_repo = MagicMock()
+        mocked_repo.get_commit_dates.return_value = ["tomorrow"]
+
+        history = HistoryView(repo=mocked_repo)
+
+        asserted_dirs = [".", "..", "tomorrow"]
+        dirs = [entry for entry in history.readdir("path", 0)]
+        assert dirs == asserted_dirs
