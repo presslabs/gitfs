@@ -91,3 +91,16 @@ class TestHistory(object):
         asserted_dirs = [".", "..", "tomorrow"]
         dirs = [entry for entry in history.readdir("path", 0)]
         assert dirs == asserted_dirs
+        assert mocked_repo.get_commit_dates.call_count == 1
+
+    def test_readdir_with_date(self):
+        mocked_repo = MagicMock()
+        mocked_repo.get_commits_by_date.return_value = ["tomorrow"]
+
+        history = HistoryView(repo=mocked_repo)
+        history.date = "now"
+
+        asserted_dirs = [".", "..", "tomorrow"]
+        dirs = [entry for entry in history.readdir("path", 0)]
+        assert dirs == asserted_dirs
+        mocked_repo.get_commits_by_date.assert_called_once_with("now")
