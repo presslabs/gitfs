@@ -155,3 +155,15 @@ class TestHistory(object):
 
         assert history._get_last_commit_time() == 1
         mocked_commit_time.assert_called_once_with(-1)
+
+    def test_first_commit_time(self):
+        mocked_repo = MagicMock()
+
+        mocked_commit_time = MagicMock()
+        mocked_commit_time.return_value = 1
+
+        history = HistoryView(repo=mocked_repo)
+        history._get_commit_time = mocked_commit_time
+
+        assert history._get_first_commit_time() == 1
+        mocked_commit_time.assert_called_once_with(0)
