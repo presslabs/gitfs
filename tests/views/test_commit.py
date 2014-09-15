@@ -182,3 +182,18 @@ class TestCommitView(object):
                               mount_time="now", uid=1, gid=1)
             assert view.readlink("/path") == "link value"
             mocked_os.path.split.assert_called_once_with("/path")
+            mocked_repo.get_blob_data.assert_called_once_with("tree",
+                                                              "another_name")
+
+    def test_read(self):
+        mocked_repo = MagicMock()
+        mocked_commit = MagicMock()
+
+        mocked_commit.tree = "tree"
+        mocked_repo.revparse_single.return_value = mocked_commit
+        mocked_repo.get_blob_data.return_value = [1, 1, 1]
+
+        view = CommitView(repo=mocked_repo, commit_sha1="sha1",
+                          mount_time="now", uid=1, gid=1)
+        assert view.read("/path", 1, 1, 0) == [1]
+        mocked_repo.get_blob_data.assert_called_once_with("tree", "/path")
