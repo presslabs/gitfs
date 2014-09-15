@@ -222,3 +222,9 @@ class TestCurrentView(object):
                 'size': 0
             }
         }
+
+    def test_chmod_in_git_dir(self):
+        current = CurrentView(repo_path="repo", uid=1, gid=1,
+                              read_only=Event(), want_to_merge=Event())
+        with pytest.raises(FuseOSError):
+            current.chmod(".git/", "mode")
