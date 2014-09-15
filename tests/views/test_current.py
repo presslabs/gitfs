@@ -116,3 +116,24 @@ class TestCurrentView(object):
             current = CurrentView(repo_path="repo", uid=1, gid=1,
                                   read_only=Event())
             current.write(".git/index", "buf", "offset", 1)
+
+    def test_write_to_large_file(self):
+        current = CurrentView(repo_path="repo", uid=1, gid=1,
+                              read_only=Event())
+        current.max_size = 10
+        current.dirty = {
+            '/path': {
+                'size': 5
+            }
+        }
+
+        with pytest.raises(FuseOSError):
+            current.write("/path", "bufffffert", 11, 1)
+
+        assert current.dirty == {
+            '/path': {
+                'size': 5,
+                'is_dirty': False,
+                'delete_it': True
+            }
+        }
