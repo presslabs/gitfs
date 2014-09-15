@@ -224,3 +224,29 @@ class TestCommitView(object):
                           mount_time="now", uid=1, gid=1)
         result = view._validate_commit_path([mocked_entry], ["simple_entry"])
         assert result is True
+
+    def test_validate_commit_path_with_more_than_one_entry(self):
+        mocked_repo = MagicMock()
+        mocked_commit = MagicMock()
+        mocked_entry = MagicMock()
+        mocked_second_entry = MagicMock()
+
+        mocked_commit.tree = "tree"
+        mocked_repo.revparse_single.return_value = mocked_commit
+
+        mocked_second_entry.id = 1
+        mocked_second_entry.name = "complex_entry"
+        mocked_second_entry.filemode = GIT_FILEMODE_TREE
+        mocked_entry.name = "simple_entry"
+        mocked_entry.filemode = GIT_FILEMODE_TREE
+
+        mocked_repo.__getitem__.return_value = [mocked_entry]
+
+        view = CommitView(repo=mocked_repo, commit_sha1="sha1",
+                          mount_time="now", uid=1, gid=1)
+        result = view._validate_commit_path([mocked_second_entry,
+                                             mocked_entry],
+                                            ["complex_entry",
+                                             "simple_entry"])
+        assert result is True
+        mocked_repo.__getitem__.assert_called_once_with(1)
