@@ -299,3 +299,20 @@ class TestCurrentView(object):
 
         with pytest.raises(FuseOSError):
             current.unlink(".git/")
+
+    def test_unlink(self):
+        from gitfs.views import current as current_view
+        old_unlink = current_view.PassthroughView.unlink
+        current_view.PassthroughView.unlink = lambda me, path: "done"
+
+        mocked_index = MagicMock()
+
+        current = CurrentView(repo_path="repo", uid=1, gid=1,
+                              read_only=Event(), want_to_merge=Event())
+        current._index = mocked_index
+
+        assert current.unlink("/path") == "done"
+        message = "Deleted /path"
+        mocked_index.assert_called_once_with(remove="/path", message=message)
+
+        current_view.PassthroughView.unlink = old_unlink
