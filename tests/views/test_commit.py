@@ -1,9 +1,11 @@
-from stat import S_IFDIR
+from stat import S_IFDIR, S_IFREG
 
 import pytest
 from mock import MagicMock, patch
 
+from pygit2 import GIT_FILEMODE_BLOB
 from fuse import FuseOSError
+
 from gitfs.views.commit import CommitView
 
 
@@ -135,5 +137,32 @@ class TestCommitView(object):
         with pytest.raises(FuseOSError):
             view.getattr("/path", 1)
 
+        mocked_repo.get_git_object_type.assert_called_once_with("tree",
+                                                                "/path")
+
+    def test_getattr_for_a_valid_file(self):
+        mocked_repo = MagicMock()
+        mocked_commit = MagicMock()
+
+        mocked_commit.tree = "tree"
+        mocked_commit.commit_time = "now+1"
+        mocked_repo.revparse_single.return_value = mocked_commit
+        mocked_repo.get_git_object_type.return_value = GIT_FILEMODE_BLOB
+        mocked_repo.get_blob_size.return_value = 10
+
+        view = CommitView(repo=mocked_repo, commit_sha1="sha1",
+                          mount_time="now", uid=1, gid=1)
+
+        result = view.getattr("/path", 1)
+
+        asserted_result = {
+            'st_uid': 1,
+            'st_gid': 1,
+            'st_mtime': "now+1",
+            'st_ctime': "now+1",
+            'st_mode': S_IFREG | 0444,
+            'st_size': 10
+        }
+        assert result == asserted_result
         mocked_repo.get_git_object_type.assert_called_once_with("tree",
                                                                 "/path")
