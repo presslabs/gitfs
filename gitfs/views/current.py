@@ -221,6 +221,9 @@ class CurrentView(PassthroughView):
     @while_not("read_only")
     @while_not("want_to_merge")
     def unlink(self, path):
+        if ".git/" in path:
+            raise FuseOSError(errno.ENOENT)
+
         result = super(CurrentView, self).unlink(path)
 
         message = 'Deleted %s' % path

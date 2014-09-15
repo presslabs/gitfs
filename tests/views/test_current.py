@@ -336,3 +336,7 @@ class TestCurrentView(object):
         mocked_repo.index.remove.assert_called_once_with(["to-index"])
 
         mocked_sanitize.has_calls([call(['add']), call(['remove'])])
+
+    def test_sanitize(self):
+        current = CurrentView(repo_path="repo")
+        assert current._sanitize("/path") == "path"
