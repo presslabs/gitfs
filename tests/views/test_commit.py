@@ -250,3 +250,12 @@ class TestCommitView(object):
                                              "simple_entry"])
         assert result is True
         mocked_repo.__getitem__.assert_called_once_with(1)
+
+    def test_init_with_invalid_commit_sha1(self):
+        mocked_repo = MagicMock()
+        mocked_repo.revparse_single.side_effect = KeyError
+
+        with pytest.raises(FuseOSError):
+            CommitView(repo=mocked_repo, commit_sha1="sha1")
+
+        mocked_repo.revparse_single.assert_called_once_with("sha1")
