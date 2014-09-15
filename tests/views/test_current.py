@@ -61,3 +61,16 @@ class TestCurrentView(object):
             mocked_full_path.assert_called_once_with("name")
             message = "Create symlink to target for name"
             mocked_index.assert_called_once_with(add="name", message=message)
+
+    def test_readlink(self):
+        mocked_full_path = MagicMock()
+        mocked_full_path.return_value = "full path"
+
+        with patch('gitfs.views.current.os') as mocked_os:
+            mocked_os.readlink.return_value = "done"
+
+            current = CurrentView(repo_path="repo",
+                                  read_only=Event(), want_to_merge=Event())
+            current._full_path = mocked_full_path
+
+            assert current.readlink("path") == "done"
