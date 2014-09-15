@@ -292,3 +292,10 @@ class TestCurrentView(object):
 
         with pytest.raises(FuseOSError):
             current.open(".git/", 0)
+
+    def test_unlink_from_git_dir(self):
+        current = CurrentView(repo_path="repo",
+                              read_only=Event(), want_to_merge=Event())
+
+        with pytest.raises(FuseOSError):
+            current.unlink(".git/")
