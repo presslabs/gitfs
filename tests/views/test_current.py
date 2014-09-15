@@ -197,3 +197,28 @@ class TestCurrentView(object):
                               read_only=Event(), want_to_merge=Event())
         with pytest.raises(FuseOSError):
             current.create(".git/", "mode")
+
+    def test_create(self):
+        from gitfs.views import current
+        current.PassthroughView.create = lambda self, path, mode, fi: "done"
+
+        mocked_writing = MagicMock()
+        current = CurrentView(repo_path="repo", uid=1, gid=1,
+                              read_only=Event(), want_to_merge=Event(),
+                              somebody_is_writing=mocked_writing)
+        current.dirty = {
+            '/path': {
+                'content': "here"
+            }
+        }
+
+        assert current.create("/path", "mode") == "done"
+        assert mocked_writing.set.call_count == 1
+        assert mocked_writing.clear.call_count == 1
+        assert current.dirty == {
+            '/path': {
+                'message': "Created /path",
+                'is_dirty': True,
+                'size': 0
+            }
+        }
