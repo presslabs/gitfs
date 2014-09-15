@@ -105,3 +105,8 @@ class TestCurrentView(object):
 
             mocked_os.lstat.assert_called_once_with("full_path")
             mocked_full.assert_called_once_with("path")
+
+    def test_getattr_in_git_dir(self):
+        with pytest.raises(FuseOSError):
+            current = CurrentView(repo_path="repo", uid=1, gid=1)
+            current.getattr(".git/index")
