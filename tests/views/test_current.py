@@ -228,3 +228,21 @@ class TestCurrentView(object):
                               read_only=Event(), want_to_merge=Event())
         with pytest.raises(FuseOSError):
             current.chmod(".git/", "mode")
+
+    def test_chmod(self):
+        from gitfs.views import current
+        current.PassthroughView.chmod = lambda self, path, mode: "done"
+
+        mocked_index = MagicMock()
+        mocked_writing = MagicMock()
+
+        current = CurrentView(repo_path="repo", uid=1, gid=1,
+                              read_only=Event(), want_to_merge=Event(),
+                              somebody_is_writing=mocked_writing)
+        current._index = mocked_index
+
+        assert current.chmod("/path", 0644) == "done"
+        assert mocked_writing.set.call_count == 1
+        assert mocked_writing.clear.call_count == 1
+        message = 'Chmod to %s on %s' % (str(oct(0644))[3:-1], "/path")
+        mocked_index.assert_called_once_with(add="/path", message=message)
