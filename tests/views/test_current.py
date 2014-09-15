@@ -191,3 +191,9 @@ class TestCurrentView(object):
                               read_only=Event(), want_to_merge=Event())
         with pytest.raises(FuseOSError):
             current.mkdir(".git/", "mode")
+
+    def test_create_in_git_dir(self):
+        current = CurrentView(repo_path="repo", uid=1, gid=1,
+                              read_only=Event(), want_to_merge=Event())
+        with pytest.raises(FuseOSError):
+            current.create(".git/", "mode")
