@@ -41,3 +41,23 @@ class TestCurrentView(object):
                               read_only=Event(), want_to_merge=Event())
         with pytest.raises(FuseOSError):
             current.rename(".git/", ".git/")
+
+    def test_symlink(self):
+        mocked_index = MagicMock()
+        mocked_full_path = MagicMock()
+
+        mocked_full_path.return_value = "full_path"
+
+        with patch('gitfs.views.current.os') as mocked_os:
+            mocked_os.symlink.return_value = "done"
+
+            current = CurrentView(repo_path="repo",
+                                  read_only=Event(), want_to_merge=Event())
+            current._index = mocked_index
+            current._full_path = mocked_full_path
+
+            assert current.symlink("name", "target") == "done"
+            mocked_os.symlink.assert_called_once_with("target", "full_path")
+            mocked_full_path.assert_called_once_with("name")
+            message = "Create symlink to target for name"
+            mocked_index.assert_called_once_with(add="name", message=message)
