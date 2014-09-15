@@ -86,3 +86,13 @@ class TestCommitView(object):
 
             split.assert_called_once_with("relative_path")
             mocked_validation.assert_called_once_with("tree", "elements")
+
+    def test_getattr_with_no_path(self):
+        mocked_repo = MagicMock()
+        mocked_commit = MagicMock()
+
+        mocked_commit.tree = "tree"
+        mocked_repo.revparse_single.return_value = mocked_commit
+
+        view = CommitView(repo=mocked_repo, commit_sha1="sha1")
+        assert view.getattr(False, 1) is None
