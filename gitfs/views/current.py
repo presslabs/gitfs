@@ -165,6 +165,8 @@ class CurrentView(PassthroughView):
         message = 'Fsync %s' % path
         self._index(add=path, message=message)
 
+        self.somebody_is_writing.clear()
+
         return result
 
     def open(self, path, flags):

@@ -265,3 +265,24 @@ class TestCurrentView(object):
 
         with pytest.raises(FuseOSError):
             current.fsync(".git/", "data", 0)
+
+    def test_fsync(self):
+        from gitfs.views import current as current_view
+        old_fsync = current_view.PassthroughView.fsync
+        current_view.PassthroughView.fsync = lambda me, path, data, fh: "done"
+
+        mocked_index = MagicMock()
+        mocked_writing = MagicMock()
+
+        current = CurrentView(repo_path="repo", uid=1, gid=1,
+                              read_only=Event(), want_to_merge=Event(),
+                              somebody_is_writing=mocked_writing)
+        current._index = mocked_index
+
+        assert current.fsync("/path", "data", 1) == "done"
+        assert mocked_writing.set.call_count == 1
+        assert mocked_writing.clear.call_count == 1
+        message = "Fsync /path"
+        mocked_index.assert_called_once_with(add="/path", message=message)
+
+        current_view.PassthroughView.chmod = old_fsync
