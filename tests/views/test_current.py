@@ -80,3 +80,28 @@ class TestCurrentView(object):
             current = CurrentView(repo_path="repo",
                                   read_only=Event(), want_to_merge=Event())
             current.readlink(".git/")
+
+    def test_getattr(self):
+        mocked_full = MagicMock()
+        mocked_os = MagicMock()
+        mocked_stat = MagicMock()
+
+        mocked_stat.simple = "stat"
+        mocked_os.lstat.return_value = mocked_stat
+        mocked_full.return_value = "full_path"
+
+        with patch.multiple('gitfs.views.current', os=mocked_os,
+                            STATS=['simple']):
+            current = CurrentView(repo_path="repo", uid=1, gid=1)
+            current._full_path = mocked_full
+
+            result = current.getattr("path")
+            asserted_result = {
+                'st_uid': 1,
+                'st_gid': 1,
+                'simple': "stat"
+            }
+            assert result == asserted_result
+
+            mocked_os.lstat.assert_called_once_with("full_path")
+            mocked_full.assert_called_once_with("path")
