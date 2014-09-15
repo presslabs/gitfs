@@ -1,5 +1,7 @@
+import pytest
 from mock import MagicMock, patch
 
+from fuse import FuseOSError
 from gitfs.views.commit import CommitView
 
 
@@ -49,6 +51,38 @@ class TestCommitView(object):
         mocked_repo.revparse_single.return_value = mocked_commit
 
         view = CommitView(repo=mocked_repo, commit_sha1="sha1")
-        view.relative_path = None
 
         assert view.access("path", "mode") == 0
+
+    def test_access_with_invalid_relative_path(self):
+        mocked_repo = MagicMock()
+        mocked_commit = MagicMock()
+
+        mocked_repo.revparse_single.return_value = mocked_commit
+
+        view = CommitView(repo=mocked_repo, commit_sha1="sha1")
+        view.relative_path = "/"
+
+        assert view.access("path", "mode") == 0
+
+    def test_access_with_invalid_path(self):
+        mocked_repo = MagicMock()
+        mocked_validation = MagicMock()
+        mocked_commit = MagicMock()
+
+        mocked_commit.tree = "tree"
+        mocked_repo.revparse_single.return_value = mocked_commit
+        mocked_validation.return_value = False
+
+        with patch("gitfs.views.commit.split_path_into_components") as split:
+            split.return_value = "elements"
+
+            view = CommitView(repo=mocked_repo, commit_sha1="sha1")
+            view._validate_commit_path = mocked_validation
+            view.relative_path = "relative_path"
+
+            with pytest.raises(FuseOSError):
+                view.access("path", "mode")
+
+            split.assert_called_once_with("relative_path")
+            mocked_validation.assert_called_once_with("tree", "elements")

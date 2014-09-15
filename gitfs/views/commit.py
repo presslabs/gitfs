@@ -101,8 +101,8 @@ class CommitView(ReadOnlyView):
                                                            path)
         return attrs
 
-    def access(self, path, amode):
-        if self.relative_path and self.relative_path != '/':
+    def access(self, path, mode):
+        if hasattr(self, "relative_path") and self.relative_path != '/':
             path_elems = split_path_into_components(self.relative_path)
             is_valid_path = self._validate_commit_path(self.commit.tree,
                                                        path_elems)
