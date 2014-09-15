@@ -119,3 +119,21 @@ class TestCommitView(object):
             'st_nlink': 2
         }
         assert result == asserted_result
+
+    def test_getattr_with_invalid_object_type(self):
+        mocked_repo = MagicMock()
+        mocked_commit = MagicMock()
+
+        mocked_commit.tree = "tree"
+        mocked_commit.commit_time = "now+1"
+        mocked_repo.revparse_single.return_value = mocked_commit
+        mocked_repo.get_git_object_type.return_value = None
+
+        view = CommitView(repo=mocked_repo, commit_sha1="sha1",
+                          mount_time="now", uid=1, gid=1)
+
+        with pytest.raises(FuseOSError):
+            view.getattr("/path", 1)
+
+        mocked_repo.get_git_object_type.assert_called_once_with("tree",
+                                                                "/path")
