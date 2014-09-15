@@ -185,3 +185,9 @@ class TestCurrentView(object):
             mocked_os.path.exists.assert_called_once_with("1/.keep")
             mocked_create.assert_called_once_with("1/.keep", 0644)
             mocked_release.assert_called_once_with("1/.keep", 1)
+
+    def test_mkdir_in_git_dir(self):
+        current = CurrentView(repo_path="repo", uid=1, gid=1,
+                              read_only=Event(), want_to_merge=Event())
+        with pytest.raises(FuseOSError):
+            current.mkdir(".git/", "mode")
