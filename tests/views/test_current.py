@@ -1,7 +1,7 @@
 from threading import Event
 
 import pytest
-from mock import patch, MagicMock
+from mock import patch, MagicMock, call
 
 from fuse import FuseOSError
 from gitfs.views.current import CurrentView
@@ -316,3 +316,23 @@ class TestCurrentView(object):
         mocked_index.assert_called_once_with(remove="/path", message=message)
 
         current_view.PassthroughView.unlink = old_unlink
+
+    def test_index(self):
+        mocked_repo = MagicMock()
+        mocked_sanitize = MagicMock()
+        mocked_queue = MagicMock()
+
+        mocked_sanitize.return_value = ["to-index"]
+
+        current = CurrentView(repo_path="repo", repo=mocked_repo,
+                              queue=mocked_queue)
+        current._sanitize = mocked_sanitize
+        current._index("message", ["add"], ["remove"])
+
+        mocked_queue.commit.assert_called_once_with(add=['to-index'],
+                                                    remove=['to-index'],
+                                                    message="message")
+        mocked_repo.index.add.assert_called_once_with(["to-index"])
+        mocked_repo.index.remove.assert_called_once_with(["to-index"])
+
+        mocked_sanitize.has_calls([call(['add']), call(['remove'])])
