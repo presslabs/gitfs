@@ -3,7 +3,7 @@ from stat import S_IFDIR, S_IFREG
 import pytest
 from mock import MagicMock, patch
 
-from pygit2 import GIT_FILEMODE_BLOB
+from pygit2 import GIT_FILEMODE_BLOB, GIT_FILEMODE_TREE
 from fuse import FuseOSError
 
 from gitfs.views.commit import CommitView
@@ -197,3 +197,30 @@ class TestCommitView(object):
                           mount_time="now", uid=1, gid=1)
         assert view.read("/path", 1, 1, 0) == [1]
         mocked_repo.get_blob_data.assert_called_once_with("tree", "/path")
+
+    def test_validate_commit_path_with_no_entries(self):
+        mocked_repo = MagicMock()
+        mocked_commit = MagicMock()
+
+        mocked_commit.tree = "tree"
+        mocked_repo.revparse_single.return_value = mocked_commit
+
+        view = CommitView(repo=mocked_repo, commit_sha1="sha1",
+                          mount_time="now", uid=1, gid=1)
+
+        assert view._validate_commit_path([], "") is False
+
+    def test_validate_commit_path_with_trees(self):
+        mocked_repo = MagicMock()
+        mocked_commit = MagicMock()
+        mocked_entry = MagicMock()
+
+        mocked_commit.tree = "tree"
+        mocked_repo.revparse_single.return_value = mocked_commit
+        mocked_entry.name = "simple_entry"
+        mocked_entry.filemode = GIT_FILEMODE_TREE
+
+        view = CommitView(repo=mocked_repo, commit_sha1="sha1",
+                          mount_time="now", uid=1, gid=1)
+        result = view._validate_commit_path([mocked_entry], ["simple_entry"])
+        assert result is True
