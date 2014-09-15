@@ -1,3 +1,5 @@
+from stat import S_IFDIR
+
 import pytest
 from mock import MagicMock, patch
 
@@ -96,3 +98,24 @@ class TestCommitView(object):
 
         view = CommitView(repo=mocked_repo, commit_sha1="sha1")
         assert view.getattr(False, 1) is None
+
+    def test_getattr_with_simple_path(self):
+        mocked_repo = MagicMock()
+        mocked_commit = MagicMock()
+
+        mocked_commit.tree = "tree"
+        mocked_commit.commit_time = "now+1"
+        mocked_repo.revparse_single.return_value = mocked_commit
+
+        view = CommitView(repo=mocked_repo, commit_sha1="sha1",
+                          mount_time="now", uid=1, gid=1)
+        result = view.getattr("/", 1)
+        asserted_result = {
+            'st_uid': 1,
+            'st_gid': 1,
+            'st_mtime': "now+1",
+            'st_ctime': "now+1",
+            'st_mode': S_IFDIR | 0555,
+            'st_nlink': 2
+        }
+        assert result == asserted_result
