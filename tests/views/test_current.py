@@ -74,3 +74,9 @@ class TestCurrentView(object):
             current._full_path = mocked_full_path
 
             assert current.readlink("path") == "done"
+
+    def test_readlink_in_git_repo(self):
+        with pytest.raises(FuseOSError):
+            current = CurrentView(repo_path="repo",
+                                  read_only=Event(), want_to_merge=Event())
+            current.readlink(".git/")
