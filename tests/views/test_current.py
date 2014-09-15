@@ -286,3 +286,9 @@ class TestCurrentView(object):
         mocked_index.assert_called_once_with(add="/path", message=message)
 
         current_view.PassthroughView.chmod = old_fsync
+
+    def test_open_from_git_dir(self):
+        current = CurrentView(repo_path="repo")
+
+        with pytest.raises(FuseOSError):
+            current.open(".git/", 0)
