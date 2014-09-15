@@ -20,8 +20,9 @@ class TestCurrentView(object):
 
         with patch.multiple('gitfs.views.current', re=mocked_re,
                             os=mocked_os):
-            from gitfs.views import current
-            current.PassthroughView.rename = lambda self, old, new: True
+            from gitfs.views import current as current_view
+            old_rename = current_view.PassthroughView.rename
+            current_view.PassthroughView.rename = lambda self, old, new: True
 
             current = CurrentView(regex="regex", repo_path="repo_path",
                                   read_only=Event(), want_to_merge=Event())
@@ -35,6 +36,7 @@ class TestCurrentView(object):
                 "message": "Rename old to new"
             })
             mocked_os.path.split.assert_called_once_with("old")
+            current_view.PassthroughView.rename = old_rename
 
     def test_rename_in_git_dir(self):
         current = CurrentView(repo_path="repo",
@@ -139,9 +141,10 @@ class TestCurrentView(object):
         }
 
     def test_write(self):
-        from gitfs.views import current
+        from gitfs.views import current as current_view
         mocked_write = lambda self, path, buf, offste, fh: "done"
-        current.PassthroughView.write = mocked_write
+        old_write = current_view.PassthroughView.write
+        current_view.PassthroughView.write = mocked_write
 
         current = CurrentView(repo_path="repo", uid=1, gid=1,
                               read_only=Event())
@@ -161,11 +164,13 @@ class TestCurrentView(object):
                 'size': 15
             }
         }
+        current_view.PassthroughView.write = old_write
 
     def test_mkdir(self):
-        from gitfs.views import current
+        from gitfs.views import current as current_view
+        old_mkdir = current_view.PassthroughView.mkdir
         mocked_mkdir = lambda self, path, mode: "done"
-        current.PassthroughView.mkdir = mocked_mkdir
+        current_view.PassthroughView.mkdir = mocked_mkdir
 
         mocked_create = MagicMock()
         mocked_create.return_value = 1
@@ -185,6 +190,7 @@ class TestCurrentView(object):
             mocked_os.path.exists.assert_called_once_with("1/.keep")
             mocked_create.assert_called_once_with("1/.keep", 0644)
             mocked_release.assert_called_once_with("1/.keep", 1)
+        current_view.PassthroughView.mkdir = old_mkdir
 
     def test_mkdir_in_git_dir(self):
         current = CurrentView(repo_path="repo", uid=1, gid=1,
@@ -199,8 +205,10 @@ class TestCurrentView(object):
             current.create(".git/", "mode")
 
     def test_create(self):
-        from gitfs.views import current
-        current.PassthroughView.create = lambda self, path, mode, fi: "done"
+        from gitfs.views import current as current_view
+        old_create = current_view.PassthroughView.create
+        mock_create = lambda self, path, mode, fi: "done"
+        current_view.PassthroughView.create = mock_create
 
         mocked_writing = MagicMock()
         current = CurrentView(repo_path="repo", uid=1, gid=1,
@@ -222,6 +230,7 @@ class TestCurrentView(object):
                 'size': 0
             }
         }
+        current_view.PassthroughView.create = old_create
 
     def test_chmod_in_git_dir(self):
         current = CurrentView(repo_path="repo", uid=1, gid=1,
@@ -230,8 +239,9 @@ class TestCurrentView(object):
             current.chmod(".git/", "mode")
 
     def test_chmod(self):
-        from gitfs.views import current
-        current.PassthroughView.chmod = lambda self, path, mode: "done"
+        from gitfs.views import current as current_view
+        old_chmod = current_view.PassthroughView.chmod
+        current_view.PassthroughView.chmod = lambda self, path, mode: "done"
 
         mocked_index = MagicMock()
         mocked_writing = MagicMock()
@@ -246,3 +256,5 @@ class TestCurrentView(object):
         assert mocked_writing.clear.call_count == 1
         message = 'Chmod to %s on %s' % (str(oct(0644))[3:-1], "/path")
         mocked_index.assert_called_once_with(add="/path", message=message)
+
+        current_view.PassthroughView.chmod = old_chmod
