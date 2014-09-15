@@ -110,3 +110,9 @@ class TestCurrentView(object):
         with pytest.raises(FuseOSError):
             current = CurrentView(repo_path="repo", uid=1, gid=1)
             current.getattr(".git/index")
+
+    def test_write_in_git_dir(self):
+        with pytest.raises(FuseOSError):
+            current = CurrentView(repo_path="repo", uid=1, gid=1,
+                                  read_only=Event())
+            current.write(".git/index", "buf", "offset", 1)
