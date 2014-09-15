@@ -1,8 +1,9 @@
-import __builtin__
 from threading import Event
 
+import pytest
 from mock import patch, MagicMock
 
+from fuse import FuseOSError
 from gitfs.views.current import CurrentView
 
 
@@ -34,3 +35,9 @@ class TestCurrentView(object):
                 "message": "Rename old to new"
             })
             mocked_os.path.split.assert_called_once_with("old")
+
+    def test_rename_in_git_dir(self):
+        current = CurrentView(repo_path="repo",
+                              read_only=Event(), want_to_merge=Event())
+        with pytest.raises(FuseOSError):
+            current.rename(".git/", ".git/")
