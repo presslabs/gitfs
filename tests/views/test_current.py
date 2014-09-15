@@ -137,3 +137,27 @@ class TestCurrentView(object):
                 'delete_it': True
             }
         }
+
+    def test_write(self):
+        from gitfs.views import current
+        mocked_write = lambda self, path, buf, offste, fh: "done"
+        current.PassthroughView.write = mocked_write
+
+        current = CurrentView(repo_path="repo", uid=1, gid=1,
+                              read_only=Event())
+        current.max_offset = 20
+        current.max_size = 20
+        current.dirty = {
+            '/path': {
+                'size': 5
+            }
+        }
+
+        assert current.write("/path", "bufffffert", 11, 1) == "done"
+        assert current.dirty == {
+            '/path': {
+                'message': 'Update /path',
+                'is_dirty': True,
+                'size': 15
+            }
+        }
