@@ -1,5 +1,6 @@
 import time
 
+from gitfs.utils.decorators import while_not
 from gitfs.worker.peasant import Peasant
 
 
@@ -9,8 +10,9 @@ class FetchWorker(Peasant):
             time.sleep(self.timeout)
             self.fetch()
 
+    @while_not("pushing")
     def fetch(self):
-
+        self.fetching.set()
         try:
             print "fetch"
             behind = self.repository.fetch(self.upstream, self.branch)
@@ -23,3 +25,4 @@ class FetchWorker(Peasant):
                 print "no more read-only"
         except:
             self.read_only.set()
+        self.fetching.clear()

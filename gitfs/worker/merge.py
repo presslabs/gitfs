@@ -3,7 +3,7 @@ import pygit2
 from gitfs.merges import AcceptMine
 from gitfs.worker.fetch import FetchWorker
 
-from gitfs.utils.decorators import retry
+from gitfs.utils.decorators import retry, while_not
 
 
 class MergeWorker(FetchWorker):
@@ -79,6 +79,7 @@ class MergeWorker(FetchWorker):
         self.strategy(self.branch, self.branch, self.upstream)
         self.repository.commits.update()
 
+    @while_not("fetching")
     def push(self):
         """
         Try to push. The push can fail in two cases:
@@ -86,6 +87,7 @@ class MergeWorker(FetchWorker):
         2. We are behind, so we need to fetch + merge and then try again
         """
 
+        self.pushing.set()
         self.read_only.set()
 
         try:
@@ -96,6 +98,7 @@ class MergeWorker(FetchWorker):
         except:
             print "push failed"
             self.fetch()
+        self.pushing.clear()
 
     @retry(each=3)
     def fetch(self):

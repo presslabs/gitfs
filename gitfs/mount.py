@@ -24,6 +24,8 @@ want_to_merge = threading.Event()
 read_only = threading.Event()
 somebody_is_writing = threading.Event()
 merging = threading.Event()
+fetching = threading.Event()
+pushing = threading.Event()
 
 # setting router
 router = Router(remote_url=args.remote_url,
@@ -54,14 +56,18 @@ merge_worker = MergeWorker(args.author_name, args.author_email,
                            upstream=args.upstream,
                            branch=args.branch,
                            repo_path=router.repo_path,
-                           timeout=args.merge_timeout)
+                           timeout=args.merge_timeout,
+                           fetching=fetching,
+                           pushing=pushing)
 
 fetch_worker = FetchWorker(upstream=args.upstream,
                            branch=args.branch,
                            repository=router.repo,
                            read_only=read_only,
                            merge_queue=merge_queue,
-                           timeout=args.fetch_timeout)
+                           timeout=args.fetch_timeout,
+                           fetching=fetching,
+                           pushing=pushing)
 
 merge_worker.start()
 fetch_worker.start()
