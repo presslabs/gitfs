@@ -27,3 +27,14 @@ class TestCommitList(object):
         commit_list.append(mocked_commit)
         assert commit_list[:1].hashes == ["hexish"]
         assert commit_list[:1].commits == [mocked_commit]
+
+    def test_iter(self):
+        mocked_commit = MagicMock()
+        mocked_commit.hex = "hexish"
+
+        commit_list = CommitsList()
+        commit_list.append(mocked_commit)
+        commit_list.append(mocked_commit)
+
+        for commit in commit_list:
+            assert commit == mocked_commit
