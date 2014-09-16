@@ -18,3 +18,12 @@ class TestCommitList(object):
         commit_list = CommitsList()
         commit_list.append(mocked_commit)
         assert commit_list.index(mocked_commit) == 0
+
+    def test_getitem(self):
+        mocked_commit = MagicMock()
+        mocked_commit.hex = "hexish"
+
+        commit_list = CommitsList()
+        commit_list.append(mocked_commit)
+        assert commit_list[:1].hashes == ["hexish"]
+        assert commit_list[:1].commits == [mocked_commit]
