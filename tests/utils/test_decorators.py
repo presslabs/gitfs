@@ -15,7 +15,9 @@ class MockedWraps(object):
 
 
 class EmptyMock(object):
-    pass
+    def __init__(self, **kwargs):
+        for name, value in kwargs.iteritems():
+            setattr(self, name, value)
 
 
 class TestRetryDecorator(object):
@@ -41,5 +43,14 @@ class TestWhileNotDecorator(object):
 
         with patch.multiple('gitfs.utils.decorators', wraps=MockedWraps):
             with pytest.raises(ValueError):
+                not_now = while_not("obj")
+                not_now(mocked_method)(mocked_self, "arg", kwarg="kwarg")
+
+    def test_while_not_with_invalid_event_type(self):
+        mocked_method = MagicMock()
+        mocked_self = EmptyMock(obj="obj")
+
+        with patch.multiple('gitfs.utils.decorators', wraps=MockedWraps):
+            with pytest.raises(TypeError):
                 not_now = while_not("obj")
                 not_now(mocked_method)(mocked_self, "arg", kwarg="kwarg")
