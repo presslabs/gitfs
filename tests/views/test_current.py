@@ -1,3 +1,4 @@
+import os
 from threading import Event
 
 import pytest
@@ -340,3 +341,28 @@ class TestCurrentView(object):
     def test_sanitize(self):
         current = CurrentView(repo_path="repo")
         assert current._sanitize("/path") == "path"
+
+    def test_open(self):
+        want_to_merge = Event()
+        want_to_merge.set()
+
+        mocked_time = MagicMock()
+        mocked_full = MagicMock()
+        mocked_os = MagicMock()
+
+        mocked_os.open.return_value = 1
+        mocked_time.sleep.side_effect = lambda x: want_to_merge.clear()
+        mocked_full.return_value = "full_path"
+
+        with patch.multiple('gitfs.views.current', os=mocked_os,
+                            time=mocked_time):
+            current = CurrentView(repo_path="repo",
+                                  want_to_merge=want_to_merge)
+
+            current._full_path = mocked_full
+            current.writing = set([])
+
+            assert current.open("path/", os.O_WRONLY) == 1
+            assert current.writing == set([1])
+            mocked_os.open.assert_called_once_with("full_path", os.O_WRONLY)
+            mocked_time.sleep.assert_called_once_with(2)
