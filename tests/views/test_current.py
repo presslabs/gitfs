@@ -366,3 +366,43 @@ class TestCurrentView(object):
             assert current.writing == set([1])
             mocked_os.open.assert_called_once_with("full_path", os.O_WRONLY)
             mocked_time.sleep.assert_called_once_with(2)
+
+    def test_release(self):
+        mocked_unlink = MagicMock()
+        mocked_index = MagicMock()
+        mocked_write = MagicMock()
+        mocked_writing = MagicMock()
+
+        mocked_writing.__contains__.return_value = True
+        mocked_writing.__len__.return_value = False
+
+        from gitfs.views import current as current_view
+        old_unlink = current_view.PassthroughView.unlink
+        current_view.PassthroughView.unlink = mocked_unlink
+
+        current = CurrentView(repo_path="path",
+                              somebody_is_writing=mocked_write,
+                              read_only=Event())
+        current.dirty = {
+            'path/': {
+                'delete_it': True,
+                'is_dirty': True,
+                'message': 'message'
+            }
+        }
+        current._index = mocked_index
+        current.writing = mocked_writing
+
+        with patch('gitfs.views.current.os') as mocked_os:
+            mocked_os.path.split.return_value = [1, 1]
+            current.release("path/", 1)
+
+            mocked_os.path.split.assert_called_once_with("path/")
+            mocked_unlink.assert_called_once_with(1)
+            assert mocked_write.set.call_count == 1
+            mocked_writing.remove.assert_called_once_with(1)
+            assert mocked_write.clear.call_count == 1
+            mocked_index.assert_called_once_with(add="path/",
+                                                 message="message")
+
+        current_view.PassthroughView.unlink = old_unlink
