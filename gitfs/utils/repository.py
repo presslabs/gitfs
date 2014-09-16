@@ -11,6 +11,13 @@ class Repository(object):
         self._repo = repository
         self.commits = commits or CommitCache(self)
 
+    def __getitem__(self, item):
+        """
+        Proxy method for pygit2.Repository
+        """
+
+        return self._repo[item]
+
     def __getattr__(self, attr):
         """
         Proxy method for pygit2.Repository
