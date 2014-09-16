@@ -1,7 +1,7 @@
 import pytest
 from mock import MagicMock, patch, call
 
-from gitfs.utils.decorators import retry
+from gitfs.utils.decorators import retry, while_not
 
 
 class MockedWraps(object):
@@ -12,6 +12,10 @@ class MockedWraps(object):
         def decorated(*args, **kwargs):
             return f(*args, **kwargs)
         return decorated
+
+
+class EmptyMock(object):
+    pass
 
 
 class TestRetryDecorator(object):
@@ -27,3 +31,15 @@ class TestRetryDecorator(object):
                 again(mocked_method)("arg", kwarg="kwarg")
 
             mocked_time.sleep.has_calls([call(3), call(3), call(1)])
+            mocked_method.has_calls([call("arg", kwarg="kwarg")])
+
+
+class TestWhileNotDecorator(object):
+    def test_while_not_with_missing_event(self):
+        mocked_method = MagicMock()
+        mocked_self = EmptyMock()
+
+        with patch.multiple('gitfs.utils.decorators', wraps=MockedWraps):
+            with pytest.raises(ValueError):
+                not_now = while_not("obj")
+                not_now(mocked_method)(mocked_self, "arg", kwarg="kwarg")
