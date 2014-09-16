@@ -38,3 +38,12 @@ class TestCommitList(object):
 
         for commit in commit_list:
             assert commit == mocked_commit
+
+    def test_repr(self):
+        mocked_commit = MagicMock()
+        mocked_commit.hex = "hexish"
+
+        commit_list = CommitsList()
+        commit_list.append(mocked_commit)
+
+        assert repr(commit_list) == repr([mocked_commit])
