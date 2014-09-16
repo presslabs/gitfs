@@ -1,3 +1,5 @@
+from threading import Event
+
 import pytest
 from mock import MagicMock, patch, call
 
@@ -54,3 +56,21 @@ class TestWhileNotDecorator(object):
             with pytest.raises(TypeError):
                 not_now = while_not("obj")
                 not_now(mocked_method)(mocked_self, "arg", kwarg="kwarg")
+
+    def test_while_not(self):
+        an_event = Event()
+        an_event.set()
+
+        mocked_method = MagicMock()
+        mocked_time = MagicMock()
+        mocked_self = EmptyMock(obj=an_event)
+
+        mocked_time.sleep.side_effect = lambda x: an_event.clear()
+        mocked_method.__name__ = "name"
+
+        with patch.multiple('gitfs.utils.decorators', wraps=MockedWraps,
+                            time=mocked_time):
+            not_now = while_not("obj")
+            not_now(mocked_method)(mocked_self, "arg", kwarg="kwarg")
+
+            mocked_time.sleep.assert_called_once_with(0.2)
