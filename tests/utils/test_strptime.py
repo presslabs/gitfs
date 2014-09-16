@@ -1,6 +1,9 @@
 import pytest
 import datetime as dt
 
+from mock import MagicMock
+
+from gitfs.utils.strptime import TimeParser
 from gitfs.utils import strptime
 
 
@@ -27,3 +30,15 @@ class TestDateTimeUtils(object):
 
         with pytest.raises(ValueError):
             strptime("31 Nov 14 01:02:03", "%d %b %y %H:%M:%S")
+
+    def test_time_parser_match_with_value_error(self):
+        mocked_pattern = MagicMock()
+        mocked_pattern.match.return_value = False
+
+        parser = TimeParser("%d %b %y %I:%M%p")
+        parser.pattern = mocked_pattern
+
+        with pytest.raises(ValueError):
+            parser.match("daytime")
+
+        mocked_pattern.match.assert_called_once_with("daytime")
