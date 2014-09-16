@@ -404,5 +404,25 @@ class TestCurrentView(object):
             assert mocked_write.clear.call_count == 1
             mocked_index.assert_called_once_with(add="path/",
                                                  message="message")
+            mocked_os.close.assert_called_once_with(1)
 
         current_view.PassthroughView.unlink = old_unlink
+
+    def test_release_when_somebody_is_still_writing(self):
+        mocked_write = MagicMock()
+        mocked_writing = MagicMock()
+
+        mocked_writing.__len__.return_value = True
+        mocked_writing.__contains__.return_value = True
+
+        current = CurrentView(repo_path="path",
+                              somebody_is_writing=mocked_write,
+                              read_only=Event())
+        current.dirty = {}
+        current.writing = mocked_writing
+
+        with patch('gitfs.views.current.os') as mocked_os:
+            current.release("path/", 1)
+
+            assert mocked_write.set.call_count == 1
+            mocked_os.close.assert_called_once_with(1)
