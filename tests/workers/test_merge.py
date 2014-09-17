@@ -1,3 +1,5 @@
+from threading import Event
+
 import pygit2
 
 import pytest
@@ -113,6 +115,7 @@ class TestMergeWorker(object):
         mocked_repo = MagicMock()
         mocked_fetch = MagicMock(side_effect=ValueError)
         mocked_read_only = MagicMock()
+        mocked_pushing = MagicMock()
         upstream = "origin"
         branch = "master"
 
@@ -121,6 +124,8 @@ class TestMergeWorker(object):
         worker = MergeWorker("name", "email", "name", "email",
                              strategy=mocked_strategy,
                              repository=mocked_repo,
+                             fetching=Event(),
+                             pushing=mocked_pushing,
                              read_only=mocked_read_only,
                              upstream=upstream, branch=branch)
         worker.fetch = mocked_fetch
@@ -132,6 +137,7 @@ class TestMergeWorker(object):
         assert mocked_fetch.call_count == 1
         assert mocked_read_only.clear.call_count == 1
         assert mocked_read_only.set.call_count == 1
+        assert mocked_pushing.set.call_count == 1
 
     def test_fetch_when_we_are_ahead(self):
         mocked_strategy = MagicMock()
