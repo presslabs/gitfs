@@ -19,12 +19,12 @@ class TestWriteCurrentView(BaseTest):
             assert f.read() == content
 
         # check if a commit was made
-        self.assert_new_commit()
+        self.assert_new_commit(2)
 
         time.sleep(1)
 
         self.assert_blob(content, "/new_file")
-        self.assert_commit_message("Update /new_file")
+        self.assert_commit_message("merging: Update /new_file")
 
     def test_create_a_directory(self):
         directory = "%s/new_directory" % self.current_path
@@ -115,20 +115,23 @@ class TestWriteCurrentView(BaseTest):
         with open(filename, "w") as f:
             f.write(content)
 
-        time.sleep(3)
+        time.sleep(5)
 
         self.assert_new_commit(2)
 
         time.sleep(1)
 
+        self.assert_blob(content, "/some_file")
+        self.assert_commit_message("merging: Update /some_file")
+
         with open(filename, "w") as f:
             f.write(continuation)
 
-        time.sleep(3)
+        time.sleep(5)
 
         self.assert_new_commit(2)
 
         time.sleep(1)
 
         self.assert_blob(continuation, "/some_file")
-        self.assert_commit_message("Update /some_file")
+        self.assert_commit_message("merging: Update /some_file")
