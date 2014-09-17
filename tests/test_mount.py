@@ -1,6 +1,6 @@
 from mock import MagicMock, patch, call
 
-from gitfs.mount import prepare_components, parse_args
+from gitfs.mount import prepare_components, parse_args, start_fuse
 
 
 class EmptyObject(object):
@@ -108,3 +108,41 @@ class TestMount(object):
                                    'user, group, branch, max_size, ' +
                                    'max_offset, fetch_timeout, merge_timeout')]
             mocked_parser.add_argument.has_calls(asserted_calls)
+
+    def test_start_fuse(self):
+        mocked_parse_args = MagicMock()
+        mocked_prepare = MagicMock()
+        mocked_argp = MagicMock()
+        mocked_fuse = MagicMock()
+        mocked_args = MagicMock()
+
+        mocked_merge = MagicMock()
+        mocked_fetch = MagicMock()
+        mocked_router = MagicMock()
+
+        mocked_prepare.return_value = (mocked_merge, mocked_fetch,
+                                       mocked_router)
+        mocked_argp.ArgumentParser.return_value = "args"
+        mocked_parse_args.return_value = mocked_args
+
+        with patch.multiple('gitfs.mount', argparse=mocked_argp,
+                            parse_args=mocked_parse_args,
+                            prepare_components=mocked_prepare,
+                            FUSE=mocked_fuse):
+            start_fuse()
+
+            mocked_argp.ArgumentParser.assert_called_once_with(prog='GitFS')
+            mocked_parse_args.assert_called_once_with("args")
+            mocked_prepare.assert_called_once_with(mocked_args)
+            assert mocked_merge.start.call_count == 1
+            assert mocked_fetch.start.call_count == 1
+
+            excepted_call = {
+                'foreground': mocked_args.foreground,
+                'nonempty': True,
+                'allow_root': mocked_args.allow_root,
+                'allow_other': mocked_args.allow_other
+            }
+            mocked_fuse.assert_called_once_with(mocked_router,
+                                                mocked_args.mount_point,
+                                                **excepted_call)
