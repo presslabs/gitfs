@@ -106,3 +106,29 @@ class TestWriteCurrentView(BaseTest):
         self.assert_new_commit(1)
         self.assert_commit_message("Create symlink to %s for /links" %
                                    (target))
+
+    def test_edit_file(self):
+        content = "first part"
+        continuation = "second part"
+        filename = "%s/some_file" % self.current_path
+
+        with open(filename, "w") as f:
+            f.write(content)
+
+        time.sleep(3)
+
+        self.assert_new_commit(2)
+
+        time.sleep(1)
+
+        with open(filename, "w") as f:
+            f.write(continuation)
+
+        time.sleep(3)
+
+        self.assert_new_commit(2)
+
+        time.sleep(1)
+
+        self.assert_blob(continuation, "/some_file")
+        self.assert_commit_message("Update /some_file")
