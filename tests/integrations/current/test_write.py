@@ -135,3 +135,23 @@ class TestWriteCurrentView(BaseTest):
 
         self.assert_blob(continuation, "/some_file")
         self.assert_commit_message("merging: Update /some_file")
+
+    def test_create_multiple_files(self):
+        content = "Just a small file"
+        no_of_files = 10
+        filename = "%s/new_file" % self.current_path
+
+        for i in range(no_of_files):
+            with open(filename + str(i), "w") as f:
+                f.write(content)
+
+        time.sleep(5)
+
+        with open(filename) as f:
+            assert f.read() == content
+
+        self.assert_new_commit(2)
+
+        time.sleep(1)
+
+        self.assert_commit_message("merging: Update %d items" % no_of_files)
