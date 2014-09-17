@@ -162,3 +162,27 @@ class TestWriteCurrentView(BaseTest):
         time.sleep(1)
 
         self.assert_commit_message("merging: Update %d items" % no_of_files)
+
+    def test_delete_file(self):
+        filename = "%s/deletable_file" % self.current_path
+
+        with open(filename, "w") as f:
+            f.write("some content")
+
+        time.sleep(5)
+
+        self.assert_new_commit(2)
+
+        time.sleep(1)
+
+        self.assert_commit_message("merging: Update /deletable_file")
+
+        os.remove(filename)
+
+        time.sleep(10)
+
+        assert not os.path.exists(filename)
+
+        time.sleep(1)
+
+        self.assert_commit_message("merging: Deleted /deletable_file")
