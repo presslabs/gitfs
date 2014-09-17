@@ -1,6 +1,6 @@
-from mock import MagicMock, patch
+from mock import MagicMock, patch, call
 
-from gitfs.mount import prepare_components
+from gitfs.mount import prepare_components, parse_args
 
 
 class EmptyObject(object):
@@ -92,3 +92,19 @@ class TestMount(object):
                                                   'commit',
                                                   'commiter@commiting.org',
                                                   **asserted_call)
+
+    def test_args(self):
+        mocked_parser = MagicMock()
+        mocked_args = MagicMock()
+
+        mocked_args.return_value = "args"
+
+        with patch.multiple('gitfs.mount', Args=mocked_args):
+            assert parse_args(mocked_parser) == "args"
+            asserted_calls = [call('remote_url', help='repo to be cloned'),
+                              call('mount_point',
+                                   help='where the repo should be mount'),
+                              call('-o', help='other options: repos_path, ' +
+                                   'user, group, branch, max_size, ' +
+                                   'max_offset, fetch_timeout, merge_timeout')]
+            mocked_parser.add_argument.has_calls(asserted_calls)
