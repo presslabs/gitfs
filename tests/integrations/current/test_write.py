@@ -117,6 +117,9 @@ class TestWriteCurrentView(BaseTest):
 
         time.sleep(5)
 
+        with open(filename) as f:
+            assert f.read() == content
+
         self.assert_new_commit(2)
 
         time.sleep(1)
@@ -128,6 +131,9 @@ class TestWriteCurrentView(BaseTest):
             f.write(continuation)
 
         time.sleep(5)
+
+        with open(filename) as f:
+            assert f.read() == continuation
 
         self.assert_new_commit(2)
 
@@ -147,8 +153,9 @@ class TestWriteCurrentView(BaseTest):
 
         time.sleep(5)
 
-        with open(filename) as f:
-            assert f.read() == content
+        for i in range(no_of_files):
+            with open(filename + str(i)) as f:
+                assert f.read() == content
 
         self.assert_new_commit(2)
 
