@@ -61,7 +61,6 @@ def prepare_components(args):
                                fetching=fetching,
                                pushing=pushing)
 
-    print args.branch
     fetch_worker = FetchWorker(upstream=args.upstream,
                                branch=args.branch,
                                repository=router.repo,
@@ -74,7 +73,7 @@ def prepare_components(args):
     return merge_worker, fetch_worker, router
 
 
-if __name__ == '__main__':
+def start_fuse():
     parser = argparse.ArgumentParser(prog='GitFS')
     args = parse_args(parser)
 
@@ -86,3 +85,7 @@ if __name__ == '__main__':
     # ready to mount it
     FUSE(router, args.mount_point, foreground=args.foreground, nonempty=True,
          allow_root=args.allow_root, allow_other=args.allow_other)
+
+
+if __name__ == '__main__':
+    start_fuse()
