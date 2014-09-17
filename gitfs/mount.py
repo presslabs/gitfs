@@ -86,6 +86,5 @@ def start_fuse():
     FUSE(router, args.mount_point, foreground=args.foreground, nonempty=True,
          allow_root=args.allow_root, allow_other=args.allow_other)
 
-
 if __name__ == '__main__':
     start_fuse()
