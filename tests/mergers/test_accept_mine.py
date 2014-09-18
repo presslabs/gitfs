@@ -1,4 +1,4 @@
-from mock import MagicMock, patch
+from mock import MagicMock, patch, call
 
 from pygit2 import GIT_BRANCH_LOCAL
 
@@ -59,3 +59,33 @@ class TestAcceptMine(object):
         mine.solve_conflicts(conflicts())
 
         mocked_repo.index.add.assert_called_once_with("simple_path")
+
+    def test_solve_conflicts_both_update_a_file(self):
+        mocked_repo = MagicMock()
+        mocked_theirs = MagicMock()
+        mocked_ours = MagicMock()
+        mocked_full = MagicMock()
+
+        mocked_ours.id = "id"
+        mocked_ours.path = "path"
+        mocked_repo.get().data = "data"
+        mocked_full.return_value = "full_path"
+
+        def conflicts():
+            yield None, mocked_theirs, mocked_ours
+
+        mock_path = 'gitfs.merges.accept_mine.open'
+        with patch(mock_path, create=True) as mocked_open:
+            mocked_file = MagicMock(spec=file)
+            mocked_open.return_value = mocked_file
+
+            mine = AcceptMine(mocked_repo)
+            mine._full_path = mocked_full
+
+            mine.solve_conflicts(conflicts())
+
+            mocked_full.assert_called_once_with("path")
+            mocked_open.assert_called_once_with("full_path", "w")
+            mocked_repo.get.has_calls([call("id")])
+            mocked_open().__enter__().write.assert_called_once_with("data")
+            mocked_repo.index.add.assert_called_once_with("path")
