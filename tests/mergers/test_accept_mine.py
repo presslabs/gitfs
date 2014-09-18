@@ -89,3 +89,15 @@ class TestAcceptMine(object):
             mocked_repo.get.has_calls([call("id")])
             mocked_open().__enter__().write.assert_called_once_with("data")
             mocked_repo.index.add.assert_called_once_with("path")
+
+    def test_full_path(self):
+        mocked_repo = MagicMock()
+
+        with patch('gitfs.merges.accept_mine.os') as mocked_os:
+            mocked_os.path.join.return_value = "full_path"
+
+            mine = AcceptMine(mocked_repo)
+            mine.repo_path = "repo_path"
+
+            assert mine._full_path("/partial") == "full_path"
+            mocked_os.path.join.assert_called_once_with("repo_path", "partial")
