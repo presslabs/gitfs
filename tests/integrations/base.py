@@ -23,7 +23,7 @@ class Sh:
 
 def pull(function):
     def call(*args, **kwargs):
-        args[0].sh.git.pull()
+        args[0].sh.git.pull("origin", "master")
 
         return function(*args, **kwargs)
     return call
