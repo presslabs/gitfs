@@ -30,4 +30,15 @@ class TestBaseCache(object):
         cache['key'] = 2
 
         assert cache['key'] == 2
-        assert cache._Cache__currsize == 1
+        assert cache.currsize == 1
+
+    def test_delitem(self):
+        cache = Cache(1)
+
+        cache['key'] = 1
+        del cache['key']
+
+        with pytest.raises(KeyError):
+            print cache['key']
+
+        assert cache.currsize == 0
