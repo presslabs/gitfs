@@ -1,32 +1,72 @@
-from mock import MagicMock, patch
+import pytest
 
-from gitfs.cache.lru import LRUCache
+from gitfs.cache.lru import LRUCache, lru_cache
+
+
+@lru_cache(maxsize=2)
+def cached(n):
+    return n
 
 
 class TestLRUCache(object):
-    def test_getitem(self):
-        mocked_getitem = MagicMock()
-        mocked_link = MagicMock()
-        mocked_root = MagicMock()
-        mocked_node = MagicMock(return_value=mocked_root)
+    def test_insert(self):
+        lru = LRUCache(2)
 
-        mocked_getitem.return_value = ("value1", mocked_link)
+        lru[1] = 1
+        lru[2] = 2
+        lru[3] = 3
 
-        from gitfs.cache.lru import Cache
-        old_getitem = Cache.__getitem__
-        Cache.__getitem__ = mocked_getitem
+        assert len(lru) == 2
+        assert lru[2] == 2
+        assert lru[3] == 3
+        assert 1 not in lru
 
-        with patch.multiple('gitfs.cache.lru', Node=mocked_node):
-            lru = LRUCache(1)
-            lru["key"] = "value"
+        lru[2]
+        lru[4] = 4
+        assert len(lru) == 2
+        assert lru[2] == 2
+        assert lru[4] == 4
+        assert 3 not in lru
 
-            assert lru["key"] == "value1"
-            mocked_getitem.asset_called_once_with("key")
-            assert mocked_link.next.prev == mocked_link.prev
-            assert mocked_link.prev.next == mocked_link.next
-            assert mocked_link.prev == mocked_root.prev
-            assert mocked_link.next == mocked_root
-            assert mocked_root.next == mocked_link
-            assert mocked_root.prev == mocked_link
+        lru[5] = 5
+        assert len(lru) == 2
+        assert lru[4] == 4
+        assert lru[5] == 5
+        assert 2 not in lru
 
-        Cache.__getitem__ = old_getitem
+    def test_lru_getsizeof(self):
+        lru = LRUCache(3, lambda x: x)
+
+        lru[1] = 1
+        lru[2] = 2
+
+        assert len(lru) == 2
+        assert lru[1] == 1
+        assert lru[2] == 2
+
+        lru[3] = 3
+
+        assert len(lru) == 1
+        assert lru[3] == 3
+        assert 1 not in lru
+        assert 2 not in lru
+
+        with pytest.raises(ValueError):
+            lru[4] = 4
+
+        assert len(lru) == 1
+        assert lru[3] == 3
+
+    def test_decorator(self):
+        assert cached.cache_info() == (0, 0, 2, 0)
+        assert cached(1) == 1
+        assert cached.cache_info() == (0, 1, 2, 1)
+        assert cached(1) == 1
+        assert cached.cache_info() == (1, 1, 2, 1)
+        assert cached(1.0) == 1.0
+        assert cached.cache_info() == (2, 1, 2, 1)
+
+        cached.cache_clear()
+
+        assert cached(1) == 1
+        assert cached.cache_info() == (2, 2, 2, 1)
