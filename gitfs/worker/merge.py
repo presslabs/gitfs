@@ -24,6 +24,9 @@ class MergeWorker(FetchWorker):
         merges = []
 
         while True:
+            if self.stopped:
+                break
+
             try:
                 job = self.merge_queue.get(timeout=self.timeout, block=True)
 

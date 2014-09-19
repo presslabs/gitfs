@@ -1,4 +1,4 @@
-from threading import Thread
+from threading import Thread, Event
 
 
 class Peasant(Thread):
@@ -7,3 +7,12 @@ class Peasant(Thread):
 
         for name, value in kwargs.iteritems():
             setattr(self, name, value)
+
+        self.__stopped = Event()
+
+    def stop(self):
+        self.__stopped.set()
+
+    @property
+    def stopped(self):
+        return self.__stopped.isSet()

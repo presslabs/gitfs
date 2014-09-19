@@ -74,6 +74,8 @@ class Router(object):
 
         self.repo.commits.update()
 
+        self.workers = []
+
         log.info('Done INIT')
 
     def init(self, path):
@@ -84,6 +86,12 @@ class Router(object):
         log.info('Done INIT')
 
     def destroy(self, path):
+        for worker in self.workers:
+            worker.stop()
+
+        for worker in self.workers:
+            worker.join()
+
         shutil.rmtree(self.repo_path)
 
     def __call__(self, operation, *args):

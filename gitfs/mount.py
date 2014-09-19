@@ -70,6 +70,11 @@ def prepare_components(args):
                                fetching=fetching,
                                pushing=pushing)
 
+    merge_worker.daemon = True
+    fetch_worker.daemon = True
+
+    router.workers = [merge_worker, fetch_worker]
+
     return merge_worker, fetch_worker, router
 
 

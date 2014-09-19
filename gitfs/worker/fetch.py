@@ -7,6 +7,9 @@ from gitfs.worker.peasant import Peasant
 class FetchWorker(Peasant):
     def run(self):
         while True:
+            if self.stopped:
+                break
+
             time.sleep(self.timeout)
             self.fetch()
 
