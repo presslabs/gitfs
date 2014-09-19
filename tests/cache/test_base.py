@@ -42,3 +42,15 @@ class TestBaseCache(object):
             print cache['key']
 
         assert cache.currsize == 0
+
+    def test_aux_method(self):
+        cache = Cache(1)
+
+        cache['key'] = 1
+        for key in cache:
+            assert key == "key"
+            assert cache["key"] == 1
+
+        assert len(cache) == 1
+        assert repr(cache) == "Cache([('key', 1)], maxsize=1, currsize=1)"
+        assert cache.maxsize == 1
