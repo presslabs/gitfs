@@ -23,7 +23,6 @@ class TestWriteCurrentView(BaseTest):
 
         time.sleep(1)
 
-        self.assert_blob(content, "/new_file")
         self.assert_commit_message("merging: Update /new_file")
 
     def test_create_a_directory(self):
@@ -124,7 +123,6 @@ class TestWriteCurrentView(BaseTest):
 
         time.sleep(1)
 
-        self.assert_blob(content, "/some_file")
         self.assert_commit_message("merging: Update /some_file")
 
         with open(filename, "w") as f:
@@ -139,7 +137,6 @@ class TestWriteCurrentView(BaseTest):
 
         time.sleep(1)
 
-        self.assert_blob(continuation, "/some_file")
         self.assert_commit_message("merging: Update /some_file")
 
     def test_create_multiple_files(self):

@@ -6,7 +6,7 @@ from tests.integrations.base import BaseTest
 
 class TestReadCommitView(BaseTest):
     def test_listdirs(self):
-        commits = self.repo.get_commits_by_date(self.today)
+        commits = self.get_commits_by_date()
         files = os.listdir("%s/history/%s/%s" % (self.mount_path, self.today,
                            commits[-1]))
 
@@ -15,7 +15,7 @@ class TestReadCommitView(BaseTest):
         assert set(files) == set(real_files)
 
     def test_stats(self):
-        commit = self.repo.get_commits_by_date(self.today)[0]
+        commit = self.get_commits_by_date()[0]
         directory = "%s/history/%s/%s" % (self.mount_path, self.today, commit)
         filename = "%s/testing" % directory
 

@@ -1,6 +1,6 @@
 import pytest
 
-from .base import BaseTest
+from tests.integrations.base import BaseTest
 
 
 class ReadOnlyFSTest(BaseTest):
