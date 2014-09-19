@@ -8,6 +8,11 @@ def cached(n):
     return n
 
 
+@lru_cache(maxsize=2, typed=True)
+def cached_typed(n):
+    return n
+
+
 class TestLRUCache(object):
     def test_insert(self):
         lru = LRUCache(2)
@@ -70,3 +75,13 @@ class TestLRUCache(object):
 
         assert cached(1) == 1
         assert cached.cache_info() == (2, 2, 2, 1)
+
+    def test_typed_decorator(self):
+        assert cached_typed(1) == 1
+        assert cached_typed.cache_info() == (0, 1, 2, 1)
+        assert cached_typed(1) == 1
+        assert cached_typed.cache_info() == (1, 1, 2, 1)
+        assert cached_typed(1.0) == 1.0
+        assert cached_typed.cache_info() == (1, 2, 2, 2)
+        assert cached_typed(1.0) == 1.0
+        assert cached_typed.cache_info() == (2, 2, 2, 2)
