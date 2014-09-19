@@ -33,6 +33,9 @@ class CommitCache(object):
     def __setitem__(self, item, value):
         self.__commits[item] = value
 
+    def __delitem__(self, item):
+        del self.__commits[item]
+
     def keys(self):
         return self.__commits.keys()
 

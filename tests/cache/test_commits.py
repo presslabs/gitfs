@@ -1,4 +1,8 @@
-from gitfs.cache.commits import Commit
+from mock import MagicMock, call
+
+from pygit2 import GIT_SORT_TIME
+
+from gitfs.cache.commits import Commit, CommitCache
 
 
 class TestCommit(object):
@@ -11,4 +15,25 @@ class TestCommit(object):
 
 
 class TestCommitCache(object):
-    pass
+    def test_cache(self):
+        mocked_repo = MagicMock()
+        mocked_commit = MagicMock()
+
+        mocked_repo.lookup_reference().resolve().target = "head"
+        mocked_repo.walk.return_value = [mocked_commit]
+        mocked_commit.commit_time = 1411135000
+        mocked_commit.hex = '1111111111'
+
+        cache = CommitCache(mocked_repo)
+        cache.update()
+
+        cache['2014-09-20'] = Commit(1, 1, "1111111111")
+        assert cache.keys() == ['2014-09-20', '2014-09-19']
+        assert repr(cache['2014-09-19']) == '[16:56:40-1111111111]'
+        del cache['2014-09-20']
+        for commit_date in cache:
+            assert commit_date == '2014-09-19'
+
+        mocked_repo.lookup_reference.has_calls([call("HEAD")])
+        mocked_repo.walk.assert_called_once_with("head", GIT_SORT_TIME)
+        assert mocked_repo.lookup_reference().resolve.call_count == 2
