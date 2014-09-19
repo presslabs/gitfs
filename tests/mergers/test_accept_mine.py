@@ -1,8 +1,13 @@
+from collections import namedtuple
+
 from mock import MagicMock, patch, call
 
-from pygit2 import GIT_BRANCH_LOCAL
+from pygit2 import GIT_BRANCH_LOCAL, GIT_CHECKOUT_FORCE
 
 from gitfs.merges.accept_mine import AcceptMine
+
+
+Commit = namedtuple("Commit", ["hex", "message", "id"])
 
 
 class TestAcceptMine(object):
@@ -101,3 +106,49 @@ class TestAcceptMine(object):
 
             assert mine._full_path("/partial") == "full_path"
             mocked_os.path.join.assert_called_once_with("repo_path", "partial")
+
+    def test_merging_strategy(self):
+        mocked_repo = MagicMock()
+        mocked_copy = MagicMock()
+        mocked_reload = MagicMock()
+        mocked_diverge = MagicMock()
+        mocked_solve = MagicMock()
+        mocked_ref = MagicMock()
+        mocked_find_commits = MagicMock()
+
+        mocked_ref.target = "target"
+        mocked_diverge.first_commits = [Commit(1, "message", 1)]
+        mocked_repo.index.conflicts = "conflicts"
+        mocked_repo.lookup_reference.return_value = mocked_ref
+        mocked_repo.commit.return_value = "new_commit"
+        mocked_reload.return_value = "reload"
+        mocked_find_commits.return_value = mocked_diverge
+        mocked_copy.return_value = "local_copy"
+
+        mine = AcceptMine(mocked_repo, author="author", commiter="commiter")
+
+        mine._create_local_copy = mocked_copy
+        mine.reload_branch = mocked_reload
+        mine.find_diverge_commits = mocked_find_commits
+        mine.solve_conflicts = mocked_solve
+
+        mine.__call__("local_branch", "remote_branch", "upstream")
+
+        mocked_copy.assert_called_once_with("local_branch", "merging_local")
+        mocked_reload.assert_called_once_with("local_branch", "upstream")
+        mocked_find_commits.assert_called_once_with("local_copy", "reload")
+        mocked_repo.checkout.has_calls([call("refs/heads/local_branch",
+                                             strategy=GIT_CHECKOUT_FORCE)])
+        mocked_repo.merge.assert_called_once_with(1)
+        mocked_solve.asssert_called_once_with(mocked_repo.index.conflicts)
+
+        asserted_calls = [call("refs/heads/local_branch"),
+                          call("refs/heads/merging_local")]
+        mocked_repo.lookup_reference.has_calls(asserted_calls)
+        mocked_repo.commit.asserted_called_once_with("merging: message",
+                                                     "author", "commiter",
+                                                     mocked_ref, ["target", 1])
+        mocked_repo.create_reference.called_once_with(mocked_ref, "new_commit",
+                                                      force=True)
+        assert mocked_repo.state_cleanup.call_count == 1
+        assert mocked_ref.delete.call_count == 1

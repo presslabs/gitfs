@@ -39,13 +39,7 @@ class AcceptMine(Merger):
         # actual merging
         for commit in diverge_commits.first_commits:
             print "Want to merge this:", commit.message
-            try:
-                self.repository.merge(commit.hex)
-            except:
-                print "commit", reference
-                print "commits diverge", diverge_commits.first_commits
-                print "remote commit", local.target
-                print "commit to merge", commit
+            self.repository.merge(commit.hex)
 
             # resolve conflicts
             self.solve_conflicts(self.repository.index.conflicts)
