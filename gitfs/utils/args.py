@@ -7,9 +7,9 @@ import tempfile
 class Args(object):
     def __init__(self, parser):
         self.DEFAULTS = {
-            "repos_path": self.get_repos_path(),
-            "user": self.get_current_user(),
-            "group": self.get_current_group(),
+            "repos_path": self.get_repos_path,
+            "user": self.get_current_user,
+            "group": self.get_current_group,
             "foreground": True,
             "branch": "master",
             "upstream": "origin",
@@ -27,8 +27,6 @@ class Args(object):
         self.config = self.build_config(parser.parse_args())
 
     def build_config(self, args):
-        args = self.set_defaults(args)
-
         if args.o:
             for arg in args.o.split(","):
                 if "=" in arg:
@@ -38,6 +36,9 @@ class Args(object):
                     if value == "False":
                         value = False
                     setattr(args, item, value)
+
+        args = self.set_defaults(args)
+
         return args
 
     def __getattr__(self, attr):
@@ -48,7 +49,10 @@ class Args(object):
 
     def set_defaults(self, args):
         for option, value in self.DEFAULTS.iteritems():
-            setattr(args, option, value)
+            if not hasattr(args, option):
+                if callable(value):
+                    value = value()
+                setattr(args, option, value)
 
         return args
 
