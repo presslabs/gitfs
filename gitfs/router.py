@@ -75,7 +75,8 @@ class Router(object):
         self.repo.commits.update()
 
         self.workers = []
-        self.repo.ignore = CachedGitignore("%s/.gitignore" % self.repo_path)
+        self.repo.ignore = CachedGitignore("%s/.gitignore" % self.repo_path,
+                                           "%s/.gitmodules" % self.repo_path)
 
         log.info('Done INIT')
 

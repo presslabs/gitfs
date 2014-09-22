@@ -202,9 +202,9 @@ class CurrentView(PassthroughView):
 
         return os.close(fh)
 
-    @not_in("ignore", check=["path"])
     def readdir(self, path, fh):
-        return super(CurrentView, self).readdir(path, fh)
+        result = super(CurrentView, self).readdir(path, fh)
+        return [entry for entry in result if entry not in self.ignore]
 
     @while_not("read_only")
     @while_not("want_to_merge")
