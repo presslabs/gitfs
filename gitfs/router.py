@@ -75,8 +75,7 @@ class Router(object):
         self.repo.commits.update()
 
         self.workers = []
-        self.ignore = CachedGitignore("%s/.gitignore" % self.repo_path)
-        self.ignore.update()
+        self.repo.ignore = CachedGitignore("%s/.gitignore" % self.repo_path)
 
         log.info('Done INIT')
 
@@ -163,7 +162,7 @@ class Router(object):
             kwargs['want_to_merge'] = self.want_to_merge
             kwargs['read_only'] = self.read_only
             kwargs['somebody_is_writing'] = self.somebody_is_writing
-            kwargs['ignore'] = self.ignore
+            kwargs['ignore'] = self.repo.ignore
 
             args = set(groups) - set(kwargs.values())
 

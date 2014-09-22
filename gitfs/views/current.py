@@ -5,7 +5,8 @@ import errno
 
 from fuse import FuseOSError
 
-from gitfs.utils.decorators import while_not, not_in
+from gitfs.utils.decorators.while_not import while_not
+from gitfs.utils.decorators.not_in import not_in
 
 from .passthrough import PassthroughView, STATS
 
@@ -209,6 +210,7 @@ class CurrentView(PassthroughView):
     @while_not("want_to_merge")
     @not_in("ignore", check=["path"])
     def unlink(self, path):
+        print path
         result = super(CurrentView, self).unlink(path)
 
         message = 'Deleted %s' % path
@@ -222,11 +224,11 @@ class CurrentView(PassthroughView):
         add = self._sanitize(add)
         remove = self._sanitize(remove)
 
-        if remove is not None and remove not in self.ignore:
+        if remove is not None:
             self.repo.index.remove(self._sanitize(remove))
             non_empty = True
 
-        if add is not None and add not in self.ignore:
+        if add is not None:
             self.repo.index.add(self._sanitize(add))
             non_empty = True
 

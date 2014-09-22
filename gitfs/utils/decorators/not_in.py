@@ -18,8 +18,8 @@ class not_in(object):
                 self.look_at = getattr(their_self, self.look_at)
 
             self.check_args(f, args)
-
             result = f(their_self, *args, **kwargs)
+
             return result
 
         return decorated
@@ -35,6 +35,7 @@ class not_in(object):
         for index in to_check:
             print methods_args
             arg = methods_args[index - 1]
+            print arg in self.look_at.cache
 
             if arg in self.look_at.cache and self.look_at.cache[arg]:
                 raise FuseOSError(errno.ENOENT)

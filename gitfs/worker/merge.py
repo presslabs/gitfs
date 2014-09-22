@@ -3,7 +3,8 @@ import pygit2
 from gitfs.merges import AcceptMine
 from gitfs.worker.fetch import FetchWorker
 
-from gitfs.utils.decorators import retry, while_not
+from gitfs.utils.decorators.retry import retry
+from gitfs.utils.decorators.while_not import while_not
 
 
 class MergeWorker(FetchWorker):
@@ -81,6 +82,7 @@ class MergeWorker(FetchWorker):
     def merge(self):
         self.strategy(self.branch, self.branch, self.upstream)
         self.repository.commits.update()
+        self.repository.ignore.update()
 
     @while_not("fetching")
     def push(self):

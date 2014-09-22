@@ -10,6 +10,8 @@ class CachedGitignore(object):
         self.path = path
         self.cache = {}
 
+        self.update()
+
     def update(self):
         self.items = ['.git/', '/.git']
 
@@ -26,6 +28,7 @@ class CachedGitignore(object):
         return self.check_key(path)
 
     def check_key(self, key):
+        print key, self.items
         for item in self.items:
             if self._check_item_and_key(item, key):
                 return True

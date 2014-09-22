@@ -1,6 +1,6 @@
 import time
 
-from gitfs.utils.decorators import while_not
+from gitfs.utils.decorators.while_not import while_not
 from gitfs.worker.peasant import Peasant
 
 
