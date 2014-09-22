@@ -49,7 +49,7 @@ class Args(object):
 
     def set_defaults(self, args):
         for option, value in self.DEFAULTS.iteritems():
-            if not hasattr(args, option):
+            if not getattr(args, option, None):
                 if callable(value):
                     value = value()
                 setattr(args, option, value)

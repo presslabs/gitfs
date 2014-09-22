@@ -18,6 +18,10 @@ class TestArgs(object):
         mocked_grp.getgrgid().gr_name = "test_group"
         mocked_parser.parse_args.return_value = mocked_args
         mocked_args.o = "magic=True,not_magic=False"
+        mocked_args.group = None
+        mocked_args.repos_path = None
+        mocked_args.user = None
+        mocked_args.branch = None
 
         with patch.multiple('gitfs.utils.args', os=mocked_os, grp=mocked_grp,
                             getpass=mocked_pass, tempfile=mocked_file):
@@ -27,20 +31,7 @@ class TestArgs(object):
                 "repos_path": "/tmp",
                 "user": "test_user",
                 "group": "test_group",
-                "foreground": True,
                 "branch": "master",
-                "upstream": "origin",
-                "allow_other": False,
-                "allow_root": False,
-                "author_name": "Presslabs",
-                "author_email": "git@presslabs.com",
-                "commiter_name": "Presslabs",
-                "commiter_email": "git@presslabs.com",
-                "max_size": 10 * 1024 * 1024,
-                "max_offset": 10 * 1024 * 1024,
-                "fetch_timeout": 5,
-                "merge_timeout": 2,
-                "magic": True,
                 "not_magic": False,
             }
             for name, value in asserted_results.iteritems():
