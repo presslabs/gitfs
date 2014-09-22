@@ -21,9 +21,6 @@ class CurrentView(PassthroughView):
     @while_not("want_to_merge")
     @not_in("ignore", check=["old", "new"])
     def rename(self, old, new):
-        if ".git/" in old or ".git/" in new:
-            raise FuseOSError(errno.ENOENT)
-
         new = re.sub(self.regex, '', new)
         result = super(CurrentView, self).rename(old, new)
 
@@ -47,16 +44,10 @@ class CurrentView(PassthroughView):
 
     @not_in("ignore", check=["path"])
     def readlink(self, path):
-        if ".git/" in path:
-            raise FuseOSError(errno.ENOENT)
-
         return os.readlink(self._full_path(path))
 
     @not_in("ignore", check=["path"])
     def getattr(self, path, fh=None):
-        if ".git/" in path:
-            raise FuseOSError(errno.ENOENT)
-
         full_path = self._full_path(path)
         st = os.lstat(full_path)
 
@@ -76,9 +67,6 @@ class CurrentView(PassthroughView):
             with them. First we check for offset, then for size. If any of this
             is off limit, raise EFBIG error and delete the file.
         """
-
-        if ".git/" in path:
-            raise FuseOSError(errno.ENOENT)
 
         size = len(buf)
         if path in self.dirty:
@@ -106,9 +94,6 @@ class CurrentView(PassthroughView):
     @while_not("want_to_merge")
     @not_in("ignore", check=["path"])
     def mkdir(self, path, mode):
-        if ".git/" in path:
-            raise FuseOSError(errno.ENOENT)
-
         result = super(CurrentView, self).mkdir(path, mode)
 
         path = "%s/.keep" % os.path.split(path)[1]
@@ -122,9 +107,6 @@ class CurrentView(PassthroughView):
     @while_not("want_to_merge")
     @not_in("ignore", check=["path"])
     def create(self, path, mode, fi=None):
-        if ".git/" in path:
-            raise FuseOSError(errno.ENOENT)
-
         self.somebody_is_writing.set()
         result = super(CurrentView, self).create(path, mode, fi)
         self.dirty[path] = {
@@ -142,9 +124,6 @@ class CurrentView(PassthroughView):
         """
         Executes chmod on the file at os level and then it commits the change.
         """
-
-        if ".git/" in path:
-            raise FuseOSError(errno.ENOENT)
 
         result = super(CurrentView, self).chmod(path, mode)
 
@@ -164,9 +143,6 @@ class CurrentView(PassthroughView):
         Each time you fsync, a new commit and push are made
         """
 
-        if ".git/" in path:
-            raise FuseOSError(errno.ENOENT)
-
         self.somebody_is_writing.set()
         result = super(CurrentView, self).fsync(path, fdatasync, fh)
 
@@ -179,9 +155,6 @@ class CurrentView(PassthroughView):
 
     @not_in("ignore", check=["path"])
     def open(self, path, flags):
-        if ".git/" in path:
-            raise FuseOSError(errno.ENOENT)
-
         write_mode = flags & (os.O_WRONLY | os.O_RDWR |
                               os.O_APPEND | os.O_CREAT)
 
@@ -228,13 +201,14 @@ class CurrentView(PassthroughView):
 
         return os.close(fh)
 
+    @not_in("ignore", check=["path"])
+    def readdir(self, path, fh):
+        return super(CurrentView, self).readdir(path, fh)
+
     @while_not("read_only")
     @while_not("want_to_merge")
     @not_in("ignore", check=["path"])
     def unlink(self, path):
-        if ".git/" in path:
-            raise FuseOSError(errno.ENOENT)
-
         result = super(CurrentView, self).unlink(path)
 
         message = 'Deleted %s' % path
@@ -243,16 +217,21 @@ class CurrentView(PassthroughView):
         return result
 
     def _index(self, message, add=None, remove=None):
+        non_empty = False
+
         add = self._sanitize(add)
         remove = self._sanitize(remove)
 
-        if remove is not None:
+        if remove is not None and remove not in self.ignore:
             self.repo.index.remove(self._sanitize(remove))
+            non_empty = True
 
-        if add is not None:
+        if add is not None and add not in self.ignore:
             self.repo.index.add(self._sanitize(add))
+            non_empty = True
 
-        self.queue.commit(add=add, remove=remove, message=message)
+        if non_empty:
+            self.queue.commit(add=add, remove=remove, message=message)
 
     def _sanitize(self, path):
         if path is not None and path.startswith("/"):

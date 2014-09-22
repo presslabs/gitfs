@@ -12,7 +12,7 @@ from pygit2.credentials import Keypair
 from fuse import Operations, FUSE, FuseOSError
 from gitfs.utils import Repository
 
-from gitfs.cache import LRUCache
+from gitfs.cache import LRUCache, CachedGitignore
 
 from gitfs.log import log
 
@@ -76,6 +76,7 @@ class Router(object):
 
         self.workers = []
         self.ignore = CachedGitignore("%s/.gitignore" % self.repo_path)
+        self.ignore.update()
 
         log.info('Done INIT')
 
@@ -162,6 +163,7 @@ class Router(object):
             kwargs['want_to_merge'] = self.want_to_merge
             kwargs['read_only'] = self.read_only
             kwargs['somebody_is_writing'] = self.somebody_is_writing
+            kwargs['ignore'] = self.ignore
 
             args = set(groups) - set(kwargs.values())
 
