@@ -28,7 +28,6 @@ class CachedGitignore(object):
         return self.check_key(path)
 
     def check_key(self, key):
-        print key, self.items
         for item in self.items:
             if self._check_item_and_key(item, key):
                 return True
@@ -36,7 +35,6 @@ class CachedGitignore(object):
 
     @lru_cache(4000)
     def _check_item_and_key(self, item, key):
-        print item, key
         if item in key or item == key:
             return True
 
