@@ -1,5 +1,5 @@
 import os
-import re
+import fnmatch
 
 from gitfs.cache.lru import lru_cache
 
@@ -9,11 +9,12 @@ class CachedGitignore(object):
         self.items = []
         self.path = path
         self.cache = {}
+        self.permanent = []
 
         self.update()
 
     def update(self):
-        self.items = ['.git/', '/.git']
+        self.items = ['/.git', '.git/*', '/.git/*']
 
         if self.path is not None and os.path.exists(self.path):
             with open(self.path) as gitignore:
@@ -33,13 +34,17 @@ class CachedGitignore(object):
                 return True
         return False
 
-    @lru_cache(4000)
+    @lru_cache(40000)
     def _check_item_and_key(self, item, key):
-        if item in key or item == key:
+        if item == key:
             return True
 
-        item = re.compile(item)
-        if item.search(key) is not None:
-            return True
+        try:
+            print fnmatch.fnmatch(key, item), key, item
+            if fnmatch.fnmatch(key, item):
+                return True
+        except:
+            print item, key
+            pass
 
         return False

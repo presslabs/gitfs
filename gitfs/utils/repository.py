@@ -16,8 +16,7 @@ class Repository(object):
         Proxy method for pygit2.Repository
         """
 
-        return self._repo[item]
-
+        return self._repo[item] 
     def __getattr__(self, attr):
         """
         Proxy method for pygit2.Repository
@@ -170,8 +169,15 @@ class Repository(object):
         # It acts as a proxy for the _get_git_object_type method, which
         # does the actual searching.
         path_components = split_path_into_components(path)
-        return self._get_git_object_type(tree, path_components[-1],
-                                         path_components)
+        try:
+            print "nu inteleg"
+            return self._get_git_object_type(tree, path_components[-1],
+                                             path_components)
+        except:
+            print "expcet", path
+            self.ignore.items.append(path)
+            print "hell"
+            return GIT_FILEMODE_TREE
 
     def _get_git_object(self, tree, obj_name, path_components):
         """
