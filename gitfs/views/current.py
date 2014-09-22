@@ -5,7 +5,7 @@ import errno
 
 from fuse import FuseOSError
 
-from gitfs.utils.decorators import while_not
+from gitfs.utils.decorators import while_not, not_in
 
 from .passthrough import PassthroughView, STATS
 
@@ -19,6 +19,7 @@ class CurrentView(PassthroughView):
 
     @while_not("read_only")
     @while_not("want_to_merge")
+    @not_in("ignore", check=["old", "new"])
     def rename(self, old, new):
         if ".git/" in old or ".git/" in new:
             raise FuseOSError(errno.ENOENT)
@@ -44,12 +45,14 @@ class CurrentView(PassthroughView):
 
         return result
 
+    @not_in("ignore", check=["path"])
     def readlink(self, path):
         if ".git/" in path:
             raise FuseOSError(errno.ENOENT)
 
         return os.readlink(self._full_path(path))
 
+    @not_in("ignore", check=["path"])
     def getattr(self, path, fh=None):
         if ".git/" in path:
             raise FuseOSError(errno.ENOENT)
@@ -66,6 +69,7 @@ class CurrentView(PassthroughView):
         return attrs
 
     @while_not("read_only")
+    @not_in("ignore", check=["path"])
     def write(self, path, buf, offset, fh):
         """
             We don't like big big files, so we need to be really carefull
@@ -100,6 +104,7 @@ class CurrentView(PassthroughView):
 
     @while_not("read_only")
     @while_not("want_to_merge")
+    @not_in("ignore", check=["path"])
     def mkdir(self, path, mode):
         if ".git/" in path:
             raise FuseOSError(errno.ENOENT)
@@ -115,6 +120,7 @@ class CurrentView(PassthroughView):
 
     @while_not("read_only")
     @while_not("want_to_merge")
+    @not_in("ignore", check=["path"])
     def create(self, path, mode, fi=None):
         if ".git/" in path:
             raise FuseOSError(errno.ENOENT)
@@ -131,6 +137,7 @@ class CurrentView(PassthroughView):
 
     @while_not("read_only")
     @while_not("want_to_merge")
+    @not_in("ignore", check=["path"])
     def chmod(self, path, mode):
         """
         Executes chmod on the file at os level and then it commits the change.
@@ -151,6 +158,7 @@ class CurrentView(PassthroughView):
 
     @while_not("read_only")
     @while_not("want_to_merge")
+    @not_in("ignore", check=["path"])
     def fsync(self, path, fdatasync, fh):
         """
         Each time you fsync, a new commit and push are made
@@ -169,6 +177,7 @@ class CurrentView(PassthroughView):
 
         return result
 
+    @not_in("ignore", check=["path"])
     def open(self, path, flags):
         if ".git/" in path:
             raise FuseOSError(errno.ENOENT)
@@ -190,6 +199,7 @@ class CurrentView(PassthroughView):
         return fh
 
     @while_not("read_only")
+    @not_in("ignore", check=["path"])
     def release(self, path, fh):
         """
         Check for path if something was written to. If so, commit and push
@@ -220,6 +230,7 @@ class CurrentView(PassthroughView):
 
     @while_not("read_only")
     @while_not("want_to_merge")
+    @not_in("ignore", check=["path"])
     def unlink(self, path):
         if ".git/" in path:
             raise FuseOSError(errno.ENOENT)
