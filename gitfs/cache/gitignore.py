@@ -20,9 +20,9 @@ class CachedGitignore(object):
 
         if self.ignore is not None and os.path.exists(self.ignore):
             with open(self.ignore) as gitignore:
-                new_items = gitignore.read().split("\n")
-                if "" in new_items:
-                    new_items.remove("")
+                new_items = filter(lambda line: line != "",
+                                   gitignore.read().split("\n"))
+
                 self.items += new_items
 
         if self.submodules is not None and os.path.exists(self.submodules):

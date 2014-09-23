@@ -35,7 +35,7 @@ class not_in(object):
         for index in to_check:
             arg = methods_args[index - 1]
 
-            if arg in self.look_at.cache and self.look_at.cache[arg]:
+            if self.look_at.cache.get(arg, False):
                 raise FuseOSError(errno.ENOENT)
 
             if self.look_at.check_key(arg):
