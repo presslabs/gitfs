@@ -17,8 +17,9 @@ class TestCachedGitignore(object):
                                 re=mocked_re):
                 gitignore = CachedGitignore("some_file", "some_file")
 
-                assert gitignore.items == ['/.git', '.git/*', '/.git/*', 'file',
-                                           '/found/*', '/found', 'found']
+                assert gitignore.items == ['/.git', '.git/*', '/.git/*',
+                                           'file', '/found/*', '/found',
+                                           'found']
 
     def test_update(self):
         gitignore = CachedGitignore()
