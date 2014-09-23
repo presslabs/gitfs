@@ -202,6 +202,7 @@ class CurrentView(PassthroughView):
 
         return os.close(fh)
 
+    @not_in("ignore", check=["path"])
     def readdir(self, path, fh):
         result = super(CurrentView, self).readdir(path, fh)
         return [entry for entry in result if entry not in self.ignore]
