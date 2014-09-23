@@ -6,6 +6,18 @@ from .base import Merger
 
 
 class AcceptMine(Merger):
+    def _create_remote_copy(self, branch_name, upstream, new_branch):
+        reference = "%s/%s" % (upstream, branch_name)
+        remote = self.repository.lookup_branch(reference,
+                                               pygit2.GIT_BRANCH_REMOTE)
+        remote_commit = remote.get_object()
+
+        local = self.repository.create_branch(new_branch, remote_commit)
+        ref = self.repository.lookup_reference("refs/heads/%s" % new_branch)
+        self.repository.checkout(ref, strategy=pygit2.GIT_CHECKOUT_FORCE)
+
+        return local
+
     def _create_local_copy(self, branch_name, new_branch):
         old_branch = self.repository.lookup_branch(branch_name,
                                                    pygit2.GIT_BRANCH_LOCAL)
@@ -23,16 +35,14 @@ class AcceptMine(Merger):
         return local
 
     def __call__(self, local_branch, remote_branch, upstream):
-        # create local copy
-        local_copy = self._create_local_copy(local_branch, "merging_local")
-
-        # reload branch from remote
-        local = self.reload_branch(local_branch, upstream)
-
+        # create copies
+        local = self._create_local_copy(local_branch, "merging_local")
+        remote = self._create_remote_copy(remote_branch, upstream,
+                                          "merging_remote")
         # get diverge commits
-        diverge_commits = self.find_diverge_commits(local_copy, local)
+        diverge_commits = self.find_diverge_commits(local, remote)
 
-        reference = "refs/heads/%s" % local_branch
+        reference = "refs/heads/%s" % "merging_remote"
         self.repository.checkout(reference,
                                  strategy=pygit2.GIT_CHECKOUT_FORCE)
 
@@ -42,8 +52,8 @@ class AcceptMine(Merger):
             self.repository.merge(commit.hex)
 
             # resolve conflicts
-            self.solve_conflicts(self.repository.index.conflicts)
             print "conflicte %s" % self.repository.index.conflicts
+            self.solve_conflicts(self.repository.index.conflicts)
 
             # create new commit
             ref = self.repository.lookup_reference(reference)
@@ -61,13 +71,30 @@ class AcceptMine(Merger):
             self.repository.checkout(reference,
                                      strategy=pygit2.GIT_CHECKOUT_FORCE)
             # cleanup after merge
-            self.repository.state_cleanup()
+            self.cleanup()
 
-        self.repository.checkout(reference,
+        ref = self.repository.lookup_reference(reference)
+        self.repository.create_reference("refs/heads/master",
+                                         ref.target,
+                                         force=True)
+        self.repository.checkout("refs/heads/%s" % local_branch,
                                  strategy=pygit2.GIT_CHECKOUT_FORCE)
         # delete merging_local
         ref = self.repository.lookup_reference("refs/heads/merging_local")
         ref.delete()
+
+        ref = self.repository.lookup_reference("refs/heads/merging_remote")
+        ref.delete()
+
+    def cleanup(self):
+        self.repository.state_cleanup()
+
+        status = self.repository.status()
+
+        # check for uncheckedout deleted files
+        for path in status:
+            if path not in self.repository.index:
+                os.unlink(self._full_path(path))
 
     def solve_conflicts(self, conflicts):
         if conflicts:
