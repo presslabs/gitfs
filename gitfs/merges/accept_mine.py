@@ -71,7 +71,7 @@ class AcceptMine(Merger):
             self.repository.checkout(reference,
                                      strategy=pygit2.GIT_CHECKOUT_FORCE)
             # cleanup after merge
-            self.cleanup()
+            self.repository.state_cleanup()
 
         ref = self.repository.lookup_reference(reference)
         self.repository.create_reference("refs/heads/master",
@@ -85,16 +85,6 @@ class AcceptMine(Merger):
 
         ref = self.repository.lookup_reference("refs/heads/merging_remote")
         ref.delete()
-
-    def cleanup(self):
-        self.repository.state_cleanup()
-
-        status = self.repository.status()
-
-        # check for uncheckedout deleted files
-        for path in status:
-            if path not in self.repository.index:
-                os.unlink(self._full_path(path))
 
     def solve_conflicts(self, conflicts):
         if conflicts:
@@ -114,6 +104,4 @@ class AcceptMine(Merger):
     def _full_path(self, partial):
         if partial.startswith("/"):
             partial = partial[1:]
-        path = os.path.join(self.repo_path, partial)
-
-        return path
+        return os.path.join(self.repo_path, partial)
