@@ -19,6 +19,7 @@ class MergeWorker(FetchWorker):
                                           commiter=self.commiter,
                                           repo_path=self.repo_path)
         self.strategy = strategy
+        self.has_merges = False
 
     def run(self):
         commits = []
@@ -51,31 +52,26 @@ class MergeWorker(FetchWorker):
         """
 
         if commits and merges:
-            print "commit sau merges"
             self.commit(commits)
             self.want_to_merge.set()
-            print "want to merge"
+            self.has_merges = True
             commits = []
             merges = []
         elif merges:
-            print "merges"
             self.want_to_merge.set()
-            print "want to merge"
+            self.has_merges = True
             merges = []
         elif commits:
-            print "commit"
             self.commit(commits)
             self.want_to_merge.set()
-            print "want to merge"
             commits = []
         elif (self.want_to_merge.is_set() and
               not self.somebody_is_writing.is_set()):
-            print "merge"
-            self.merge()
+            if self.has_merges:
+                self.merge()
             self.want_to_merge.clear()
-            print "no more merge"
+            self.has_merges = False
             self.push()
-            print "done push"
 
         return commits, merges
 
@@ -96,24 +92,18 @@ class MergeWorker(FetchWorker):
         self.read_only.set()
 
         try:
-            print "try to push"
             self.repository.push(self.upstream, self.branch)
-            print "push done"
             self.read_only.clear()
         except:
-            print "push failed"
             self.fetch()
         self.pushing.clear()
 
     @retry(each=3)
     def fetch(self):
-        print "try to fetch"
         behind = self.repository.fetch(self.upstream, self.branch)
         if behind:
-            print "behind"
             self.merge_queue.add({'type': 'merge'})
         else:
-            print "ok...pushing"
             self.push()
 
     def commit(self, jobs):
