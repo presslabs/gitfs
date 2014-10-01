@@ -54,7 +54,7 @@ class MergeWorker(FetchWorker):
         if commits and merges:
             self.commit(commits)
             self.want_to_merge.set()
-            this.has_merges = True
+            self.has_merges = True
             commits = []
             merges = []
         elif merges:
