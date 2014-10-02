@@ -5,6 +5,7 @@ import shutil
 import time
 
 from pwd import getpwnam
+from grp import getgrnam
 
 from errno import EFAULT
 
@@ -61,7 +62,7 @@ class Router(object):
         self.repo.credentials = credentials
 
         self.uid = getpwnam(user).pw_uid
-        self.gid = getpwnam(group).pw_gid
+        self.gid = getgrnam(group).gr_gid
 
         self.merge_queue = kwargs['merge_queue']
         self.want_to_merge = kwargs['want_to_merge']
