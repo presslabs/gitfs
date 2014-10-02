@@ -6,7 +6,6 @@ import errno
 from fuse import FuseOSError
 
 from gitfs.utils.decorators.while_not import while_not
-from gitfs.utils.decorators.not_in import not_in
 
 from .passthrough import PassthroughView, STATS
 
@@ -20,7 +19,6 @@ class CurrentView(PassthroughView):
 
     @while_not("read_only")
     @while_not("want_to_merge")
-    @not_in("ignore", check=["old", "new"])
     def rename(self, old, new):
         new = re.sub(self.regex, '', new)
         result = super(CurrentView, self).rename(old, new)
@@ -43,11 +41,9 @@ class CurrentView(PassthroughView):
 
         return result
 
-    @not_in("ignore", check=["path"])
     def readlink(self, path):
         return os.readlink(self._full_path(path))
 
-    @not_in("ignore", check=["path"])
     def getattr(self, path, fh=None):
         full_path = self._full_path(path)
         st = os.lstat(full_path)
@@ -61,7 +57,6 @@ class CurrentView(PassthroughView):
         return attrs
 
     @while_not("read_only")
-    @not_in("ignore", check=["path"])
     def write(self, path, buf, offset, fh):
         """
             We don't like big big files, so we need to be really carefull
@@ -93,7 +88,6 @@ class CurrentView(PassthroughView):
 
     @while_not("read_only")
     @while_not("want_to_merge")
-    @not_in("ignore", check=["path"])
     def mkdir(self, path, mode):
         result = super(CurrentView, self).mkdir(path, mode)
 
@@ -106,7 +100,6 @@ class CurrentView(PassthroughView):
 
     @while_not("read_only")
     @while_not("want_to_merge")
-    @not_in("ignore", check=["path"])
     def create(self, path, mode, fi=None):
         self.somebody_is_writing.set()
         result = super(CurrentView, self).create(path, mode, fi)
@@ -120,7 +113,6 @@ class CurrentView(PassthroughView):
 
     @while_not("read_only")
     @while_not("want_to_merge")
-    @not_in("ignore", check=["path"])
     def chmod(self, path, mode):
         """
         Executes chmod on the file at os level and then it commits the change.
@@ -138,7 +130,6 @@ class CurrentView(PassthroughView):
 
     @while_not("read_only")
     @while_not("want_to_merge")
-    @not_in("ignore", check=["path"])
     def fsync(self, path, fdatasync, fh):
         """
         Each time you fsync, a new commit and push are made
@@ -154,7 +145,6 @@ class CurrentView(PassthroughView):
 
         return result
 
-    @not_in("ignore", check=["path"])
     def open(self, path, flags):
         write_mode = flags & (os.O_WRONLY | os.O_RDWR |
                               os.O_APPEND | os.O_CREAT)
@@ -173,7 +163,6 @@ class CurrentView(PassthroughView):
         return fh
 
     @while_not("read_only")
-    @not_in("ignore", check=["path"])
     def release(self, path, fh):
         """
         Check for path if something was written to. If so, commit and push
@@ -202,14 +191,8 @@ class CurrentView(PassthroughView):
 
         return os.close(fh)
 
-    @not_in("ignore", check=["path"])
-    def readdir(self, path, fh):
-        result = super(CurrentView, self).readdir(path, fh)
-        return [entry for entry in result if entry not in self.ignore]
-
     @while_not("read_only")
     @while_not("want_to_merge")
-    @not_in("ignore", check=["path"])
     def unlink(self, path):
         print path
         result = super(CurrentView, self).unlink(path)

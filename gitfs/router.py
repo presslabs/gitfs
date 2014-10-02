@@ -12,7 +12,7 @@ from pygit2.credentials import Keypair
 from fuse import Operations, FUSE, FuseOSError
 from gitfs.utils import Repository
 
-from gitfs.cache import LRUCache, CachedGitignore
+from gitfs.cache import LRUCache
 
 from gitfs.log import log
 
@@ -54,8 +54,8 @@ class Router(object):
 
         log.info('Cloning into %s' % self.repo_path)
 
-        credentials = Keypair("git", "/home/wok/.ssh/one_more.pub",
-                              "/home/wok/.ssh/one_more", "")
+        credentials = Keypair("git", "/home/zalman/.ssh/id_rsa.pub",
+                              "/home/zalman/.ssh/id_rsa", "")
         self.repo = Repository.clone(self.remote_url, self.repo_path,
                                      self.branch, credentials)
         self.repo.credentials = credentials
@@ -75,8 +75,6 @@ class Router(object):
         self.repo.commits.update()
 
         self.workers = []
-        self.repo.ignore = CachedGitignore("%s/.gitignore" % self.repo_path,
-                                           "%s/.gitmodules" % self.repo_path)
 
         log.info('Done INIT')
 
@@ -163,7 +161,6 @@ class Router(object):
             kwargs['want_to_merge'] = self.want_to_merge
             kwargs['read_only'] = self.read_only
             kwargs['somebody_is_writing'] = self.somebody_is_writing
-            kwargs['ignore'] = self.repo.ignore
 
             args = set(groups) - set(kwargs.values())
 
