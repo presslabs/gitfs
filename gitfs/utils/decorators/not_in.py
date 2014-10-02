@@ -1,3 +1,4 @@
+import os
 import errno
 import inspect
 from functools import wraps
@@ -25,6 +26,8 @@ class not_in(object):
         return decorated
 
     def check_args(self, f, methods_args):
+        print '=========================='
+        print 'check_args'
         to_check = []
 
         args = inspect.getargspec(f)
@@ -36,10 +39,15 @@ class not_in(object):
             arg = methods_args[index - 1]
 
             if self.look_at.cache.get(arg, False):
-                raise FuseOSError(errno.ENOENT)
+                print 'raising EPERM (42) for arg: ', arg
+                raise FuseOSError(errno.EPERM)
 
             if self.look_at.check_key(arg):
                 self.look_at.cache[arg] = True
-                raise FuseOSError(errno.ENOENT)
+                print 'raising EPERM (47) for arg: ', arg
+                raise FuseOSError(errno.EPERM)
 
             self.look_at.cache[arg] = False
+
+        print '=========================='
+
