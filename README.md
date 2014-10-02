@@ -1,4 +1,4 @@
-gitiumFS [![Build Status](http://drone.presslabs.net/github.com/PressLabs/git-fs/status.svg?branch=master)](http://drone.presslabs.net/github.com/PressLabs/git-fs)
+gitfs [![Build Status](http://drone.presslabs.net/github.com/PressLabs/git-fs/status.svg?branch=master)](http://drone.presslabs.net/github.com/PressLabs/git-fs)
 ========
 
 A FUSE filesystem for git repositories, with local cache
@@ -41,10 +41,8 @@ to `user@FQDN`.
 * `merge_timeout`: the interval between idle state and commits/pushes. 
 Defaults to `5 sec`.
 * `fetch_timeout`: the interval between fetches. Defaults to `30 sec`.
+* `log`: The path for logging. Special name `syslog` will log to the system logger. Defaults to `syslog`.
 * `foreground`: specifies whether fuse will in foreground or in backround. Defaults
 to `False`.
 * `allow_other`: see `man fuse`.
 * `allow_root`: see `man fuse`.
-* `gitignore`: when this is set, does not commit any modifications that correspond
-to patterns specified in `.gitignore`. Defaults to `False`. __WARNING__ This 
-can lead to data loss in case you write to ignored files.
