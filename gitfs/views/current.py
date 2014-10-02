@@ -43,11 +43,9 @@ class CurrentView(PassthroughView):
 
         return result
 
-    @not_in("ignore", check=["path"])
     def readlink(self, path):
         return os.readlink(self._full_path(path))
 
-    @not_in("ignore", check=["path"])
     def getattr(self, path, fh=None):
         full_path = self._full_path(path)
         st = os.lstat(full_path)
@@ -154,7 +152,7 @@ class CurrentView(PassthroughView):
 
         return result
 
-    @not_in("ignore", check=["path"])
+    #@not_in("ignore", check=["path"])
     def open(self, path, flags):
         write_mode = flags & (os.O_WRONLY | os.O_RDWR |
                               os.O_APPEND | os.O_CREAT)
@@ -201,11 +199,6 @@ class CurrentView(PassthroughView):
             self.somebody_is_writing.set()
 
         return os.close(fh)
-
-    @not_in("ignore", check=["path"])
-    def readdir(self, path, fh):
-        result = super(CurrentView, self).readdir(path, fh)
-        return [entry for entry in result if entry not in self.ignore]
 
     @while_not("read_only")
     @while_not("want_to_merge")

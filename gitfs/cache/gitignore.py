@@ -35,12 +35,18 @@ class CachedGitignore(object):
                     self.items.append("/%s" % result[2])
                     self.items.append("%s" % result[2])
 
+        print 'FINAL items: ', self.items
+
         self.cache = {}
 
     def __contains__(self, path):
         return self.check_key(path)
 
     def check_key(self, key):
+        """
+        Returns True if the key matches one of the patterns that needs
+        to be ignored.
+        """
         for item in self.items:
             if self._check_item_and_key(item, key):
                 return True
@@ -48,6 +54,7 @@ class CachedGitignore(object):
 
     @lru_cache(40000)
     def _check_item_and_key(self, item, key):
+        print '_check_item_and_key(item={}, key={})'.format(item, key)
         if item == key:
             return True
 
