@@ -23,6 +23,7 @@ class Args(object):
             "max_offset": 10 * 1024 * 1024,
             "fetch_timeout": 5,
             "merge_timeout": 2,
+            "log": "syslog"
         }
         self.config = self.build_config(parser.parse_args())
 

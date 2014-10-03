@@ -1,8 +1,11 @@
 import argparse
+from logging import Formatter
+from logging.handlers import TimedRotatingFileHandler, SysLogHandler
 import threading
 import sys
 
 from fuse import FUSE
+from gitfs.log import log
 
 from gitfs.utils import Args
 from gitfs.routes import routes
@@ -75,6 +78,16 @@ def prepare_components(args):
     fetch_worker.daemon = True
 
     router.workers = [merge_worker, fetch_worker]
+
+    if args.log == "syslog":
+        handler = TimedRotatingFileHandler(args.log, when="midnight")
+    else:
+        handler = SysLogHandler()
+
+    handler.setFormatter(Formatter(fmt='%(asctime)s %(message)s',
+                                   datefmt='%B-%d-%Y %H:%M:%S'))
+
+    log.addHandler(handler)
 
     return merge_worker, fetch_worker, router
 

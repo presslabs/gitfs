@@ -44,6 +44,7 @@ class TestMount(object):
             'author_email': 'tester@test.com',
             'commiter_name': 'commit',
             'commiter_email': 'commiter@commiting.org',
+            'log': 'syslog'
         })
 
         mocked_argparse.Argumentparser.return_value = mocked_parser
