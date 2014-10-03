@@ -221,7 +221,6 @@ class Repository(object):
             return self._get_git_object_type(tree, path_components[-1],
                                              path_components)
         except:
-            self.ignore.items.append(path)
             return GIT_FILEMODE_TREE
 
     def _get_git_object(self, tree, obj_name, path_components):

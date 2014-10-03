@@ -51,38 +51,28 @@ class MergeWorker(FetchWorker):
         """
 
         if commits and merges:
-            print "commit sau merges"
             self.commit(commits)
             self.want_to_merge.set()
-            print "want to merge"
             commits = []
             merges = []
         elif merges:
-            print "merges"
             self.want_to_merge.set()
-            print "want to merge"
             merges = []
         elif commits:
-            print "commit"
             self.commit(commits)
             self.want_to_merge.set()
-            print "want to merge"
             commits = []
         elif (self.want_to_merge.is_set() and
               not self.somebody_is_writing.is_set()):
-            print "merge"
             self.merge()
             self.want_to_merge.clear()
-            print "no more merge"
             self.push()
-            print "done push"
 
         return commits, merges
 
     def merge(self):
         self.strategy(self.branch, self.branch, self.upstream)
         self.repository.commits.update()
-        self.repository.ignore.update()
 
     @while_not("fetching")
     def push(self):

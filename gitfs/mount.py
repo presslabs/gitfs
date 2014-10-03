@@ -1,5 +1,6 @@
 import argparse
 import threading
+import sys
 
 from fuse import FUSE
 
@@ -88,9 +89,15 @@ def start_fuse():
     fetch_worker.start()
 
     # ready to mount it
-    FUSE(router, args.mount_point, foreground=args.foreground, nonempty=True,
-         allow_root=args.allow_root, allow_other=args.allow_other,
-         fsname="GitFS")
+    if sys.platform == 'darwin':
+        FUSE(router, args.mount_point, foreground=args.foreground,
+             allow_root=args.allow_root, allow_other=args.allow_other,
+             fsname="GitFS")
+    else:
+        FUSE(router, args.mount_point, foreground=args.foreground,
+             nonempty=True, allow_root=args.allow_root,
+             allow_other=args.allow_other, fsname="GitFS")
+
 
 if __name__ == '__main__':
     start_fuse()
