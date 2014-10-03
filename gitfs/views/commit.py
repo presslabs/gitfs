@@ -90,15 +90,13 @@ class CommitView(ReadOnlyView):
         if path == '/':
             attrs.update(types[GIT_FILEMODE_TREE])
         else:
-            obj_type = self.repo.get_git_object_type(self.commit.tree, path)
-
-            if obj_type is None:
+            stats = self.repo.get_git_object_default_stats(self.commit.tree,
+                                                           path)
+            if stats is None:
                 raise FuseOSError(ENOENT)
 
-            attrs.update(types[obj_type])
-            if obj_type in [GIT_FILEMODE_BLOB, GIT_FILEMODE_BLOB_EXECUTABLE]:
-                attrs['st_size'] = self.repo.get_blob_size(self.commit.tree,
-                                                           path)
+            attrs.update(stats)
+
         return attrs
 
     def access(self, path, mode):
