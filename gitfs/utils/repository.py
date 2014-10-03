@@ -46,22 +46,13 @@ class Repository(object):
                 os.unlink(self._full_path(path))
                 continue
 
+            # check files stats
             stats = self.get_git_object_stat(path)
-
             current_stat = os.lstat(self._full_path(path))
 
-            print types[obj_type]['st_mode'] != current_stat.st_mode
             if stats['st_mode'] != current_stat.st_mode:
-                print os.lstat(self._full_path(path)).st_mode
-                print current_stat.st_mode
-                print "fuck"
-                print os.chmod(self._full_path(path), current_stat.st_mode)
-                print os.lstat(self._full_path(path)).st_mode
-                print current_stat.st_mode
+                os.chmod(self._full_path(path), current_stat.st_mode)
                 self._repo.index.add(self._sanitize(path))
-
-            print self._full_path(path)
-            print "%s is not the current status" % path
 
         return result
 
@@ -387,16 +378,19 @@ class Repository(object):
         return os.path.join(self._repo.workdir, partial)
 
     def get_git_object_default_stats(self, ref, path):
-        obj_type = self.get_git_object_type(ref, path)
-        if obj_type is None:
-            return obj_type
-
         types = {
             GIT_FILEMODE_LINK: {'st_mode': S_IFLNK | 0444},
             GIT_FILEMODE_TREE: {'st_mode': S_IFDIR | 0555, 'st_nlink': 2},
             GIT_FILEMODE_BLOB: {'st_mode': S_IFREG | 0444},
             GIT_FILEMODE_BLOB_EXECUTABLE: {'st_mode': S_IFREG | 0555},
         }
+
+        if path == '/':
+            return types[GIT_FILEMODE_TREE]
+
+        obj_type = self.get_git_object_type(ref, path)
+        if obj_type is None:
+            return obj_type
 
         stats = types[obj_type]
         if obj_type in [GIT_FILEMODE_BLOB, GIT_FILEMODE_BLOB_EXECUTABLE]:
