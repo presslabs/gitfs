@@ -124,19 +124,18 @@ class TestAcceptMine(object):
         mocked_reload.return_value = "reload"
         mocked_find_commits.return_value = mocked_diverge
         mocked_copy.return_value = "local_copy"
+        mocked_repo.create_branch.return_value = "merging_remote"
 
         mine = AcceptMine(mocked_repo, author="author", commiter="commiter")
 
         mine._create_local_copy = mocked_copy
-        mine.reload_branch = mocked_reload
         mine.find_diverge_commits = mocked_find_commits
         mine.solve_conflicts = mocked_solve
 
         mine.__call__("local_branch", "remote_branch", "upstream")
 
         mocked_copy.assert_called_once_with("local_branch", "merging_local")
-        mocked_reload.assert_called_once_with("local_branch", "upstream")
-        mocked_find_commits.assert_called_once_with("local_copy", "reload")
+        mocked_find_commits.assert_called_once_with("local_copy", "merging_remote")
         mocked_repo.checkout.has_calls([call("refs/heads/local_branch",
                                              strategy=GIT_CHECKOUT_FORCE)])
         mocked_repo.merge.assert_called_once_with(1)
@@ -151,4 +150,4 @@ class TestAcceptMine(object):
         mocked_repo.create_reference.called_once_with(mocked_ref, "new_commit",
                                                       force=True)
         assert mocked_repo.state_cleanup.call_count == 1
-        assert mocked_ref.delete.call_count == 1
+        assert mocked_ref.delete.call_count == 2
