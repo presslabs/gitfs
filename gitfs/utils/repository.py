@@ -32,43 +32,43 @@ class Repository(object):
         else:
             return self.__dict__[attr]
 
-    def checkout(self, ref, *args, **kwargs):
-        result = self._repo.checkout(ref, *args, **kwargs)
+    #def checkout(self, ref, *args, **kwargs):
+    #    result = self._repo.checkout(ref, *args, **kwargs)
 
-        status = self._repo.status()
-        for path, status in status.iteritems():
-            # path is current status, move on
-            if status == GIT_STATUS_CURRENT:
-                continue
+    #    status = self._repo.status()
+    #    for path, status in status.iteritems():
+    #        # path is current status, move on
+    #        if status == GIT_STATUS_CURRENT:
+    #            continue
 
-            # check if file exists or not
-            if path not in self._repo.index:
-                os.unlink(self._full_path(path))
-                continue
+    #        # check if file exists or not
+    #        if path not in self._repo.index:
+    #            os.unlink(self._full_path(path))
+    #            continue
 
-            obj_type = self.get_git_object_type(self._repo.head, path)
-            types = {
-                GIT_FILEMODE_LINK: {'st_mode': S_IFLNK | 0444},
-                GIT_FILEMODE_TREE: {'st_mode': S_IFDIR | 0555, 'st_nlink': 2},
-                GIT_FILEMODE_BLOB: {'st_mode': S_IFREG | 0444},
-                GIT_FILEMODE_BLOB_EXECUTABLE: {'st_mode': S_IFREG | 0555},
-            }
-            current_stat = os.lstat(self._full_path(path))
+    #        obj_type = self.get_git_object_type(self._repo.head, path)
+    #        types = {
+    #            GIT_FILEMODE_LINK: {'st_mode': S_IFLNK | 0444},
+    #            GIT_FILEMODE_TREE: {'st_mode': S_IFDIR | 0555, 'st_nlink': 2},
+    #            GIT_FILEMODE_BLOB: {'st_mode': S_IFREG | 0444},
+    #            GIT_FILEMODE_BLOB_EXECUTABLE: {'st_mode': S_IFREG | 0555},
+    #        }
+    #        current_stat = os.lstat(self._full_path(path))
 
-            print types[obj_type]['st_mode'] != current_stat.st_mode
-            if types[obj_type]['st_mode'] != current_stat.st_mode:
-                print os.lstat(self._full_path(path)).st_mode
-                print current_stat.st_mode
-                print "fuck"
-                print os.chmod(self._full_path(path), current_stat.st_mode)
-                print os.lstat(self._full_path(path)).st_mode
-                print current_stat.st_mode
-                self._repo.index.add(self._sanitize(path))
+    #        print types[obj_type]['st_mode'] != current_stat.st_mode
+    #        if types[obj_type]['st_mode'] != current_stat.st_mode:
+    #            print os.lstat(self._full_path(path)).st_mode
+    #            print current_stat.st_mode
+    #            print "fuck"
+    #            print os.chmod(self._full_path(path), current_stat.st_mode)
+    #            print os.lstat(self._full_path(path)).st_mode
+    #            print current_stat.st_mode
+    #            self._repo.index.add(self._sanitize(path))
 
-            print self._full_path(path)
-            print "%s is not the current status" % path
+    #        print self._full_path(path)
+    #        print "%s is not the current status" % path
 
-        return result
+    #    return result
 
     def _sanitize(self, path):
         if path is not None and path.startswith("/"):
