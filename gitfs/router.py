@@ -13,7 +13,7 @@ from pygit2.credentials import Keypair
 from fuse import Operations, FUSE, FuseOSError
 from gitfs.utils import Repository
 
-from gitfs.cache import LRUCache
+from gitfs.cache import LRUCache, CachedIgnore
 
 from gitfs.log import log
 
@@ -60,6 +60,7 @@ class Router(object):
         self.repo = Repository.clone(self.remote_url, self.repo_path,
                                      self.branch, credentials)
         self.repo.credentials = credentials
+        self.repo.ignore = CachedIgnore(submodules=True, ignore=True)
 
         self.uid = getpwnam(user).pw_uid
         self.gid = getgrnam(group).gr_gid
@@ -148,6 +149,7 @@ class Router(object):
 
             # TODO: move all this to a nice config variable
             kwargs['repo'] = self.repo
+            kwargs['ignore'] = self.repo.ignore
             kwargs['repo_path'] = self.repo_path
             kwargs['mount_path'] = self.mount_path
             kwargs['regex'] = route['regex']
