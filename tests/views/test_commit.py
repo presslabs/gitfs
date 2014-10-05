@@ -104,10 +104,15 @@ class TestCommitView(object):
     def test_getattr_with_simple_path(self):
         mocked_repo = MagicMock()
         mocked_commit = MagicMock()
+        stats = {
+            'st_mode': S_IFDIR | 0555,
+            'st_nlink': 2
+        }
 
         mocked_commit.tree = "tree"
         mocked_commit.commit_time = "now+1"
         mocked_repo.revparse_single.return_value = mocked_commit
+        mocked_repo.get_git_object_default_stats.return_value = stats
 
         view = CommitView(repo=mocked_repo, commit_sha1="sha1",
                           mount_time="now", uid=1, gid=1)
@@ -129,7 +134,7 @@ class TestCommitView(object):
         mocked_commit.tree = "tree"
         mocked_commit.commit_time = "now+1"
         mocked_repo.revparse_single.return_value = mocked_commit
-        mocked_repo.get_git_object_type.return_value = None
+        mocked_repo.get_git_object_default_stats.return_value = None
 
         view = CommitView(repo=mocked_repo, commit_sha1="sha1",
                           mount_time="now", uid=1, gid=1)
@@ -137,8 +142,8 @@ class TestCommitView(object):
         with pytest.raises(FuseOSError):
             view.getattr("/path", 1)
 
-        mocked_repo.get_git_object_type.assert_called_once_with("tree",
-                                                                "/path")
+        args = ("tree", "/path")
+        mocked_repo.get_git_object_default_stats.assert_called_once_with(*args)
 
     def test_getattr_for_a_valid_file(self):
         mocked_repo = MagicMock()
@@ -147,8 +152,10 @@ class TestCommitView(object):
         mocked_commit.tree = "tree"
         mocked_commit.commit_time = "now+1"
         mocked_repo.revparse_single.return_value = mocked_commit
-        mocked_repo.get_git_object_type.return_value = GIT_FILEMODE_BLOB
-        mocked_repo.get_blob_size.return_value = 10
+        mocked_repo.get_git_object_default_stats.return_value = {
+            'st_mode': S_IFREG | 0444,
+            'st_size': 10
+        }
 
         view = CommitView(repo=mocked_repo, commit_sha1="sha1",
                           mount_time="now", uid=1, gid=1)
@@ -164,8 +171,8 @@ class TestCommitView(object):
             'st_size': 10
         }
         assert result == asserted_result
-        mocked_repo.get_git_object_type.assert_called_once_with("tree",
-                                                                "/path")
+        args = ("tree", "/path")
+        mocked_repo.get_git_object_default_stats.assert_called_once_with(*args)
 
     def test_readlink(self):
         mocked_repo = MagicMock()

@@ -262,6 +262,27 @@ class Repository(object):
         path_components = split_path_into_components(path)
         return self._get_git_object(tree, path_components[-1], path_components)
 
+    def get_git_object_default_stats(self, ref, path):
+        types = {
+            GIT_FILEMODE_LINK: {'st_mode': S_IFLNK | 0444},
+            GIT_FILEMODE_TREE: {'st_mode': S_IFDIR | 0555, 'st_nlink': 2},
+            GIT_FILEMODE_BLOB: {'st_mode': S_IFREG | 0444},
+            GIT_FILEMODE_BLOB_EXECUTABLE: {'st_mode': S_IFREG | 0555},
+        }
+
+        if path == "/":
+            return types[GIT_FILEMODE_TREE]
+
+        obj_type = self.get_git_object_type(ref, path)
+        if obj_type is None:
+            return obj_type
+
+        stats = types[obj_type]
+        if obj_type in [GIT_FILEMODE_BLOB, GIT_FILEMODE_BLOB_EXECUTABLE]:
+            stats['st_size'] = self.get_blob_size(ref, path)
+
+        return stats
+
     def get_blob_size(self, tree, path):
         """
         Returns the size of a the data contained by a blob object
@@ -376,24 +397,3 @@ class Repository(object):
         if partial.startswith("/"):
             partial = partial[1:]
         return os.path.join(self._repo.workdir, partial)
-
-    def get_git_object_default_stats(self, ref, path):
-        types = {
-            GIT_FILEMODE_LINK: {'st_mode': S_IFLNK | 0444},
-            GIT_FILEMODE_TREE: {'st_mode': S_IFDIR | 0555, 'st_nlink': 2},
-            GIT_FILEMODE_BLOB: {'st_mode': S_IFREG | 0444},
-            GIT_FILEMODE_BLOB_EXECUTABLE: {'st_mode': S_IFREG | 0555},
-        }
-
-        if path == '/':
-            return types[GIT_FILEMODE_TREE]
-
-        obj_type = self.get_git_object_type(ref, path)
-        if obj_type is None:
-            return obj_type
-
-        stats = types[obj_type]
-        if obj_type in [GIT_FILEMODE_BLOB, GIT_FILEMODE_BLOB_EXECUTABLE]:
-            stats['st_size'] = self.get_blob_size(ref, path)
-
-        return stats
