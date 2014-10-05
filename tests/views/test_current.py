@@ -6,7 +6,7 @@ from mock import patch, MagicMock, call
 
 from fuse import FuseOSError
 from gitfs.views.current import CurrentView
-from gitfs.cache.gitignore import CachedGitignore
+from gitfs.cache.gitignore import CachedIgnore
 
 
 class TestCurrentView(object):
@@ -28,7 +28,7 @@ class TestCurrentView(object):
 
             current = CurrentView(regex="regex", repo_path="repo_path",
                                   read_only=Event(), want_to_merge=Event(),
-                                  ignore=CachedGitignore("f"))
+                                  ignore=CachedIgnore("f"))
             current._index = mocked_index
 
             result = current.rename("old", "new")
@@ -44,7 +44,7 @@ class TestCurrentView(object):
     def test_rename_in_git_dir(self):
         current = CurrentView(repo_path="repo",
                               read_only=Event(), want_to_merge=Event(),
-                              ignore=CachedGitignore("f"))
+                              ignore=CachedIgnore("f"))
         with pytest.raises(FuseOSError):
             current.rename(".git/", ".git/")
 
@@ -59,7 +59,7 @@ class TestCurrentView(object):
 
             current = CurrentView(repo_path="repo",
                                   read_only=Event(), want_to_merge=Event(),
-                                  ignore=CachedGitignore("f"))
+                                  ignore=CachedIgnore("f"))
             current._index = mocked_index
             current._full_path = mocked_full_path
 
@@ -78,17 +78,10 @@ class TestCurrentView(object):
 
             current = CurrentView(repo_path="repo",
                                   read_only=Event(), want_to_merge=Event(),
-                                  ignore=CachedGitignore("f"))
+                                  ignore=CachedIgnore("f"))
             current._full_path = mocked_full_path
 
             assert current.readlink("path") == "done"
-
-    def test_readlink_in_git_repo(self):
-        with pytest.raises(FuseOSError):
-            current = CurrentView(repo_path="repo",
-                                  read_only=Event(), want_to_merge=Event(),
-                                  ignore=CachedGitignore("f"))
-            current.readlink(".git/")
 
     def test_getattr(self):
         mocked_full = MagicMock()
@@ -102,7 +95,7 @@ class TestCurrentView(object):
         with patch.multiple('gitfs.views.current', os=mocked_os,
                             STATS=['simple']):
             current = CurrentView(repo_path="repo", uid=1, gid=1,
-                                  ignore=CachedGitignore("f"))
+                                  ignore=CachedIgnore("f"))
             current._full_path = mocked_full
 
             result = current.getattr("path")
@@ -116,22 +109,16 @@ class TestCurrentView(object):
             mocked_os.lstat.assert_called_once_with("full_path")
             mocked_full.assert_called_once_with("path")
 
-    def test_getattr_in_git_dir(self):
-        with pytest.raises(FuseOSError):
-            current = CurrentView(repo_path="repo", uid=1, gid=1,
-                                  ignore=CachedGitignore("f"))
-            current.getattr(".git/index")
-
     def test_write_in_git_dir(self):
         with pytest.raises(FuseOSError):
             current = CurrentView(repo_path="repo", uid=1, gid=1,
                                   read_only=Event(),
-                                  ignore=CachedGitignore("f"))
+                                  ignore=CachedIgnore("f"))
             current.write(".git/index", "buf", "offset", 1)
 
     def test_write_to_large_file(self):
         current = CurrentView(repo_path="repo", uid=1, gid=1,
-                              read_only=Event(), ignore=CachedGitignore("f"))
+                              read_only=Event(), ignore=CachedIgnore("f"))
         current.max_size = 10
         current.dirty = {
             '/path': {
@@ -157,7 +144,7 @@ class TestCurrentView(object):
         current_view.PassthroughView.write = mocked_write
 
         current = CurrentView(repo_path="repo", uid=1, gid=1,
-                              read_only=Event(), ignore=CachedGitignore("f"))
+                              read_only=Event(), ignore=CachedIgnore("f"))
         current.max_offset = 20
         current.max_size = 20
         current.dirty = {
@@ -192,7 +179,7 @@ class TestCurrentView(object):
 
             current = CurrentView(repo_path="repo", uid=1, gid=1,
                                   read_only=Event(), want_to_merge=Event(),
-                                  ignore=CachedGitignore("f"))
+                                  ignore=CachedIgnore("f"))
             current.create = mocked_create
             current.release = mocked_release
 
@@ -206,14 +193,14 @@ class TestCurrentView(object):
     def test_mkdir_in_git_dir(self):
         current = CurrentView(repo_path="repo", uid=1, gid=1,
                               read_only=Event(), want_to_merge=Event(),
-                              ignore=CachedGitignore("f"))
+                              ignore=CachedIgnore("f"))
         with pytest.raises(FuseOSError):
             current.mkdir(".git/", "mode")
 
     def test_create_in_git_dir(self):
         current = CurrentView(repo_path="repo", uid=1, gid=1,
                               read_only=Event(), want_to_merge=Event(),
-                              ignore=CachedGitignore("f"))
+                              ignore=CachedIgnore("f"))
 
         with pytest.raises(FuseOSError):
             current.create(".git/", "mode")
@@ -228,7 +215,7 @@ class TestCurrentView(object):
         current = CurrentView(repo_path="repo", uid=1, gid=1,
                               read_only=Event(), want_to_merge=Event(),
                               somebody_is_writing=mocked_writing,
-                              ignore=CachedGitignore("f"))
+                              ignore=CachedIgnore("f"))
         current.dirty = {
             '/path': {
                 'content': "here"
@@ -250,7 +237,7 @@ class TestCurrentView(object):
     def test_chmod_in_git_dir(self):
         current = CurrentView(repo_path="repo", uid=1, gid=1,
                               read_only=Event(), want_to_merge=Event(),
-                              ignore=CachedGitignore("f"))
+                              ignore=CachedIgnore("f"))
         with pytest.raises(FuseOSError):
             current.chmod(".git/", "mode")
 
@@ -265,7 +252,7 @@ class TestCurrentView(object):
         current = CurrentView(repo_path="repo", uid=1, gid=1,
                               read_only=Event(), want_to_merge=Event(),
                               somebody_is_writing=mocked_writing,
-                              ignore=CachedGitignore("f"))
+                              ignore=CachedIgnore("f"))
 
         current._index = mocked_index
 
@@ -280,7 +267,7 @@ class TestCurrentView(object):
     def test_fsync_a_file_from_git_dir(self):
         current = CurrentView(repo_path="repo", uid=1, gid=1,
                               read_only=Event(), want_to_merge=Event(),
-                              ignore=CachedGitignore("f"))
+                              ignore=CachedIgnore("f"))
 
         with pytest.raises(FuseOSError):
             current.fsync(".git/", "data", 0)
@@ -296,7 +283,7 @@ class TestCurrentView(object):
         current = CurrentView(repo_path="repo", uid=1, gid=1,
                               read_only=Event(), want_to_merge=Event(),
                               somebody_is_writing=mocked_writing,
-                              ignore=CachedGitignore("f"))
+                              ignore=CachedIgnore("f"))
         current._index = mocked_index
 
         assert current.fsync("/path", "data", 1) == "done"
@@ -307,14 +294,8 @@ class TestCurrentView(object):
 
         current_view.PassthroughView.fsync = old_fsync
 
-    def test_open_from_git_dir(self):
-        current = CurrentView(repo_path="repo", ignore=CachedGitignore("f"))
-
-        with pytest.raises(FuseOSError):
-            current.open(".git/", 0)
-
     def test_unlink_from_git_dir(self):
-        current = CurrentView(repo_path="repo", ignore=CachedGitignore("f"),
+        current = CurrentView(repo_path="repo", ignore=CachedIgnore("f"),
                               read_only=Event(), want_to_merge=Event())
 
         with pytest.raises(FuseOSError):
@@ -329,7 +310,7 @@ class TestCurrentView(object):
 
         current = CurrentView(repo_path="repo", uid=1, gid=1,
                               read_only=Event(), want_to_merge=Event(),
-                              ignore=CachedGitignore("f"))
+                              ignore=CachedIgnore("f"))
         current._index = mocked_index
 
         assert current.unlink("/path") == "done"
@@ -346,7 +327,7 @@ class TestCurrentView(object):
         mocked_sanitize.return_value = ["to-index"]
 
         current = CurrentView(repo_path="repo", repo=mocked_repo,
-                              queue=mocked_queue, ignore=CachedGitignore("f"))
+                              queue=mocked_queue, ignore=CachedIgnore("f"))
         current._sanitize = mocked_sanitize
         current._index("message", ["add"], ["remove"])
 
@@ -378,7 +359,7 @@ class TestCurrentView(object):
                             time=mocked_time):
             current = CurrentView(repo_path="repo",
                                   want_to_merge=want_to_merge,
-                                  ignore=CachedGitignore("f"))
+                                  ignore=CachedIgnore("f"))
 
             current._full_path = mocked_full
             current.writing = set([])
@@ -403,7 +384,7 @@ class TestCurrentView(object):
 
         current = CurrentView(repo_path="path",
                               somebody_is_writing=mocked_write,
-                              read_only=Event(), ignore=CachedGitignore("f"))
+                              read_only=Event(), ignore=CachedIgnore("f"))
         current.dirty = {
             'path/': {
                 'delete_it': True,
@@ -438,7 +419,7 @@ class TestCurrentView(object):
 
         current = CurrentView(repo_path="path",
                               somebody_is_writing=mocked_write,
-                              read_only=Event(), ignore=CachedGitignore("f"))
+                              read_only=Event(), ignore=CachedIgnore("f"))
         current.dirty = {}
         current.writing = mocked_writing
 

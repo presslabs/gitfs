@@ -3,7 +3,7 @@ from stat import S_IFDIR, S_IFREG
 import pytest
 from mock import MagicMock, patch
 
-from pygit2 import GIT_FILEMODE_BLOB, GIT_FILEMODE_TREE
+from pygit2 import GIT_FILEMODE_TREE
 from fuse import FuseOSError
 
 from gitfs.views.commit import CommitView
