@@ -1,8 +1,8 @@
 from mock import MagicMock, patch
-from gitfs.cache import CachedGitignore
+from gitfs.cache import CachedIgnore
 
 
-class TestCachedGitignore(object):
+class TestCachedIgnore(object):
     def test_init(self):
         mocked_os = MagicMock()
         mocked_os.path.exists.return_value = True
@@ -15,14 +15,14 @@ class TestCachedGitignore(object):
 
             with patch.multiple("gitfs.cache.gitignore", os=mocked_os,
                                 re=mocked_re):
-                gitignore = CachedGitignore("some_file", "some_file")
+                gitignore = CachedIgnore("some_file", "some_file")
 
                 assert gitignore.items == ['/.git', '.git/*', '/.git/*',
                                            'file', '/found/*', '/found',
                                            'found']
 
     def test_update(self):
-        gitignore = CachedGitignore()
+        gitignore = CachedIgnore()
         gitignore.cache = {"some_key": "some_value"}
 
         gitignore.update()
@@ -30,7 +30,7 @@ class TestCachedGitignore(object):
         assert gitignore.cache == {}
 
     def test_contains(self):
-        gitignore = CachedGitignore()
+        gitignore = CachedIgnore()
 
         assert '/.git' in gitignore
         assert 'file' not in gitignore
