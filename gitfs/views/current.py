@@ -6,6 +6,7 @@ import errno
 from fuse import FuseOSError
 
 from gitfs.utils.decorators.while_not import while_not
+from gitfs.utils.decorators.not_in import not_in
 
 from .passthrough import PassthroughView, STATS
 
@@ -19,6 +20,7 @@ class CurrentView(PassthroughView):
 
     @while_not("read_only")
     @while_not("want_to_merge")
+    @not_in("ignore", check=["old", "new"])
     def rename(self, old, new):
         new = re.sub(self.regex, '', new)
         result = super(CurrentView, self).rename(old, new)
@@ -33,6 +35,7 @@ class CurrentView(PassthroughView):
         return result
 
     @while_not("want_to_merge")
+    @not_in("ignore", check=["target"])
     def symlink(self, name, target):
         result = os.symlink(target, self._full_path(name))
 
@@ -57,6 +60,7 @@ class CurrentView(PassthroughView):
         return attrs
 
     @while_not("read_only")
+    @not_in("ignore", check=["path"])
     def write(self, path, buf, offset, fh):
         """
             We don't like big big files, so we need to be really carefull
@@ -88,6 +92,7 @@ class CurrentView(PassthroughView):
 
     @while_not("read_only")
     @while_not("want_to_merge")
+    @not_in("ignore", check=["path"])
     def mkdir(self, path, mode):
         result = super(CurrentView, self).mkdir(path, mode)
 
@@ -100,6 +105,7 @@ class CurrentView(PassthroughView):
 
     @while_not("read_only")
     @while_not("want_to_merge")
+    @not_in("ignore", check=["path"])
     def create(self, path, mode, fi=None):
         self.somebody_is_writing.set()
         result = super(CurrentView, self).create(path, mode, fi)
@@ -113,6 +119,7 @@ class CurrentView(PassthroughView):
 
     @while_not("read_only")
     @while_not("want_to_merge")
+    @not_in("ignore", check=["path"])
     def chmod(self, path, mode):
         """
         Executes chmod on the file at os level and then it commits the change.
@@ -120,7 +127,6 @@ class CurrentView(PassthroughView):
 
         result = super(CurrentView, self).chmod(path, mode)
 
-        print "CHMOOOOD"
         self.somebody_is_writing.set()
         message = 'Chmod to %s on %s' % (str(oct(mode))[3:-1], path)
         self._index(add=path, message=message)
@@ -130,6 +136,7 @@ class CurrentView(PassthroughView):
 
     @while_not("read_only")
     @while_not("want_to_merge")
+    @not_in("ignore", check=["path"])
     def fsync(self, path, fdatasync, fh):
         """
         Each time you fsync, a new commit and push are made
@@ -145,22 +152,28 @@ class CurrentView(PassthroughView):
 
         return result
 
-    def open(self, path, flags):
-        write_mode = flags & (os.O_WRONLY | os.O_RDWR |
-                              os.O_APPEND | os.O_CREAT)
-
-        if self.want_to_merge.is_set() and write_mode:
-            print "want to write"
+    @not_in("ignore", check=["path"])
+    def open_for_write(self, path, flags):
+        if self.want_to_merge.is_set():
             while self.want_to_merge.is_set():
                 time.sleep(2)
 
-        full_path = self._full_path(path)
-        fh = os.open(full_path, flags)
-
-        if write_mode:
-            self.writing.add(fh)
+        fh = self.open_for_read(path, flags)
+        self.writing.add(fh)
 
         return fh
+
+    def open_for_read(self, path, flags):
+        full_path = self._full_path(path)
+        return os.open(full_path, flags)
+
+    def open(self, path, flags):
+        write_mode = flags & (os.O_WRONLY | os.O_RDWR |
+                              os.O_APPEND | os.O_CREAT)
+        if write_mode:
+            return self.open_for_write(path, flags)
+
+        return self.open_for_read(path, flags)
 
     @while_not("read_only")
     def release(self, path, fh):
@@ -193,8 +206,8 @@ class CurrentView(PassthroughView):
 
     @while_not("read_only")
     @while_not("want_to_merge")
+    @not_in("ignore", check=["path"])
     def unlink(self, path):
-        print path
         result = super(CurrentView, self).unlink(path)
 
         message = 'Deleted %s' % path

@@ -1,10 +1,6 @@
 import os
-from stat import S_IFDIR, S_IFREG, S_IFLNK
 from errno import ENOENT
-from pygit2 import (
-    GIT_FILEMODE_TREE, GIT_FILEMODE_BLOB, GIT_FILEMODE_BLOB_EXECUTABLE,
-    GIT_FILEMODE_LINK
-)
+from pygit2 import GIT_FILEMODE_TREE
 from fuse import FuseOSError
 
 from gitfs.utils import split_path_into_components
@@ -80,25 +76,12 @@ class CommitView(ReadOnlyView):
             'st_mtime': self.commit.commit_time,
         })
 
-        types = {
-            GIT_FILEMODE_LINK: {'st_mode': S_IFLNK | 0444},
-            GIT_FILEMODE_TREE: {'st_mode': S_IFDIR | 0555, 'st_nlink': 2},
-            GIT_FILEMODE_BLOB: {'st_mode': S_IFREG | 0444},
-            GIT_FILEMODE_BLOB_EXECUTABLE: {'st_mode': S_IFREG | 0555},
-        }
+        stats = self.repo.get_git_object_default_stats(self.commit.tree, path)
+        if stats is None:
+            raise FuseOSError(ENOENT)
 
-        if path == '/':
-            attrs.update(types[GIT_FILEMODE_TREE])
-        else:
-            obj_type = self.repo.get_git_object_type(self.commit.tree, path)
+        attrs.update(stats)
 
-            if obj_type is None:
-                raise FuseOSError(ENOENT)
-
-            attrs.update(types[obj_type])
-            if obj_type in [GIT_FILEMODE_BLOB, GIT_FILEMODE_BLOB_EXECUTABLE]:
-                attrs['st_size'] = self.repo.get_blob_size(self.commit.tree,
-                                                           path)
         return attrs
 
     def access(self, path, mode):

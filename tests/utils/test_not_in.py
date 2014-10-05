@@ -1,7 +1,7 @@
 from fuse import FuseOSError
 from mock import MagicMock, patch
 import pytest
-from gitfs.cache import CachedGitignore
+from gitfs.cache import CachedIgnore
 from gitfs.utils.decorators.not_in import not_in
 
 
@@ -10,7 +10,7 @@ class TestNotIn(object):
         mocked_function = MagicMock()
         mocked_function.__name__ = "function"
         mocked_object = MagicMock()
-        mocked_object.ignore = CachedGitignore()
+        mocked_object.ignore = CachedIgnore()
         mocked_inspect = MagicMock()
         mocked_inspect.getargspec.return_value = [["file"]]
 

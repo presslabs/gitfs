@@ -23,17 +23,6 @@ class AcceptMine(Merger):
                                                    pygit2.GIT_BRANCH_LOCAL)
         return old_branch.rename(new_branch, True)
 
-    def reload_branch(self, branch, upstream):
-        remote = self.repository.lookup_branch("%s/%s" % (upstream, branch),
-                                               pygit2.GIT_BRANCH_REMOTE)
-        remote_commit = remote.get_object()
-
-        local = self.repository.create_branch(branch, remote_commit)
-        ref = self.repository.lookup_reference("refs/heads/%s" % branch)
-        self.repository.checkout(ref, strategy=pygit2.GIT_CHECKOUT_FORCE)
-
-        return local
-
     def __call__(self, local_branch, remote_branch, upstream):
         # create copies
         local = self._create_local_copy(local_branch, "merging_local")

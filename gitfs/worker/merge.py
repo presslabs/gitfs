@@ -73,6 +73,7 @@ class MergeWorker(FetchWorker):
     def merge(self):
         self.strategy(self.branch, self.branch, self.upstream)
         self.repository.commits.update()
+        self.repository.ignore.update()
 
     @while_not("fetching")
     def push(self):
