@@ -1,7 +1,8 @@
-import os
-import grp
 import getpass
+import os
+import socket
 import tempfile
+import grp
 
 
 class Args(object):
@@ -12,17 +13,13 @@ class Args(object):
             "group": self.get_current_group,
             "foreground": True,
             "branch": "master",
-            "upstream": "origin",
             "allow_other": False,
             "allow_root": False,
-            "author_name": "Presslabs",
-            "author_email": "git@presslabs.com",
-            "commiter_name": "Presslabs",
-            "commiter_email": "git@presslabs.com",
-            "max_size": 10 * 1024 * 1024,
-            "max_offset": 10 * 1024 * 1024,
-            "fetch_timeout": 5,
-            "merge_timeout": 2,
+            "commiter_name": self.get_current_user,
+            "commiter_email": self.get_current_email,
+            "max_size": 10,
+            "fetch_timeout": 30,
+            "merge_timeout": 5,
             "log": "syslog"
         }
         self.config = self.build_config(parser.parse_args())
@@ -64,5 +61,8 @@ class Args(object):
     def get_current_user(self):
         return getpass.getuser()
 
+    def get_current_email(self):
+        return self.get_current_user() + "@" + socket.gethostname()
+
     def get_repos_path(self):
-        return tempfile.mkdtemp()
+        return tempfile.mkdtemp(dir="/var/lib/gitfs")

@@ -40,8 +40,6 @@ class TestMount(object):
             'upstream': 'origin',
             'fetch_timeout': 10,
             'merge_timeout': 10,
-            'author_name': 'test',
-            'author_email': 'tester@test.com',
             'commiter_name': 'commit',
             'commiter_email': 'commiter@commiting.org',
             'log': 'syslog'
@@ -89,7 +87,8 @@ class TestMount(object):
                 'fetching': mocked_event,
                 'pushing': mocked_event
             }
-            mocked_merger.assert_called_once_with('test', 'tester@test.com',
+            mocked_merger.assert_called_once_with('commit',
+                                                  'commiter@commiting.org',
                                                   'commit',
                                                   'commiter@commiting.org',
                                                   **asserted_call)

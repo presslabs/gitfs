@@ -1,6 +1,7 @@
 import argparse
 from logging import Formatter
 from logging.handlers import TimedRotatingFileHandler, SysLogHandler
+import tempfile
 import threading
 import sys
 
@@ -16,8 +17,8 @@ from gitfs.worker import MergeQueue, MergeWorker, FetchWorker
 def parse_args(parser):
     parser.add_argument('remote_url', help='repo to be cloned')
     parser.add_argument('mount_point', help='where the repo should be mount')
-    parser.add_argument('-o', help='other options: repos_path, user, ' +
-                                   'group, branch, max_size, max_offset, ' +
+    parser.add_argument('-o', help='other options: repos_path, user, '
+                                   'group, branch, max_size, max_offset, '
                                    'fetch_timeout, merge_timeout')
     return Args(parser)
 
@@ -39,8 +40,8 @@ def prepare_components(args):
                     branch=args.branch,
                     user=args.user,
                     group=args.group,
-                    max_size=args.max_size,
-                    max_offset=args.max_offset,
+                    max_size=args.max_size * 1024 * 1024,
+                    max_offset=args.max_size * 1024 * 1024,
                     merge_queue=merge_queue,
                     want_to_merge=want_to_merge,
                     somebody_is_writing=somebody_is_writing,
@@ -50,7 +51,7 @@ def prepare_components(args):
     router.register(routes)
 
     # setup workers
-    merge_worker = MergeWorker(args.author_name, args.author_email,
+    merge_worker = MergeWorker(args.commiter_name, args.commiter_email,
                                args.commiter_name, args.commiter_email,
                                want_to_merge=want_to_merge,
                                somebody_is_writing=somebody_is_writing,
@@ -58,14 +59,14 @@ def prepare_components(args):
                                merge_queue=merge_queue,
                                merging=merging,
                                repository=router.repo,
-                               upstream=args.upstream,
+                               upstream="origin",
                                branch=args.branch,
                                repo_path=router.repo_path,
                                timeout=args.merge_timeout,
                                fetching=fetching,
                                pushing=pushing)
 
-    fetch_worker = FetchWorker(upstream=args.upstream,
+    fetch_worker = FetchWorker(upstream="origin",
                                branch=args.branch,
                                repository=router.repo,
                                read_only=read_only,

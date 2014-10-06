@@ -12,7 +12,7 @@ class TestWriteCurrentView(BaseTest):
         with open(filename, "w") as f:
             f.write(content)
 
-        time.sleep(3)
+        time.sleep(6)
 
         # check if the write was done correctly
         with open(filename) as f:
@@ -31,7 +31,7 @@ class TestWriteCurrentView(BaseTest):
 
         os.makedirs(directory)
 
-        time.sleep(3)
+        time.sleep(6)
 
         # check if directory exists or not
         directory_path = "%s/new_directory" % self.repo_path
@@ -64,7 +64,7 @@ class TestWriteCurrentView(BaseTest):
 
         os.rename(old_filename, new_filename)
 
-        time.sleep(3)
+        time.sleep(6)
 
         # check for new file
         assert os.path.exists(new_filename)
@@ -80,7 +80,7 @@ class TestWriteCurrentView(BaseTest):
             f.write(content)
             os.fsync(f.fileno())
 
-        time.sleep(3)
+        time.sleep(6)
 
         self.assert_new_commit(2)
         self.assert_commit_message("Update 1 items")
@@ -89,7 +89,7 @@ class TestWriteCurrentView(BaseTest):
         filename = "%s/new_empty_file" % self.current_path
         open(filename, "a").close()
 
-        time.sleep(3)
+        time.sleep(6)
 
         self.assert_new_commit(2)
         self.assert_commit_message("Created /new_empty_file")
@@ -99,7 +99,7 @@ class TestWriteCurrentView(BaseTest):
         name = "%s/links" % self.current_path
         os.symlink(target, name)
 
-        time.sleep(3)
+        time.sleep(6)
 
         # check if link exists
         assert os.path.exists(name)
