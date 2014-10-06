@@ -2,6 +2,7 @@ import time
 
 from gitfs.utils.decorators.while_not import while_not
 from gitfs.worker.peasant import Peasant
+from gitfs.events import pushing, fetching, read_only
 
 
 class FetchWorker(Peasant):
@@ -11,11 +12,13 @@ class FetchWorker(Peasant):
                 break
 
             time.sleep(self.timeout)
+            print "stats fetching"
+            print pushing.is_set()
             self.fetch()
 
-    @while_not("pushing")
+    @while_not(pushing)
     def fetch(self):
-        self.fetching.set()
+        fetching.set()
         try:
             print "fetch"
             behind = self.repository.fetch(self.upstream, self.branch)
@@ -23,9 +26,9 @@ class FetchWorker(Peasant):
             if behind:
                 print "behind"
                 self.merge_queue.add({"type": "merge"})
-            if self.read_only.is_set():
-                self.read_only.clear()
+            if read_only.is_set():
+                read_only.clear()
                 print "no more read-only"
         except:
-            self.read_only.set()
-        self.fetching.clear()
+            read_only.set()
+        fetching.clear()

@@ -5,6 +5,8 @@ from gitfs.worker.fetch import FetchWorker
 
 from gitfs.utils.decorators.retry import retry
 from gitfs.utils.decorators.while_not import while_not
+from gitfs.events import (pushing, fetching, read_only, want_to_merge,
+                          somebody_is_writing)
 
 
 class MergeWorker(FetchWorker):
@@ -52,20 +54,20 @@ class MergeWorker(FetchWorker):
 
         if commits and merges:
             self.commit(commits)
-            self.want_to_merge.set()
+            want_to_merge.set()
             commits = []
             merges = []
         elif merges:
-            self.want_to_merge.set()
+            want_to_merge.set()
             merges = []
         elif commits:
             self.commit(commits)
-            self.want_to_merge.set()
+            want_to_merge.set()
             commits = []
-        elif (self.want_to_merge.is_set() and
-              not self.somebody_is_writing.is_set()):
+        elif (want_to_merge.is_set() and
+              not somebody_is_writing.is_set()):
             self.merge()
-            self.want_to_merge.clear()
+            want_to_merge.clear()
             self.push()
 
         return commits, merges
@@ -75,7 +77,7 @@ class MergeWorker(FetchWorker):
         self.repository.commits.update()
         self.repository.ignore.update()
 
-    @while_not("fetching")
+    @while_not(fetching)
     def push(self):
         """
         Try to push. The push can fail in two cases:
@@ -83,18 +85,18 @@ class MergeWorker(FetchWorker):
         2. We are behind, so we need to fetch + merge and then try again
         """
 
-        self.pushing.set()
-        self.read_only.set()
+        pushing.set()
+        read_only.set()
 
         try:
             print "try to push"
             self.repository.push(self.upstream, self.branch)
             print "push done"
-            self.read_only.clear()
+            read_only.clear()
         except:
             print "push failed"
             self.fetch()
-        self.pushing.clear()
+        pushing.clear()
 
     @retry(each=3)
     def fetch(self):

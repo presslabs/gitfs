@@ -1,12 +1,12 @@
 import re
 import os
-import time
 import errno
 
 from fuse import FuseOSError
 
 from gitfs.utils.decorators.while_not import while_not
 from gitfs.utils.decorators.not_in import not_in
+from gitfs.events import want_to_merge, somebody_is_writing, read_only
 
 from .passthrough import PassthroughView, STATS
 
@@ -18,8 +18,8 @@ class CurrentView(PassthroughView):
         self.dirty = {}
         self.writing = set([])
 
-    @while_not("read_only")
-    @while_not("want_to_merge")
+    @while_not(read_only)
+    @while_not(want_to_merge)
     @not_in("ignore", check=["old", "new"])
     def rename(self, old, new):
         new = re.sub(self.regex, '', new)
@@ -34,7 +34,7 @@ class CurrentView(PassthroughView):
 
         return result
 
-    @while_not("want_to_merge")
+    @while_not(want_to_merge)
     @not_in("ignore", check=["target"])
     def symlink(self, name, target):
         result = os.symlink(target, self._full_path(name))
@@ -59,7 +59,7 @@ class CurrentView(PassthroughView):
 
         return attrs
 
-    @while_not("read_only")
+    @while_not(read_only)
     @not_in("ignore", check=["path"])
     def write(self, path, buf, offset, fh):
         """
@@ -90,8 +90,8 @@ class CurrentView(PassthroughView):
 
         return result
 
-    @while_not("read_only")
-    @while_not("want_to_merge")
+    @while_not(read_only)
+    @while_not(want_to_merge)
     @not_in("ignore", check=["path"])
     def mkdir(self, path, mode):
         result = super(CurrentView, self).mkdir(path, mode)
@@ -103,22 +103,22 @@ class CurrentView(PassthroughView):
 
         return result
 
-    @while_not("read_only")
-    @while_not("want_to_merge")
+    @while_not(read_only)
+    @while_not(want_to_merge)
     @not_in("ignore", check=["path"])
     def create(self, path, mode, fi=None):
-        self.somebody_is_writing.set()
+        somebody_is_writing.set()
         result = super(CurrentView, self).create(path, mode, fi)
         self.dirty[path] = {
             'message': "Created %s" % path,
             'is_dirty': True,
             'size': 0,
         }
-        self.somebody_is_writing.clear()
+        somebody_is_writing.clear()
         return result
 
-    @while_not("read_only")
-    @while_not("want_to_merge")
+    @while_not(read_only)
+    @while_not(want_to_merge)
     @not_in("ignore", check=["path"])
     def chmod(self, path, mode):
         """
@@ -127,37 +127,34 @@ class CurrentView(PassthroughView):
 
         result = super(CurrentView, self).chmod(path, mode)
 
-        self.somebody_is_writing.set()
+        somebody_is_writing.set()
         message = 'Chmod to %s on %s' % (str(oct(mode))[3:-1], path)
         self._index(add=path, message=message)
-        self.somebody_is_writing.clear()
+        somebody_is_writing.clear()
 
         return result
 
-    @while_not("read_only")
-    @while_not("want_to_merge")
+    @while_not(read_only)
+    @while_not(want_to_merge)
     @not_in("ignore", check=["path"])
     def fsync(self, path, fdatasync, fh):
         """
         Each time you fsync, a new commit and push are made
         """
 
-        self.somebody_is_writing.set()
+        somebody_is_writing.set()
         result = super(CurrentView, self).fsync(path, fdatasync, fh)
 
         message = 'Fsync %s' % path
         self._index(add=path, message=message)
 
-        self.somebody_is_writing.clear()
+        somebody_is_writing.clear()
 
         return result
 
     @not_in("ignore", check=["path"])
+    @while_not(want_to_merge)
     def open_for_write(self, path, flags):
-        if self.want_to_merge.is_set():
-            while self.want_to_merge.is_set():
-                time.sleep(2)
-
         fh = self.open_for_read(path, flags)
         self.writing.add(fh)
 
@@ -175,7 +172,7 @@ class CurrentView(PassthroughView):
 
         return self.open_for_read(path, flags)
 
-    @while_not("read_only")
+    @while_not(read_only)
     def release(self, path, fh):
         """
         Check for path if something was written to. If so, commit and push
@@ -191,21 +188,21 @@ class CurrentView(PassthroughView):
 
             if self.dirty[path]['is_dirty']:
                 self.dirty[path]['is_dirty'] = False
-                self.somebody_is_writing.set()
+                somebody_is_writing.set()
                 self._index(add=path, message=self.dirty[path]['message'])
 
         if fh in self.writing:
             self.writing.remove(fh)
 
         if not len(self.writing):
-            self.somebody_is_writing.clear()
+            somebody_is_writing.clear()
         else:
-            self.somebody_is_writing.set()
+            somebody_is_writing.set()
 
         return os.close(fh)
 
-    @while_not("read_only")
-    @while_not("want_to_merge")
+    @while_not(read_only)
+    @while_not(want_to_merge)
     @not_in("ignore", check=["path"])
     def unlink(self, path):
         result = super(CurrentView, self).unlink(path)
