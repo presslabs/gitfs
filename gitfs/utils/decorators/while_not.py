@@ -19,7 +19,6 @@ class while_not(object):
                                 self.event)
 
             while self.event.is_set():
-                print "wait"
                 time.sleep(self.wait)
 
             return f(obj, *args, **kwargs)

@@ -1,9 +1,21 @@
 import threading
 
+from gitfs.utils.atomic import AtomicLong
 
-want_to_merge = threading.Event()
+
+syncing = threading.Event()
+sync_done = threading.Event()
+
+push_successful = threading.Event()
+push_successful.set()
+
+fetch_successful = threading.Event()
+fetch_successful.set()
+
 read_only = threading.Event()
-somebody_is_writing = threading.Event()
-merging = threading.Event()
-fetching = threading.Event()
-pushing = threading.Event()
+fetch = threading.Event()
+shutting_down = threading.Event()
+
+writers = AtomicLong(0)
+
+remote_operation = threading.Lock()

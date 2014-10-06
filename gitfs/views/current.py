@@ -4,9 +4,10 @@ import errno
 
 from fuse import FuseOSError
 
-from gitfs.utils.decorators.while_not import while_not
 from gitfs.utils.decorators.not_in import not_in
-from gitfs.events import want_to_merge, somebody_is_writing, read_only
+from gitfs.utils.decorators.write_operation import write_operation
+
+from gitfs.events import writers
 
 from .passthrough import PassthroughView, STATS
 
@@ -16,17 +17,15 @@ class CurrentView(PassthroughView):
     def __init__(self, *args, **kwargs):
         super(CurrentView, self).__init__(*args, **kwargs)
         self.dirty = {}
-        self.writing = set([])
 
-    @while_not(read_only)
-    @while_not(want_to_merge)
+    @write_operation
     @not_in("ignore", check=["old", "new"])
     def rename(self, old, new):
         new = re.sub(self.regex, '', new)
         result = super(CurrentView, self).rename(old, new)
 
         message = "Rename %s to %s" % (old, new)
-        self._index(**{
+        self._stage(**{
             'remove': os.path.split(old)[1],
             'add': new,
             'message': message
@@ -34,13 +33,13 @@ class CurrentView(PassthroughView):
 
         return result
 
-    @while_not(want_to_merge)
+    @write_operation
     @not_in("ignore", check=["target"])
     def symlink(self, name, target):
         result = os.symlink(target, self._full_path(name))
 
         message = "Create symlink to %s for %s" % (target, name)
-        self._index(add=name, message=message)
+        self._stage(add=name, message=message)
 
         return result
 
@@ -59,7 +58,7 @@ class CurrentView(PassthroughView):
 
         return attrs
 
-    @while_not(read_only)
+    @write_operation
     @not_in("ignore", check=["path"])
     def write(self, path, buf, offset, fh):
         """
@@ -68,30 +67,17 @@ class CurrentView(PassthroughView):
             is off limit, raise EFBIG error and delete the file.
         """
 
-        size = len(buf)
-        if path in self.dirty:
-            size += self.dirty[path]['size']
-
-        if size > self.max_size or offset > self.max_offset:
-            if path in self.dirty:
-                # mark it as not dirty
-                self.dirty[path]['is_dirty'] = False
-                # delete it
-                self.dirty[path]['delete_it'] = True
-
+        if offset + len(buf) > self.max_size:
             raise FuseOSError(errno.EFBIG)
 
         result = super(CurrentView, self).write(path, buf, offset, fh)
-        self.dirty[path] = {
+        self.dirty[fh] = {
             'message': 'Update %s' % path,
-            'is_dirty': True,
-            'size': size
         }
 
         return result
 
-    @while_not(read_only)
-    @while_not(want_to_merge)
+    @write_operation
     @not_in("ignore", check=["path"])
     def mkdir(self, path, mode):
         result = super(CurrentView, self).mkdir(path, mode)
@@ -103,22 +89,17 @@ class CurrentView(PassthroughView):
 
         return result
 
-    @while_not(read_only)
-    @while_not(want_to_merge)
-    @not_in("ignore", check=["path"])
     def create(self, path, mode, fi=None):
-        somebody_is_writing.set()
-        result = super(CurrentView, self).create(path, mode, fi)
-        self.dirty[path] = {
-            'message': "Created %s" % path,
-            'is_dirty': True,
-            'size': 0,
-        }
-        somebody_is_writing.clear()
-        return result
+        fh = self.open_for_write(path, os.O_WRONLY | os.O_CREAT)
+        super(CurrentView, self).chmod(path, mode)
 
-    @while_not(read_only)
-    @while_not(want_to_merge)
+        self.dirty[fh] = {
+            'message': "Created %s" % path,
+        }
+
+        return fh
+
+    @write_operation
     @not_in("ignore", check=["path"])
     def chmod(self, path, mode):
         """
@@ -127,37 +108,31 @@ class CurrentView(PassthroughView):
 
         result = super(CurrentView, self).chmod(path, mode)
 
-        somebody_is_writing.set()
         message = 'Chmod to %s on %s' % (str(oct(mode))[3:-1], path)
-        self._index(add=path, message=message)
-        somebody_is_writing.clear()
+        self._stage(add=path, message=message)
 
         return result
 
-    @while_not(read_only)
-    @while_not(want_to_merge)
+    @write_operation
     @not_in("ignore", check=["path"])
     def fsync(self, path, fdatasync, fh):
         """
         Each time you fsync, a new commit and push are made
         """
 
-        somebody_is_writing.set()
         result = super(CurrentView, self).fsync(path, fdatasync, fh)
 
         message = 'Fsync %s' % path
-        self._index(add=path, message=message)
-
-        somebody_is_writing.clear()
+        self._stage(add=path, message=message)
 
         return result
 
+    @write_operation
     @not_in("ignore", check=["path"])
-    @while_not(want_to_merge)
     def open_for_write(self, path, flags):
+        global writers
         fh = self.open_for_read(path, flags)
-        self.writing.add(fh)
-
+        writers += 1
         return fh
 
     def open_for_read(self, path, flags):
@@ -169,50 +144,35 @@ class CurrentView(PassthroughView):
                               os.O_APPEND | os.O_CREAT)
         if write_mode:
             return self.open_for_write(path, flags)
-
         return self.open_for_read(path, flags)
 
-    @while_not(read_only)
     def release(self, path, fh):
         """
         Check for path if something was written to. If so, commit and push
         the changed to upstream.
         """
 
-        if path in self.dirty:
-            if ('delete_it' in self.dirty[path] and
-               self.dirty[path]['delete_it']):
-                # delete the file
-                super(CurrentView, self).unlink(os.path.split(path)[1])
-                self.dirty[path]['delete_it'] = False
-
-            if self.dirty[path]['is_dirty']:
-                self.dirty[path]['is_dirty'] = False
-                somebody_is_writing.set()
-                self._index(add=path, message=self.dirty[path]['message'])
-
-        if fh in self.writing:
-            self.writing.remove(fh)
-
-        if not len(self.writing):
-            somebody_is_writing.clear()
-        else:
-            somebody_is_writing.set()
+        print self.dirty, fh
+        if fh in self.dirty:
+            message = self.dirty[fh]['message']
+            del self.dirty[fh]
+            global writers
+            writers -= 1
+            self._stage(add=path, message=message)
 
         return os.close(fh)
 
-    @while_not(read_only)
-    @while_not(want_to_merge)
+    @write_operation
     @not_in("ignore", check=["path"])
     def unlink(self, path):
         result = super(CurrentView, self).unlink(path)
 
         message = 'Deleted %s' % path
-        self._index(remove=path, message=message)
+        self._stage(remove=path, message=message)
 
         return result
 
-    def _index(self, message, add=None, remove=None):
+    def _stage(self, message, add=None, remove=None):
         non_empty = False
 
         add = self._sanitize(add)
@@ -227,6 +187,7 @@ class CurrentView(PassthroughView):
             non_empty = True
 
         if non_empty:
+            print "queue", add
             self.queue.commit(add=add, remove=remove, message=message)
 
     def _sanitize(self, path):

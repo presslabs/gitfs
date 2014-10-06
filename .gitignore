@@ -5,6 +5,7 @@ settings_*.py
 !deployment/settings/*.py
 .idea
 .project
+__pycache__
 .pydevproject
 *~
 .settings

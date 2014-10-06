@@ -49,7 +49,6 @@ def prepare_components(args):
     fetch_worker = FetchWorker(upstream=args.upstream,
                                branch=args.branch,
                                repository=router.repo,
-                               merge_queue=merge_queue,
                                timeout=args.fetch_timeout)
 
     merge_worker.daemon = True

@@ -11,11 +11,11 @@ from errno import EFAULT
 
 from pygit2.credentials import Keypair
 from fuse import Operations, FUSE, FuseOSError
+
 from gitfs.utils import Repository
-
 from gitfs.cache import LRUCache, CachedIgnore
-
 from gitfs.log import log
+from gitfs.events import shutting_down
 
 
 lru = LRUCache(40000)
@@ -85,8 +85,7 @@ class Router(object):
         log.info('Done INIT')
 
     def destroy(self, path):
-        for worker in self.workers:
-            worker.stop()
+        shutting_down.set()
 
         for worker in self.workers:
             worker.join()

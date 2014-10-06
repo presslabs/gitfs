@@ -1,12 +1,18 @@
 import os
+from collections import namedtuple
 from stat import S_IFDIR, S_IFREG, S_IFLNK
 
-from pygit2 import (clone_repository, Signature, GIT_FILEMODE_TREE,
-                    GIT_BRANCH_REMOTE, GIT_STATUS_CURRENT, GIT_FILEMODE_LINK,
-                    GIT_FILEMODE_BLOB, GIT_FILEMODE_BLOB_EXECUTABLE)
-
+from pygit2 import (clone_repository, Signature, GIT_SORT_TOPOLOGICAL,
+                    GIT_FILEMODE_TREE, GIT_STATUS_CURRENT,
+                    GIT_FILEMODE_LINK, GIT_FILEMODE_BLOB, GIT_BRANCH_REMOTE,
+                    GIT_BRANCH_LOCAL, GIT_FILEMODE_BLOB_EXECUTABLE)
 from gitfs.cache import CommitCache
 from gitfs.utils.path import split_path_into_components
+from gitfs.utils.commits import CommitsList
+
+
+DivergeCommits = namedtuple("DivergeCommits", ["common_parent",
+                            "first_commits", "second_commits"])
 
 
 class Repository(object):
@@ -14,6 +20,8 @@ class Repository(object):
     def __init__(self, repository, commits=None):
         self._repo = repository
         self.commits = commits or CommitCache(self)
+
+        self.behind = False
 
     def __getitem__(self, item):
         """
@@ -69,6 +77,7 @@ class Repository(object):
                 repo.push("origin", "master")
         """
 
+        print upstream, branch
         remote = self.get_remote(upstream)
         remote.push("refs/heads/%s" % (branch))
 
@@ -77,17 +86,17 @@ class Repository(object):
         Fetch from remote and return True if we are behind or False otherwise
         """
 
-        remote_commit = self.remote_head(upstream, branch_name)
-
         remote = self.get_remote(upstream)
         remote.fetch()
 
-        new_remote_commit = self.remote_head(upstream, branch_name)
+        reference = "%s/%s" % (upstream, branch_name)
+        remote_branch = self.lookup_branch(reference, GIT_BRANCH_REMOTE)
+        local_branch = self.lookup_branch(branch_name, GIT_BRANCH_LOCAL)
 
-        if remote_commit.hex != new_remote_commit.hex:
-            return True
-
-        return False
+        print "branches:", local_branch.name, remote_branch.name
+        diverge_commits = self.find_diverge_commits(local_branch,
+                                                    remote_branch)
+        self.behind = len(diverge_commits.second_commits) > 0
 
     def commit(self, message, author, commiter, parents=None, ref="HEAD"):
         """ Wrapper for create_commit. It creates a commit from a given ref
@@ -397,3 +406,55 @@ class Repository(object):
         if partial.startswith("/"):
             partial = partial[1:]
         return os.path.join(self._repo.workdir, partial)
+
+    def find_diverge_commits(self, first_branch, second_branch):
+        """
+        Take two branches and find diverge commits.
+
+             2--3--4--5
+            /
+        1--+              Return:
+            \               - common parent: 1
+             6              - first list of commits: (2, 3, 4, 5)
+                            - second list of commits: (6)
+
+        :param first_branch: first branch to look for common parent
+        :type first_branch: `pygit2.Branch`
+        :param second_branch: second branch to look for common parent
+        :type second_branch: `pygit2.Branch`
+        :returns: a namedtuple with common parent, a list of first's branch
+        commits and another list with second's branch commits
+        :rtype: DivergeCommits (namedtuple)
+        """
+
+        common_parent = None
+        first_commits = CommitsList()
+        second_commits = CommitsList()
+
+        walker = self.walk_branches(GIT_SORT_TOPOLOGICAL,
+                                    first_branch, second_branch)
+
+        for first_commit, second_commit in walker:
+            if (first_commit in second_commits or
+               second_commit in first_commits):
+                break
+
+            if first_commit not in first_commits:
+                first_commits.append(first_commit)
+            if second_commit not in second_commits:
+                second_commits.append(second_commit)
+
+            if second_commit.hex == first_commit.hex:
+                break
+
+        if first_commit in second_commits:
+            index = second_commits.index(first_commit)
+            second_commits = second_commits[:index]
+            common_parent = first_commit
+
+        if second_commit in first_commits:
+            index = first_commits.index(second_commit)
+            first_commits = first_commits[:index]
+            common_parent = second_commit
+
+        return DivergeCommits(common_parent, first_commits, second_commits)
