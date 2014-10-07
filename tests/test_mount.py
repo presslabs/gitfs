@@ -15,13 +15,11 @@ class TestMount(object):
         mocked_parser = MagicMock()
         mocked_args = MagicMock()
         mocked_queue = MagicMock()
-        mocked_threading = MagicMock()
         mocked_router = MagicMock()
         mocked_routes = MagicMock()
         mocked_merger = MagicMock()
         mocked_fetcher = MagicMock()
         mocked_fuse = MagicMock()
-        mocked_event = MagicMock()
         mocked_merge_worker = MagicMock()
         mocked_fetch_worker = MagicMock()
 
@@ -47,7 +45,6 @@ class TestMount(object):
 
         mocked_argparse.Argumentparser.return_value = mocked_parser
         mocked_args.return_value = args
-        mocked_threading.Event.return_value = mocked_event
         mocked_merger.return_value = mocked_merge_worker
         mocked_fetcher.return_value = mocked_fetch_worker
         mocked_router.repo = 'repo'
@@ -55,7 +52,6 @@ class TestMount(object):
 
         with patch.multiple('gitfs.mount',
                             MergeQueue=MagicMock(return_value=mocked_queue),
-                            threading=mocked_threading,
                             Router=MagicMock(return_value=mocked_router),
                             routes=mocked_routes, MergeWorker=mocked_merger,
                             FetchWorker=mocked_fetcher, FUSE=mocked_fuse):
@@ -67,25 +63,15 @@ class TestMount(object):
             mocked_fetcher.assert_called_once_with(upstream='origin',
                                                    branch='branch',
                                                    repository='repo',
-                                                   read_only=mocked_event,
-                                                   merge_queue=mocked_queue,
-                                                   timeout=10,
-                                                   fetching=mocked_event,
-                                                   pushing=mocked_event)
+                                                   timeout=10)
 
             asserted_call = {
-                'want_to_merge': mocked_event,
-                'somebody_is_writing': mocked_event,
-                'read_only': mocked_event,
-                'merge_queue': mocked_queue,
-                'merging': mocked_event,
                 'repository': 'repo',
                 'upstream': 'origin',
                 'branch': 'branch',
                 'timeout': 10,
                 'repo_path': 'repo_path',
-                'fetching': mocked_event,
-                'pushing': mocked_event
+                'merge_queue': mocked_queue
             }
             mocked_merger.assert_called_once_with('commit',
                                                   'commiter@commiting.org',

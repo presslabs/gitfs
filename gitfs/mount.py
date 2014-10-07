@@ -1,8 +1,6 @@
 import argparse
 from logging import Formatter
 from logging.handlers import TimedRotatingFileHandler, SysLogHandler
-import tempfile
-import threading
 import sys
 
 from fuse import FUSE
@@ -26,12 +24,6 @@ def parse_args(parser):
 def prepare_components(args):
     # initialize merge queue
     merge_queue = MergeQueue()
-    want_to_merge = threading.Event()
-    read_only = threading.Event()
-    somebody_is_writing = threading.Event()
-    merging = threading.Event()
-    fetching = threading.Event()
-    pushing = threading.Event()
 
     # setting router
     router = Router(remote_url=args.remote_url,
@@ -42,10 +34,7 @@ def prepare_components(args):
                     group=args.group,
                     max_size=args.max_size * 1024 * 1024,
                     max_offset=args.max_size * 1024 * 1024,
-                    merge_queue=merge_queue,
-                    want_to_merge=want_to_merge,
-                    somebody_is_writing=somebody_is_writing,
-                    read_only=read_only)
+                    merge_queue=merge_queue)
 
     # register all the routes
     router.register(routes)
@@ -53,34 +42,24 @@ def prepare_components(args):
     # setup workers
     merge_worker = MergeWorker(args.commiter_name, args.commiter_email,
                                args.commiter_name, args.commiter_email,
-                               want_to_merge=want_to_merge,
-                               somebody_is_writing=somebody_is_writing,
-                               read_only=read_only,
                                merge_queue=merge_queue,
-                               merging=merging,
                                repository=router.repo,
                                upstream="origin",
                                branch=args.branch,
                                repo_path=router.repo_path,
-                               timeout=args.merge_timeout,
-                               fetching=fetching,
-                               pushing=pushing)
+                               timeout=args.merge_timeout)
 
     fetch_worker = FetchWorker(upstream="origin",
                                branch=args.branch,
                                repository=router.repo,
-                               read_only=read_only,
-                               merge_queue=merge_queue,
-                               timeout=args.fetch_timeout,
-                               fetching=fetching,
-                               pushing=pushing)
+                               timeout=args.fetch_timeout)
 
     merge_worker.daemon = True
     fetch_worker.daemon = True
 
     router.workers = [merge_worker, fetch_worker]
 
-    if args.log == "syslog":
+    if args.log != "syslog":
         handler = TimedRotatingFileHandler(args.log, when="midnight")
     else:
         handler = SysLogHandler()
