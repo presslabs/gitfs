@@ -1,4 +1,5 @@
-from errno import EROFS
+import os
+from errno import EROFS, EACCES
 
 from fuse import FuseOSError
 
@@ -12,6 +13,12 @@ class ReadOnlyView(View):
         raise FuseMethodNotImplemented
 
     def open(self, path, flags):
+        write_flags = (os.O_WRONLY | os.O_RDWR | os.O_APPEND | os.O_TRUNC
+                       | os.O_CREAT)
+
+        if write_flags & flags:
+            raise FuseOSError(EROFS)
+
         return 0
 
     def create(self, path, fh):
@@ -33,6 +40,8 @@ class ReadOnlyView(View):
         return 0
 
     def access(self, path, amode):
+        if amode & (os.R_OK | os.F_OK):
+            raise FuseOSError(EACCES)
         return 0
 
     def mkdir(self, path, mode):
