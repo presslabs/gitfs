@@ -85,11 +85,12 @@ def start_fuse():
     if sys.platform == 'darwin':
         FUSE(router, args.mount_point, foreground=args.foreground,
              allow_root=args.allow_root, allow_other=args.allow_other,
-             fsname="GitFS")
+             fsname=args.remote_url, subtype="gitfs")
     else:
         FUSE(router, args.mount_point, foreground=args.foreground,
              nonempty=True, allow_root=args.allow_root,
-             allow_other=args.allow_other, fsname="GitFS")
+             allow_other=args.allow_other, fsname=args.remote_url,
+             subtype="gitfs")
 
 
 if __name__ == '__main__':

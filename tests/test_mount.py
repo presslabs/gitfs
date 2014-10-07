@@ -128,7 +128,8 @@ class TestMount(object):
                 'nonempty': True,
                 'allow_root': mocked_args.allow_root,
                 'allow_other': mocked_args.allow_other,
-                'fsname': 'GitFS'
+                'subtype': 'gitfs',
+                'fsname': mocked_args.remote_url
             }
             mocked_fuse.assert_called_once_with(mocked_router,
                                                 mocked_args.mount_point,
