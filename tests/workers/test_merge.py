@@ -1,9 +1,7 @@
-from threading import Event
-
 import pygit2
 
 import pytest
-from mock import MagicMock
+from mock import MagicMock, patch
 
 from gitfs.worker.merge import MergeWorker
 
@@ -24,76 +22,26 @@ class TestMergeWorker(object):
             worker.run()
 
         mocked_queue.get.assert_called_once_with(timeout=1, block=True)
-        mocked_idle.assert_called_once_with([], [])
+        mocked_idle.assert_called_once_with([])
 
     def test_on_idle_with_commits_and_merges(self):
-        mocked_want_to_merge = MagicMock()
+        mocked_sync = MagicMock()
+        mocked_syncing = MagicMock()
         mocked_commit = MagicMock()
 
-        worker = MergeWorker("name", "email", "name", "email",
-                             strategy="strategy",
-                             want_to_merge=mocked_want_to_merge)
-        worker.commit = mocked_commit
+        with patch.multiple("gitfs.worker.merge", syncing=mocked_syncing,
+                            writers=0):
+            worker = MergeWorker("name", "email", "name", "email",
+                                 strategy="strategy")
+            worker.commit = mocked_commit
+            worker.sync = mocked_sync
 
-        commits, merges = worker.on_idle("commits", "merges")
+            commits = worker.on_idle("commits")
 
-        mocked_commit.assert_called_once_with("commits")
-        assert mocked_want_to_merge.set.call_count == 1
-        assert commits == []
-        assert merges == []
-
-    def test_on_idle_with_merges_and_no_commits(self):
-        mocked_want_to_merge = MagicMock()
-
-        worker = MergeWorker("name", "email", "name", "email",
-                             strategy="strategy",
-                             want_to_merge=mocked_want_to_merge)
-
-        commits, merges = worker.on_idle(None, "merges")
-
-        assert mocked_want_to_merge.set.call_count == 1
-        assert commits is None
-        assert merges == []
-
-    def test_on_idle_with_commits_and_no_merges(self):
-        mocked_want_to_merge = MagicMock()
-        mocked_commit = MagicMock()
-
-        worker = MergeWorker("name", "email", "name", "email",
-                             strategy="strategy",
-                             want_to_merge=mocked_want_to_merge)
-        worker.commit = mocked_commit
-
-        commits, merges = worker.on_idle("commits", None)
-
-        mocked_commit.assert_called_once_with("commits")
-        assert mocked_want_to_merge.set.call_count == 1
-        assert commits == []
-        assert merges is None
-
-    def test_on_idle_with_no_commits_and_no_merges(self):
-        mocked_somebody_is_writing = MagicMock()
-        mocked_want_to_merge = MagicMock()
-        mocked_merge = MagicMock()
-        mocked_push = MagicMock()
-
-        mocked_want_to_merge.is_set.return_value = True
-        mocked_somebody_is_writing.is_set.return_value = False
-
-        worker = MergeWorker("name", "email", "name", "email",
-                             strategy="strategy",
-                             somebody_is_writing=mocked_somebody_is_writing,
-                             want_to_merge=mocked_want_to_merge)
-        worker.merge = mocked_merge
-        worker.push = mocked_push
-
-        commits, merges = worker.on_idle(None, None)
-
-        assert mocked_push.call_count == 1
-        assert mocked_merge.call_count == 1
-        assert mocked_want_to_merge.clear.call_count == 1
-        assert commits is None
-        assert merges is None
+            mocked_commit.assert_called_once_with("commits")
+            assert mocked_syncing.set.call_count == 1
+            assert mocked_sync.call_count == 1
+            assert commits == []
 
     def test_merge(self):
         mocked_strategy = MagicMock()
@@ -110,78 +58,40 @@ class TestMergeWorker(object):
         mocked_strategy.assert_called_once_with(branch, branch, upstream)
         assert mocked_repo.commits.update.call_count == 1
 
-    def test_push(self):
-        mocked_strategy = MagicMock()
-        mocked_repo = MagicMock()
-        mocked_fetch = MagicMock(side_effect=ValueError)
-        mocked_read_only = MagicMock()
-        mocked_pushing = MagicMock()
+    def test_sync(self):
         upstream = "origin"
         branch = "master"
-
-        mocked_read_only.clear.side_effect = ValueError
-
-        worker = MergeWorker("name", "email", "name", "email",
-                             strategy=mocked_strategy,
-                             repository=mocked_repo,
-                             fetching=Event(),
-                             pushing=mocked_pushing,
-                             read_only=mocked_read_only,
-                             upstream=upstream, branch=branch)
-        worker.fetch = mocked_fetch
-
-        with pytest.raises(ValueError):
-            worker.push()
-
-        mocked_repo.push.assert_called_once_with("origin", "master")
-        assert mocked_fetch.call_count == 1
-        assert mocked_read_only.clear.call_count == 1
-        assert mocked_read_only.set.call_count == 1
-        assert mocked_pushing.set.call_count == 1
-
-    def test_fetch_when_we_are_ahead(self):
-        mocked_strategy = MagicMock()
         mocked_repo = MagicMock()
-        mocked_push = MagicMock()
-        mocked_queue = MagicMock()
-
-        upstream = "origin"
-        branch = "master"
-
-        mocked_repo.fetch.return_value = False
-        worker = MergeWorker("name", "email", "name", "email",
-                             strategy=mocked_strategy,
-                             repository=mocked_repo,
-                             merge_queue=mocked_queue,
-                             upstream=upstream, branch=branch)
-        worker.push = mocked_push
-
-        worker.fetch()
-
-        mocked_repo.fetch.assert_called_once_with(upstream, branch)
-        assert mocked_push.call_count == 1
-
-    def test_fetch_when_we_are_behind(self):
+        mocked_merge = MagicMock()
+        mocked_sync_done = MagicMock()
+        mocked_syncing = MagicMock()
+        mocked_push_successful = MagicMock()
+        mocked_fetch = MagicMock()
         mocked_strategy = MagicMock()
-        mocked_repo = MagicMock()
-        mocked_push = MagicMock()
-        mocked_queue = MagicMock()
 
-        upstream = "origin"
-        branch = "master"
+        mocked_repo.behind = True
+        mocked_push_successful.set.side_effect = ValueError
 
-        mocked_repo.fetch.return_value = True
-        worker = MergeWorker("name", "email", "name", "email",
-                             strategy=mocked_strategy,
-                             repository=mocked_repo,
-                             merge_queue=mocked_queue,
-                             upstream=upstream, branch=branch)
-        worker.push = mocked_push
+        with patch.multiple('gitfs.worker.merge', sync_done=mocked_sync_done,
+                            syncing=mocked_syncing,
+                            push_successful=mocked_push_successful,
+                            fetch=mocked_fetch):
+            worker = MergeWorker("name", "email", "name", "email",
+                                 repository=mocked_repo,
+                                 strategy=mocked_strategy,
+                                 upstream=upstream, branch=branch)
+            worker.merge = mocked_merge
 
-        worker.fetch()
+            worker.sync()
 
-        mocked_repo.fetch.assert_called_once_with(upstream, branch)
-        mocked_queue.add.assert_called_once_with({'type': 'merge'})
+            assert mocked_syncing.clear.call_count == 1
+            assert mocked_push_successful.clear.call_count == 1
+            assert mocked_sync_done.clear.call_count == 1
+            assert mocked_sync_done.set.call_count == 1
+            assert mocked_fetch.set.call_count == 1
+            assert mocked_push_successful.set.call_count == 1
+            assert mocked_repo.behind is False
+            mocked_repo.push.assert_called_once_with(upstream, branch)
 
     def test_commit_with_just_one_job(self):
         mocked_repo = MagicMock()

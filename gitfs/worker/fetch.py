@@ -16,9 +16,10 @@ class FetchWorker(Peasant):
         with remote_operation:
             print "acum fac fetch"
             fetch.clear()
-            #try:
-            self.repository.fetch(self.upstream, self.branch)
-            fetch_successful.set()
-            #except:
-            #    print "fetch failed"
-            #    fetch_successful.clear()
+
+            try:
+                self.repository.fetch(self.upstream, self.branch)
+                fetch_successful.set()
+            except:
+                print "fetch failed"
+                fetch_successful.clear()

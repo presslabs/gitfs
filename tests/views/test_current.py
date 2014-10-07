@@ -27,9 +27,8 @@ class TestCurrentView(object):
             current_view.PassthroughView.rename = lambda self, old, new: True
 
             current = CurrentView(regex="regex", repo_path="repo_path",
-                                  read_only=Event(), want_to_merge=Event(),
                                   ignore=CachedIgnore("f"))
-            current._index = mocked_index
+            current._stage = mocked_index
 
             result = current.rename("old", "new")
             assert result is True
@@ -43,7 +42,6 @@ class TestCurrentView(object):
 
     def test_rename_in_git_dir(self):
         current = CurrentView(repo_path="repo",
-                              read_only=Event(), want_to_merge=Event(),
                               ignore=CachedIgnore("f"))
         with pytest.raises(FuseOSError):
             current.rename(".git/", ".git/")
@@ -58,9 +56,8 @@ class TestCurrentView(object):
             mocked_os.symlink.return_value = "done"
 
             current = CurrentView(repo_path="repo",
-                                  read_only=Event(), want_to_merge=Event(),
                                   ignore=CachedIgnore("f"))
-            current._index = mocked_index
+            current._stage = mocked_index
             current._full_path = mocked_full_path
 
             assert current.symlink("name", "target") == "done"
@@ -77,7 +74,6 @@ class TestCurrentView(object):
             mocked_os.readlink.return_value = "done"
 
             current = CurrentView(repo_path="repo",
-                                  read_only=Event(), want_to_merge=Event(),
                                   ignore=CachedIgnore("f"))
             current._full_path = mocked_full_path
 
@@ -129,14 +125,6 @@ class TestCurrentView(object):
         with pytest.raises(FuseOSError):
             current.write("/path", "bufffffert", 11, 1)
 
-        assert current.dirty == {
-            '/path': {
-                'size': 5,
-                'is_dirty': False,
-                'delete_it': True
-            }
-        }
-
     def test_write(self):
         from gitfs.views import current as current_view
         mocked_write = lambda self, path, buf, offste, fh: "done"
@@ -148,17 +136,13 @@ class TestCurrentView(object):
         current.max_offset = 20
         current.max_size = 20
         current.dirty = {
-            '/path': {
-                'size': 5
-            }
+            1: {}
         }
 
-        assert current.write("/path", "bufffffert", 11, 1) == "done"
+        assert current.write("/path", "buf", 3, 1) == "done"
         assert current.dirty == {
-            '/path': {
+            1: {
                 'message': 'Update /path',
-                'is_dirty': True,
-                'size': 15
             }
         }
         current_view.PassthroughView.write = old_write
@@ -178,7 +162,6 @@ class TestCurrentView(object):
             mocked_os.path.split.return_value = [1, 1]
 
             current = CurrentView(repo_path="repo", uid=1, gid=1,
-                                  read_only=Event(), want_to_merge=Event(),
                                   ignore=CachedIgnore("f"))
             current.create = mocked_create
             current.release = mocked_release
@@ -192,14 +175,12 @@ class TestCurrentView(object):
 
     def test_mkdir_in_git_dir(self):
         current = CurrentView(repo_path="repo", uid=1, gid=1,
-                              read_only=Event(), want_to_merge=Event(),
                               ignore=CachedIgnore("f"))
         with pytest.raises(FuseOSError):
             current.mkdir(".git/", "mode")
 
     def test_create_in_git_dir(self):
         current = CurrentView(repo_path="repo", uid=1, gid=1,
-                              read_only=Event(), want_to_merge=Event(),
                               ignore=CachedIgnore("f"))
 
         with pytest.raises(FuseOSError):
@@ -207,36 +188,26 @@ class TestCurrentView(object):
 
     def test_create(self):
         from gitfs.views import current as current_view
-        old_create = current_view.PassthroughView.create
-        mock_create = lambda self, path, mode, fi: "done"
-        current_view.PassthroughView.create = mock_create
+        old_chmod = current_view.PassthroughView.chmod
+        mock_chmod = lambda self, path, mode: "done"
+        current_view.PassthroughView.chmod = mock_chmod
 
-        mocked_writing = MagicMock()
+        mocked_open = MagicMock()
+        mocked_open.return_value = "done"
         current = CurrentView(repo_path="repo", uid=1, gid=1,
-                              read_only=Event(), want_to_merge=Event(),
-                              somebody_is_writing=mocked_writing,
                               ignore=CachedIgnore("f"))
         current.dirty = {
             '/path': {
                 'content': "here"
             }
         }
+        current.open_for_write = mocked_open
 
         assert current.create("/path", "mode") == "done"
-        assert mocked_writing.set.call_count == 1
-        assert mocked_writing.clear.call_count == 1
-        assert current.dirty == {
-            '/path': {
-                'message': "Created /path",
-                'is_dirty': True,
-                'size': 0
-            }
-        }
-        current_view.PassthroughView.create = old_create
+        current_view.PassthroughView.chmod = old_chmod
 
     def test_chmod_in_git_dir(self):
         current = CurrentView(repo_path="repo", uid=1, gid=1,
-                              read_only=Event(), want_to_merge=Event(),
                               ignore=CachedIgnore("f"))
         with pytest.raises(FuseOSError):
             current.chmod(".git/", "mode")
@@ -247,18 +218,13 @@ class TestCurrentView(object):
         current_view.PassthroughView.chmod = lambda self, path, mode: "done"
 
         mocked_index = MagicMock()
-        mocked_writing = MagicMock()
 
         current = CurrentView(repo_path="repo", uid=1, gid=1,
-                              read_only=Event(), want_to_merge=Event(),
-                              somebody_is_writing=mocked_writing,
                               ignore=CachedIgnore("f"))
 
-        current._index = mocked_index
+        current._stage = mocked_index
 
         assert current.chmod("/path", 0644) == "done"
-        assert mocked_writing.set.call_count == 1
-        assert mocked_writing.clear.call_count == 1
         message = 'Chmod to %s on %s' % (str(oct(0644))[3:-1], "/path")
         mocked_index.assert_called_once_with(add="/path", message=message)
 
@@ -266,7 +232,6 @@ class TestCurrentView(object):
 
     def test_fsync_a_file_from_git_dir(self):
         current = CurrentView(repo_path="repo", uid=1, gid=1,
-                              read_only=Event(), want_to_merge=Event(),
                               ignore=CachedIgnore("f"))
 
         with pytest.raises(FuseOSError):
@@ -278,25 +243,19 @@ class TestCurrentView(object):
         current_view.PassthroughView.fsync = lambda me, path, data, fh: "done"
 
         mocked_index = MagicMock()
-        mocked_writing = MagicMock()
 
         current = CurrentView(repo_path="repo", uid=1, gid=1,
-                              read_only=Event(), want_to_merge=Event(),
-                              somebody_is_writing=mocked_writing,
                               ignore=CachedIgnore("f"))
-        current._index = mocked_index
+        current._stage = mocked_index
 
         assert current.fsync("/path", "data", 1) == "done"
-        assert mocked_writing.set.call_count == 1
-        assert mocked_writing.clear.call_count == 1
         message = "Fsync /path"
         mocked_index.assert_called_once_with(add="/path", message=message)
 
         current_view.PassthroughView.fsync = old_fsync
 
     def test_unlink_from_git_dir(self):
-        current = CurrentView(repo_path="repo", ignore=CachedIgnore("f"),
-                              read_only=Event(), want_to_merge=Event())
+        current = CurrentView(repo_path="repo", ignore=CachedIgnore("f"))
 
         with pytest.raises(FuseOSError):
             current.unlink(".git/")
@@ -309,9 +268,8 @@ class TestCurrentView(object):
         mocked_index = MagicMock()
 
         current = CurrentView(repo_path="repo", uid=1, gid=1,
-                              read_only=Event(), want_to_merge=Event(),
                               ignore=CachedIgnore("f"))
-        current._index = mocked_index
+        current._stage = mocked_index
 
         assert current.unlink("/path") == "done"
         message = "Deleted /path"
@@ -319,23 +277,23 @@ class TestCurrentView(object):
 
         current_view.PassthroughView.unlink = old_unlink
 
-    def test_index(self):
+    def test_stage(self):
         mocked_repo = MagicMock()
         mocked_sanitize = MagicMock()
         mocked_queue = MagicMock()
 
-        mocked_sanitize.return_value = ["to-index"]
+        mocked_sanitize.return_value = ["to-stage"]
 
         current = CurrentView(repo_path="repo", repo=mocked_repo,
                               queue=mocked_queue, ignore=CachedIgnore("f"))
         current._sanitize = mocked_sanitize
-        current._index("message", ["add"], ["remove"])
+        current._stage("message", ["add"], ["remove"])
 
-        mocked_queue.commit.assert_called_once_with(add=['to-index'],
-                                                    remove=['to-index'],
+        mocked_queue.commit.assert_called_once_with(add=['to-stage'],
+                                                    remove=['to-stage'],
                                                     message="message")
-        mocked_repo.index.add.assert_called_once_with(["to-index"])
-        mocked_repo.index.remove.assert_called_once_with(["to-index"])
+        mocked_repo.index.add.assert_called_once_with(["to-stage"])
+        mocked_repo.index.remove.assert_called_once_with(["to-stage"])
 
         mocked_sanitize.has_calls([call(['add']), call(['remove'])])
 
@@ -344,87 +302,40 @@ class TestCurrentView(object):
         assert current._sanitize("/path") == "path"
 
     def test_open(self):
-        want_to_merge = Event()
-        want_to_merge.set()
-
-        mocked_time = MagicMock()
         mocked_full = MagicMock()
         mocked_os = MagicMock()
 
         mocked_os.open.return_value = 1
-        mocked_time.sleep.side_effect = lambda x: want_to_merge.clear()
         mocked_full.return_value = "full_path"
 
-        with patch.multiple('gitfs.views.current', os=mocked_os,
-                            time=mocked_time):
+        with patch.multiple('gitfs.views.current', os=mocked_os):
             current = CurrentView(repo_path="repo",
-                                  want_to_merge=want_to_merge,
                                   ignore=CachedIgnore("f"))
 
             current._full_path = mocked_full
             current.writing = set([])
 
             assert current.open("path/", os.O_WRONLY) == 1
-            assert current.writing == set([1])
             mocked_os.open.assert_called_once_with("full_path", os.O_WRONLY)
-            mocked_time.sleep.assert_called_once_with(2)
 
     def test_release(self):
-        mocked_unlink = MagicMock()
-        mocked_index = MagicMock()
-        mocked_write = MagicMock()
-        mocked_writing = MagicMock()
+        message = "I need to stage this"
+        mocked_os = MagicMock()
+        mocked_stage = MagicMock()
 
-        mocked_writing.__contains__.return_value = True
-        mocked_writing.__len__.return_value = False
+        mocked_os.close.return_value = 0
 
-        from gitfs.views import current as current_view
-        old_unlink = current_view.PassthroughView.unlink
-        current_view.PassthroughView.unlink = mocked_unlink
-
-        current = CurrentView(repo_path="path",
-                              somebody_is_writing=mocked_write,
-                              read_only=Event(), ignore=CachedIgnore("f"))
-        current.dirty = {
-            'path/': {
-                'delete_it': True,
-                'is_dirty': True,
-                'message': 'message'
+        with patch.multiple('gitfs.views.current', os=mocked_os):
+            current = CurrentView(repo_path="repo",
+                                  ignore=CachedIgnore("f"))
+            current._stage = mocked_stage
+            current.dirty = {
+                4: {
+                    'message': message
+                }
             }
-        }
-        current._index = mocked_index
-        current.writing = mocked_writing
 
-        with patch('gitfs.views.current.os') as mocked_os:
-            mocked_os.path.split.return_value = [1, 1]
-            current.release("path/", 1)
+            assert current.release("/path", 4) == 0
 
-            mocked_os.path.split.assert_called_once_with("path/")
-            mocked_unlink.assert_called_once_with(1)
-            assert mocked_write.set.call_count == 1
-            mocked_writing.remove.assert_called_once_with(1)
-            assert mocked_write.clear.call_count == 1
-            mocked_index.assert_called_once_with(add="path/",
-                                                 message="message")
-            mocked_os.close.assert_called_once_with(1)
-
-        current_view.PassthroughView.unlink = old_unlink
-
-    def test_release_when_somebody_is_still_writing(self):
-        mocked_write = MagicMock()
-        mocked_writing = MagicMock()
-
-        mocked_writing.__len__.return_value = True
-        mocked_writing.__contains__.return_value = True
-
-        current = CurrentView(repo_path="path",
-                              somebody_is_writing=mocked_write,
-                              read_only=Event(), ignore=CachedIgnore("f"))
-        current.dirty = {}
-        current.writing = mocked_writing
-
-        with patch('gitfs.views.current.os') as mocked_os:
-            current.release("path/", 1)
-
-            assert mocked_write.set.call_count == 1
-            mocked_os.close.assert_called_once_with(1)
+            mocked_os.close.assert_called_once_with(4)
+            mocked_stage.assert_called_once_with(add="/path", message=message)

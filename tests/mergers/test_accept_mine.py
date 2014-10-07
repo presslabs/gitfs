@@ -135,6 +135,7 @@ class TestAcceptMine(object):
         mocked_repo.index.conflicts = "conflicts"
         mocked_repo.lookup_reference.return_value = mocked_ref
         mocked_repo.commit.return_value = "new_commit"
+        mocked_repo.find_diverge_commits = mocked_find_commits
         mocked_reload.return_value = "reload"
         mocked_find_commits.return_value = mocked_diverge
         mocked_copy.return_value = "local_copy"
@@ -145,7 +146,6 @@ class TestAcceptMine(object):
         mine._create_local_copy = mocked_copy
         mine._create_remote_copy = mocked_remote_copy
         mine.reload_branch = mocked_reload
-        mine.find_diverge_commits = mocked_find_commits
         mine.solve_conflicts = mocked_solve
 
         mine.__call__("local_branch", "remote_branch", "upstream")

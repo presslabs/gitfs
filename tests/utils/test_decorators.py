@@ -40,16 +40,6 @@ class TestRetryDecorator(object):
 
 
 class TestWhileNotDecorator(object):
-    def test_while_not_with_missing_event(self):
-        mocked_method = MagicMock()
-        mocked_self = EmptyMock()
-
-        with patch.multiple('gitfs.utils.decorators.while_not',
-                            wraps=MockedWraps):
-            with pytest.raises(ValueError):
-                not_now = while_not("obj")
-                not_now(mocked_method)(mocked_self, "arg", kwarg="kwarg")
-
     def test_while_not_with_invalid_event_type(self):
         mocked_method = MagicMock()
         mocked_self = EmptyMock(obj="obj")
@@ -66,14 +56,13 @@ class TestWhileNotDecorator(object):
 
         mocked_method = MagicMock()
         mocked_time = MagicMock()
-        mocked_self = EmptyMock(obj=an_event)
 
         mocked_time.sleep.side_effect = lambda x: an_event.clear()
         mocked_method.__name__ = "name"
 
         with patch.multiple('gitfs.utils.decorators.while_not',
                             wraps=MockedWraps, time=mocked_time):
-            not_now = while_not("obj")
-            not_now(mocked_method)(mocked_self, "arg", kwarg="kwarg")
+            not_now = while_not(an_event)
+            not_now(mocked_method)("arg", kwarg="kwarg")
 
             mocked_time.sleep.assert_called_once_with(0.2)

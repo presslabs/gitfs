@@ -152,7 +152,6 @@ class CurrentView(PassthroughView):
         the changed to upstream.
         """
 
-        print self.dirty, fh
         if fh in self.dirty:
             message = self.dirty[fh]['message']
             del self.dirty[fh]

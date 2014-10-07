@@ -1,4 +1,3 @@
-import time
 import os
 
 import pygit2
@@ -29,7 +28,6 @@ class AcceptMine(Merger):
         local = self._create_local_copy(local_branch, "merging_local")
         remote = self._create_remote_copy(remote_branch, upstream,
                                           "merging_remote")
-        print "find diverge commits", local.name, remote.name, time.time()
         # get diverge commits
         diverge_commits = self.repository.find_diverge_commits(local, remote)
 
