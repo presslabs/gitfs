@@ -1,4 +1,5 @@
 import time
+from collections import namedtuple
 
 import pytest
 from mock import MagicMock, patch, call
@@ -6,6 +7,8 @@ from pygit2 import GIT_BRANCH_REMOTE, GIT_SORT_TIME, GIT_FILEMODE_TREE
 
 from gitfs.utils import Repository
 from .base import RepositoryBaseTest
+
+Commit = namedtuple("Commit", "hex")
 
 
 class TestRepository(RepositoryBaseTest):
@@ -36,9 +39,8 @@ class TestRepository(RepositoryBaseTest):
         mocked_repo.lookup_branch().get_object.return_value = MockedCommit()
 
         repo = Repository(mocked_repo)
-        behind = repo.fetch("origin", "master")
+        repo.fetch("origin", "master")
 
-        assert behind is True
         assert mocked_remote.fetch.call_count == 1
 
     def test_comit_no_parents(self):
@@ -312,3 +314,51 @@ class TestRepository(RepositoryBaseTest):
 
         assert repo.get_blob_data("tree", "path") == "some data"
         mocked_git_object.has_calls([call("tree", "path")])
+
+    def test_find_diverge_commits_first_from_second(self):
+        mocked_repo = MagicMock()
+
+        def walker(obj, sort, *branches):
+            first_branch = [Commit(1), Commit(2), Commit(3), Commit(4)]
+            second_branch = [Commit(5), Commit(6), Commit(2), Commit(3)]
+
+            for index, commit in enumerate(first_branch):
+                yield (commit, second_branch[index])
+
+        repo = Repository(mocked_repo)
+        repo.walk_branches = walker
+
+        result = repo.find_diverge_commits("first_branch", "second_branch")
+        assert result.common_parent == Commit(2)
+
+    def test_find_diverge_commits_second_from_first(self):
+        mocked_repo = MagicMock()
+
+        def walker(obj, sort, *branches):
+            first_branch = [Commit(5), Commit(6), Commit(2), Commit(3)]
+            second_branch = [Commit(1), Commit(2), Commit(3), Commit(4)]
+
+            for index, commit in enumerate(first_branch):
+                yield (commit, second_branch[index])
+
+        repo = Repository(mocked_repo)
+        repo.walk_branches = walker
+
+        result = repo.find_diverge_commits("first_branch", "second_branch")
+        assert result.common_parent == Commit(2)
+
+    def test_find_diverge_commits_common_commit(self):
+        mocked_repo = MagicMock()
+
+        def walker(obj, sort, *branches):
+            first_branch = [Commit(5), Commit(6), Commit(2), Commit(3)]
+            second_branch = [Commit(1), Commit(0), Commit(2), Commit(3)]
+
+            for index, commit in enumerate(first_branch):
+                yield (commit, second_branch[index])
+
+        repo = Repository(mocked_repo)
+        repo.walk_branches = walker
+
+        result = repo.find_diverge_commits("first_branch", "second_branch")
+        assert result.common_parent == Commit(2)

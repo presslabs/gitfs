@@ -11,11 +11,11 @@ from errno import EFAULT
 
 from pygit2.credentials import Keypair
 from fuse import Operations, FUSE, FuseOSError
+
 from gitfs.utils import Repository
-
 from gitfs.cache import LRUCache, CachedIgnore
-
 from gitfs.log import log
+from gitfs.events import shutting_down
 
 
 lru = LRUCache(40000)
@@ -66,9 +66,6 @@ class Router(object):
         self.gid = getgrnam(group).gr_gid
 
         self.merge_queue = kwargs['merge_queue']
-        self.want_to_merge = kwargs['want_to_merge']
-        self.read_only = kwargs['read_only']
-        self.somebody_is_writing = kwargs['somebody_is_writing']
         self.mount_time = int(time.time())
 
         self.max_size = kwargs['max_size']
@@ -88,8 +85,7 @@ class Router(object):
         log.info('Done INIT')
 
     def destroy(self, path):
-        for worker in self.workers:
-            worker.stop()
+        shutting_down.set()
 
         for worker in self.workers:
             worker.join()
@@ -161,9 +157,6 @@ class Router(object):
             kwargs['queue'] = self.merge_queue
             kwargs['max_size'] = self.max_size
             kwargs['max_offset'] = self.max_offset
-            kwargs['want_to_merge'] = self.want_to_merge
-            kwargs['read_only'] = self.read_only
-            kwargs['somebody_is_writing'] = self.somebody_is_writing
 
             args = set(groups) - set(kwargs.values())
 

@@ -1,31 +1,25 @@
-import time
-
-from gitfs.utils.decorators.while_not import while_not
 from gitfs.worker.peasant import Peasant
+from gitfs.events import (fetch, fetch_successful, shutting_down,
+                          remote_operation)
 
 
 class FetchWorker(Peasant):
     def run(self):
         while True:
-            if self.stopped:
+            if shutting_down.is_set():
                 break
 
-            time.sleep(self.timeout)
+            fetch.wait(self.timeout)
             self.fetch()
 
-    @while_not("pushing")
     def fetch(self):
-        self.fetching.set()
-        try:
-            print "fetch"
-            behind = self.repository.fetch(self.upstream, self.branch)
+        with remote_operation:
+            print "acum fac fetch"
+            fetch.clear()
 
-            if behind:
-                print "behind"
-                self.merge_queue.add({"type": "merge"})
-            if self.read_only.is_set():
-                self.read_only.clear()
-                print "no more read-only"
-        except:
-            self.read_only.set()
-        self.fetching.clear()
+            try:
+                self.repository.fetch(self.upstream, self.branch)
+                fetch_successful.set()
+            except:
+                print "fetch failed"
+                fetch_successful.clear()

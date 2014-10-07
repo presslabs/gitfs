@@ -1,10 +1,11 @@
+import time
 import pygit2
 
 from gitfs.merges import AcceptMine
 from gitfs.worker.fetch import FetchWorker
 
-from gitfs.utils.decorators.retry import retry
-from gitfs.utils.decorators.while_not import while_not
+from gitfs.events import (fetch, syncing, sync_done, writers, shutting_down,
+                          remote_operation, push_successful)
 
 
 class MergeWorker(FetchWorker):
@@ -22,24 +23,22 @@ class MergeWorker(FetchWorker):
 
     def run(self):
         commits = []
-        merges = []
 
         while True:
-            if self.stopped:
+            if shutting_down.is_set():
                 break
 
             try:
                 job = self.merge_queue.get(timeout=self.timeout, block=True)
-
-                # we have two types of jobs: [commit, merge]
+                print job, time.time()
                 if job['type'] == 'commit':
                     commits.append(job)
-                elif job['type'] == 'merge':
-                    merges.append(job)
+                print "ceva treaba boss?"
             except:
-                commits, merges = self.on_idle(commits, merges)
+                print "idle", time.time()
+                commits = self.on_idle(commits)
 
-    def on_idle(self, commits, merges):
+    def on_idle(self, commits):
         """
         On idle, we have 4 cases:
         1. We have to commit and also need to merge some commits from remote.
@@ -50,62 +49,41 @@ class MergeWorker(FetchWorker):
         In this case we are safe to merge and push.
         """
 
-        if commits and merges:
+        if commits:
             self.commit(commits)
-            self.want_to_merge.set()
             commits = []
-            merges = []
-        elif merges:
-            self.want_to_merge.set()
-            merges = []
-        elif commits:
-            self.commit(commits)
-            self.want_to_merge.set()
-            commits = []
-        elif (self.want_to_merge.is_set() and
-              not self.somebody_is_writing.is_set()):
-            self.merge()
-            self.want_to_merge.clear()
-            self.push()
+            syncing.set()
 
-        return commits, merges
+        if writers == 0:
+            self.sync()
+
+        return commits
 
     def merge(self):
         self.strategy(self.branch, self.branch, self.upstream)
         self.repository.commits.update()
         self.repository.ignore.update()
 
-    @while_not("fetching")
-    def push(self):
-        """
-        Try to push. The push can fail in two cases:
-        1. The remote is down, so we need to retry.
-        2. We are behind, so we need to fetch + merge and then try again
-        """
+    def sync(self):
+        sync_done.clear()
 
-        self.pushing.set()
-        self.read_only.set()
+        if self.repository.behind:
+            self.merge()
 
         try:
-            print "try to push"
-            self.repository.push(self.upstream, self.branch)
-            print "push done"
-            self.read_only.clear()
-        except:
-            print "push failed"
-            self.fetch()
-        self.pushing.clear()
-
-    @retry(each=3)
-    def fetch(self):
-        print "try to fetch"
-        behind = self.repository.fetch(self.upstream, self.branch)
-        if behind:
-            print "behind"
-            self.merge_queue.add({'type': 'merge'})
-        else:
-            print "ok...pushing"
-            self.push()
+            with remote_operation:
+                print "start pushing", time.time()
+                self.repository.push(self.upstream, self.branch)
+                print "push done", time.time()
+                self.repository.behind = False
+            syncing.clear()
+            sync_done.set()
+            push_successful.set()
+        except Exception as e:
+            print "push failed", time.time()
+            print e
+            push_successful.clear()
+            fetch.set()
 
     def commit(self, jobs):
         if len(jobs) == 1:

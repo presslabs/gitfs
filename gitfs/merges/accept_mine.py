@@ -29,7 +29,7 @@ class AcceptMine(Merger):
         remote = self._create_remote_copy(remote_branch, upstream,
                                           "merging_remote")
         # get diverge commits
-        diverge_commits = self.find_diverge_commits(local, remote)
+        diverge_commits = self.repository.find_diverge_commits(local, remote)
 
         reference = "refs/heads/%s" % "merging_remote"
         self.repository.checkout(reference,
