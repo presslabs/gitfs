@@ -40,6 +40,23 @@ class Repository(object):
         else:
             return self.__dict__[attr]
 
+    def ahead(self, upstream, branch):
+        ahead, behind = self.diverge(upstream, branch)
+        return ahead
+
+    def diverge(self, upstream, branch):
+        reference = "%s/%s" % (upstream, branch)
+        remote_branch = self.lookup_branch(reference, GIT_BRANCH_REMOTE)
+        local_branch = self.lookup_branch(branch, GIT_BRANCH_LOCAL)
+
+        print "branches:", local_branch.name, remote_branch.name
+        diverge_commits = self.find_diverge_commits(local_branch,
+                                                    remote_branch)
+        behind = len(diverge_commits.second_commits) > 0
+        ahead = len(diverge_commits.first_commits) > 0
+
+        return ahead, behind
+
     def checkout(self, ref, *args, **kwargs):
         result = self._repo.checkout(ref, *args, **kwargs)
 
@@ -89,14 +106,8 @@ class Repository(object):
         remote = self.get_remote(upstream)
         remote.fetch()
 
-        reference = "%s/%s" % (upstream, branch_name)
-        remote_branch = self.lookup_branch(reference, GIT_BRANCH_REMOTE)
-        local_branch = self.lookup_branch(branch_name, GIT_BRANCH_LOCAL)
-
-        print "branches:", local_branch.name, remote_branch.name
-        diverge_commits = self.find_diverge_commits(local_branch,
-                                                    remote_branch)
-        self.behind = len(diverge_commits.second_commits) > 0
+        ahead, behind = self.diverge(upstream, branch_name)
+        self.behind = behind
 
     def commit(self, message, author, commiter, parents=None, ref="HEAD"):
         """ Wrapper for create_commit. It creates a commit from a given ref

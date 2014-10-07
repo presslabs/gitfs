@@ -65,25 +65,28 @@ class MergeWorker(FetchWorker):
         self.repository.ignore.update()
 
     def sync(self):
+        need_to_push = self.repository.ahead(self.upstream, self.branch)
         sync_done.clear()
 
         if self.repository.behind:
             self.merge()
+            need_to_push = True
 
-        try:
-            with remote_operation:
-                print "start pushing", time.time()
-                self.repository.push(self.upstream, self.branch)
-                print "push done", time.time()
-                self.repository.behind = False
-            syncing.clear()
-            sync_done.set()
-            push_successful.set()
-        except Exception as e:
-            print "push failed", time.time()
-            print e
-            push_successful.clear()
-            fetch.set()
+        if need_to_push:
+            try:
+                with remote_operation:
+                    print "start pushing", time.time()
+                    self.repository.push(self.upstream, self.branch)
+                    print "push done", time.time()
+                    self.repository.behind = False
+                syncing.clear()
+                sync_done.set()
+                push_successful.set()
+            except Exception as e:
+                print "push failed", time.time()
+                print e
+                push_successful.clear()
+                fetch.set()
 
     def commit(self, jobs):
         if len(jobs) == 1:
