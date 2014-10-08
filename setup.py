@@ -1,9 +1,8 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 requires_list = [
-    'cffi==0.8.6',
     'fusepy==2.0.2',
-    'pygit2==0.21.2',
+    'pygit2==0.21.3',
 ]
 
 setup(name='git-fs',
@@ -13,8 +12,8 @@ setup(name='git-fs',
       author='Presslabs',
       author_email='gitfs@gmail.com',
       url='https://github.com/Presslabs/git-fs',
-      packages=['gitfs'],
-      entry_points={'console_scripts': ['gitfs = gitfs.mount:start_fuse']},
+      packages=find_packages(exclude=["tests", "tests.*"]),
+      entry_points={'console_scripts': ['gitfs = gitfs:mount']},
       include_package_data=True,
       install_requires=requires_list,
       classifiers=[
