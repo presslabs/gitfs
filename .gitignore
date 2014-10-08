@@ -14,3 +14,4 @@ synctool/*
 .coverage
 .vagrant
 docs/build
+*.egg-info
