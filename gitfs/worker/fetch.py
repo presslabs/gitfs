@@ -21,6 +21,7 @@ from gitfs.events import (fetch, fetch_successful, shutting_down,
 class FetchWorker(Peasant):
     def run(self):
         while True:
+            print shutting_down.is_set(), "fetch worker"
             if shutting_down.is_set():
                 break
 
