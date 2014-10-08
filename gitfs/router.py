@@ -15,7 +15,7 @@ from fuse import Operations, FUSE, FuseOSError
 from gitfs.utils import Repository
 from gitfs.cache import LRUCache, CachedIgnore
 from gitfs.log import log
-from gitfs.events import shutting_down
+from gitfs.events import shutting_down, fetch
 
 
 lru = LRUCache(40000)
@@ -86,6 +86,7 @@ class Router(object):
 
     def destroy(self, path):
         shutting_down.set()
+        fetch.set()
 
         for worker in self.workers:
             worker.join()
