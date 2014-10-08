@@ -22,10 +22,11 @@ class FetchWorker(Peasant):
     def run(self):
         while True:
             print shutting_down.is_set(), "fetch worker"
+            fetch.wait(self.timeout)
+
             if shutting_down.is_set():
                 break
 
-            fetch.wait(self.timeout)
             self.fetch()
 
     def fetch(self):
