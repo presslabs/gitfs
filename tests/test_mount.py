@@ -50,7 +50,7 @@ class TestMount(object):
         mocked_router.repo = 'repo'
         mocked_router.repo_path = 'repo_path'
 
-        with patch.multiple('gitfs.mount',
+        with patch.multiple('gitfs.mounter',
                             MergeQueue=MagicMock(return_value=mocked_queue),
                             Router=MagicMock(return_value=mocked_router),
                             routes=mocked_routes, MergeWorker=mocked_merger,
@@ -85,7 +85,7 @@ class TestMount(object):
 
         mocked_args.return_value = "args"
 
-        with patch.multiple('gitfs.mount', Args=mocked_args):
+        with patch.multiple('gitfs.mounter', Args=mocked_args):
             assert parse_args(mocked_parser) == "args"
             asserted_calls = [call('remote_url', help='repo to be cloned'),
                               call('mount_point',
