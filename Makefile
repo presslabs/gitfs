@@ -19,6 +19,7 @@ GITCONFIG_PATH=$(TEST_DIR)/.gitconfig
 all: $(BUILD_DIR)/gitfs
 
 install: $(BUILD_DIR)/gitfs
+	mkdir -p $(DESTDIR)$(PREFIX)/bin
 	install -m 0755 $(BUILD_DIR)/gitfs $(DESTDIR)$(PREFIX)/bin/gitfs
 
 uninstall:
