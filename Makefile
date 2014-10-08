@@ -37,7 +37,7 @@ $(VIRTUAL_ENV)/bin/py.test: $(VIRTUAL_ENV)/bin/pip
 	@touch $@
 
 $(VIRTUAL_ENV)/bin/pip:
-	virtualenv $(VIRTUAL_ENV)
+	virtualenv --setuptools $(VIRTUAL_ENV)
 
 drone:
 	sudo apt-get update
