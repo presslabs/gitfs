@@ -1,4 +1,4 @@
-gitfs [![Build Status](http://drone.presslabs.net/github.com/PressLabs/git-fs/status.svg?branch=master)](http://drone.presslabs.net/github.com/PressLabs/git-fs)
+gitfs [![Build Status](http://drone.presslabs.net/github.com/PressLabs/gitfs/status.svg?branch=master)](http://drone.presslabs.net/github.com/PressLabs/gitfs)
 ========
 
 A FUSE filesystem for git repositories, with local cache
