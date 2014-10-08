@@ -8,19 +8,19 @@ import grp
 class Args(object):
     def __init__(self, parser):
         self.DEFAULTS = {
-            "repos_path": self.get_repos_path,
-            "user": self.get_current_user,
-            "group": self.get_current_group,
-            "foreground": True,
-            "branch": "master",
-            "allow_other": False,
-            "allow_root": False,
-            "commiter_name": self.get_current_user,
-            "commiter_email": self.get_current_email,
-            "max_size": 10,
-            "fetch_timeout": 30,
-            "merge_timeout": 5,
-            "log": "syslog"
+            "repos_path": (self.get_repos_path, "s"),
+            "user": (self.get_current_user, "s"),
+            "group": (self.get_current_group, "s"),
+            "foreground": (True, "b"),
+            "branch": ("master", "s"),
+            "allow_other": (False, "b"),
+            "allow_root": (False, "b"),
+            "commiter_name": (self.get_current_user, "s"),
+            "commiter_email": (self.get_current_email, "s"),
+            "max_size": (10, "f"),
+            "fetch_timeout": (30, "f"),
+            "merge_timeout": (5, "f"),
+            "log": ("syslog", "s")
         }
         self.config = self.build_config(parser.parse_args())
 
@@ -29,10 +29,7 @@ class Args(object):
             for arg in args.o.split(","):
                 if "=" in arg:
                     item, value = arg.split("=")
-                    if value == "True":
-                        value = True
-                    if value == "False":
-                        value = False
+
                     setattr(args, item, value)
 
         args = self.set_defaults(args)
@@ -47,10 +44,25 @@ class Args(object):
 
     def set_defaults(self, args):
         for option, value in self.DEFAULTS.iteritems():
-            if not getattr(args, option, None):
+            new_value = getattr(args, option, None)
+
+            if not new_value:
+                value = value[0]
+
                 if callable(value):
                     value = value()
-                setattr(args, option, value)
+            else:
+                if value[1] == "s":
+                    value = new_value
+                if value[1] == "b":
+                    if new_value == "True":
+                        value = True
+                    if new_value == "False":
+                        value = False
+                if value[1] == "f":
+                    value = float(new_value)
+
+            setattr(args, option, value)
 
         return args
 
