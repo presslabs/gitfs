@@ -1,3 +1,4 @@
+PREFIX:=/usr/local
 BUILD_DIR:=build
 VIRTUAL_ENV?=$(BUILD_DIR)/virtualenv
 
@@ -15,9 +16,15 @@ GITCONFIG="\
 
 GITCONFIG_PATH=$(TEST_DIR)/.gitconfig
 
-all: $(BUILD_DIR)/pex
+all: $(BUILD_DIR)/gitfs
 
-$(BUILD_DIR)/pex: $(BUILD_DIR) $(VIRTUAL_ENV)/bin/pex
+install: $(BUILD_DIR)/gitfs
+	install -m 0755 $(BUILD_DIR)/gitfs $(PREFIX)/bin/gitfs
+
+uninstall:
+	rm -rf $(PREFIX)/bin/gitfs
+
+$(BUILD_DIR)/gitfs: $(BUILD_DIR) $(VIRTUAL_ENV)/bin/pex
 	$(VIRTUAL_ENV)/bin/pex -r 'pygit2==0.21.3' -r 'fusepy==2.0.2' -s . -e gitfs:mount -o $(BUILD_DIR)/gitfs
 
 $(VIRTUAL_ENV)/bin/pex: virtualenv
@@ -73,8 +80,6 @@ test: testenv
 
 clean:
 	rm -rf $(BUILD_DIR)
-	rm -rf $(MNT_DIR)
-	rm -rf $(REPO_DIR)
 	rm -rf $(TEST_DIR)
 
 .PHONY: clean test testenv virtualenv drone all
