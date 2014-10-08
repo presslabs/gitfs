@@ -22,8 +22,8 @@ lru = LRUCache(40000)
 
 
 class Router(object):
-    def __init__(self, remote_url, repos_path, mount_path, branch=None,
-                 user="root", group="root", **kwargs):
+    def __init__(self, remote_url, repos_path, mount_path, credentials,
+                 branch=None, user="root", group="root", **kwargs):
         """
         Clone repo from a remote into repos_path/<repo_name> and checkout to
         a specific branch.
@@ -55,8 +55,6 @@ class Router(object):
 
         log.info('Cloning into %s' % self.repo_path)
 
-        credentials = Keypair("git", "/home/dragos/.ssh/gitfs.pub",
-                              "/home/dragos/.ssh/gitfs", "")
         self.repo = Repository.clone(self.remote_url, self.repo_path,
                                      self.branch, credentials)
         self.repo.credentials = credentials
