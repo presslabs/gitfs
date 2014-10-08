@@ -3,25 +3,26 @@ import os
 import socket
 import tempfile
 import grp
+from collections import OrderedDict
 
 
 class Args(object):
     def __init__(self, parser):
-        self.DEFAULTS = {
-            "repos_path": (self.get_repos_path, "s"),
-            "user": (self.get_current_user, "s"),
-            "group": (self.get_current_group, "s"),
-            "foreground": (True, "b"),
-            "branch": ("master", "s"),
-            "allow_other": (False, "b"),
-            "allow_root": (False, "b"),
-            "commiter_name": (self.get_current_user, "s"),
-            "commiter_email": (self.get_current_email, "s"),
-            "max_size": (10, "f"),
-            "fetch_timeout": (30, "f"),
-            "merge_timeout": (5, "f"),
-            "log": ("syslog", "s")
-        }
+        self.DEFAULTS = OrderedDict({
+            "repos_path": (self.get_repos_path, "string"),
+            "user": (self.get_current_user, "string"),
+            "group": (self.get_current_group, "string"),
+            "foreground": (True, "bool"),
+            "branch": ("master", "string"),
+            "allow_other": (False, "bool"),
+            "allow_root": (False, "bool"),
+            "commiter_name": (self.get_current_user, "string"),
+            "commiter_email": (self.get_current_email, "string"),
+            "max_size": (10, "float"),
+            "fetch_timeout": (30, "float"),
+            "merge_timeout": (5, "float"),
+            "log": ("syslog", "string")
+        })
         self.config = self.build_config(parser.parse_args())
 
     def build_config(self, args):
@@ -50,31 +51,31 @@ class Args(object):
                 value = value[0]
 
                 if callable(value):
-                    value = value()
+                    value = value(args)
             else:
-                if value[1] == "s":
+                if value[1] == "string":
                     value = new_value
-                if value[1] == "b":
+                if value[1] == "bool":
                     if new_value == "True":
                         value = True
                     if new_value == "False":
                         value = False
-                if value[1] == "f":
+                if value[1] == "float":
                     value = float(new_value)
 
             setattr(args, option, value)
 
         return args
 
-    def get_current_group(self):
+    def get_current_group(self, args):
         gid = os.getegid()
         return grp.getgrgid(gid).gr_name
 
-    def get_current_user(self):
+    def get_current_user(self, args):
         return getpass.getuser()
 
-    def get_current_email(self):
-        return self.get_current_user() + "@" + socket.gethostname()
+    def get_current_email(self, args):
+        return "%s@%s" % (args.user, socket.gethostname())
 
-    def get_repos_path(self):
+    def get_repos_path(self, args):
         return tempfile.mkdtemp(dir="/var/lib/gitfs")
