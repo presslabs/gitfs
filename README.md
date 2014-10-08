@@ -45,4 +45,4 @@ Defaults to `5 sec`.
 * `foreground`: specifies whether fuse will in foreground or in backround. Defaults
 to `True`.
 * `allow_other`:  This option overrides the security measure restricting file access to the user mounting the filesystem.  So all users (including root) can access the files. This option is by default only allowed to root, but this restriction can be removed with a configuration option described in the previous section. Defaults to `True`
-* `allow_root`: This option is similar to allow_other but file access is limited to the user mounting the filesystem and root. This option and allow_other are mutu‐ ally exclusive. Defaults to `True`
+* `allow_root`: This option is similar to allow_other but file access is limited to the user mounting the filesystem and root. This option and allow_other are mutu‐ ally exclusive. Defaults to `False`
