@@ -13,54 +13,93 @@
 # limitations under the License.
 
 
-import os
 from datetime import datetime
+import os
+import subprocess
 
-from pygit2 import Repository as _Repository
-from gitfs.utils.repository import Repository
+
+class Sh:
+    def __init__(self, cwd=None):
+        self.command = ""
+        self.cwd = cwd
+
+    def __getattr__(self, item):
+        self.command += item + " "
+
+        return self
+
+    def __call__(self, *args, **kwargs):
+        command = self.command + " ".join(args)
+        self.command = ""
+
+        return subprocess.Popen(command, shell=True, stdout=subprocess.PIPE,
+                                cwd=self.cwd).stdout.read()
+
+
+class pull:
+    def __init__(self, sh):
+        self.sh = sh
+
+    def __enter__(self):
+        self.sh.git.pull("origin", "master")
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        pass
 
 
 class BaseTest(object):
-    COMMITS_DONE = 1
+    def setup(self):
+        self.mount_path = "%s" % os.environ["MOUNT_PATH"]
+
+        self.repo_name = os.environ["REPO_NAME"]
+        self.repo_path = "%s/%s" % (os.environ["REPO_PATH"], self.repo_name)
+
+        self.current_path = "%s/current" % self.mount_path
+
+        self.sh = Sh(os.environ["REMOTE"])
+
+        self.last_commit_hash = self.commit_hash()
 
     @property
     def today(self):
         now = datetime.now()
         return now.strftime("%Y-%m-%d")
 
-    def setup(self):
-        self.mount_path = "%s/" % os.environ["MOUNT_PATH"]
-        self.repo_name = os.environ["REPO_NAME"]
-        self.repo_path = "%s/%s" % (os.environ["REPO_PATH"], self.repo_name)
+    def commit_hash(self, index=0):
+        return self.sh.git.log("--pretty=%H").splitlines()[index]
 
-        self.current_path = "%s/current" % self.mount_path
+    def commit_message(self, index=0):
+        return self.sh.git.log("--pretty=%B").splitlines()[index]
 
-        self.repo = Repository(_Repository(self.repo_path))
-        self.repo.commits.update()
+    def get_commits_by_date(self, date=None):
+        if date is None:
+            date = self.today
 
-    def assert_new_commit(self, step=1):
-        total_commits = BaseTest.COMMITS_DONE + step
-        commits_len = len(self.commits)
-        assert commits_len == total_commits
-        BaseTest.COMMITS_DONE += step
+        lines = self.sh.git.log("--before", '"%s 23:59:59"' % date,
+                                "--after", '"%s 00:00:00"' % date,
+                                '--pretty="%ai %H"').splitlines()
+
+        lines = map(lambda line: line.split(), lines)
+
+        return map(lambda tokens: "%s-%s" % (tokens[1], tokens[3][:10]), lines)
+
+    def get_commit_dates(self):
+        return list(set(self.sh.git.log("--pretty=%ad", "--date=short").
+                        splitlines()))
 
     def assert_commit_message(self, message):
-        self.repo.commits.update()
-        commit = self.last_commit
-        assert commit.message == message
+        assert message == self.commit_message()
 
-    def assert_blob(self, blob, path):
-        assert self.repo.get_blob_data(self.last_commit.tree, path) == blob
+    def assert_new_commit(self, steps=1):
+        current_index = 0
 
-    @property
-    def last_commit(self):
-        self.repo.commits.update()
-        last_commit = str(self.commits[-1])
-        commit = self.repo.revparse_single(last_commit.split('-')[1])
-        return commit
+        while self.commit_hash(current_index) != self.last_commit_hash:
+            current_index += 1
 
-    @property
-    def commits(self):
-        self.repo.commits.update()
-        date = self.repo.get_commit_dates()
-        return self.repo.get_commits_by_date(date[0])
+        self.last_commit_hash = self.commit_hash(0)
+
+        assert current_index == steps
+
+    def assert_file_content(self, file_path, content):
+        with open(self.repo_path + "/" + file_path) as f:
+            assert f.read() == content

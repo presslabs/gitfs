@@ -47,7 +47,7 @@ class TestArgs(object):
                 "user": "test_user",
                 "group": "test_group",
                 "branch": "master",
-                "not_magic": False,
+                "not_magic": "False",
             }
             for name, value in asserted_results.iteritems():
                 assert value == getattr(args, name)
