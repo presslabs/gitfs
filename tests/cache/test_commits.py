@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from mock import MagicMock, call
 
 from pygit2 import GIT_SORT_TIME
@@ -29,6 +31,9 @@ class TestCommitCache(object):
 
         cache['2014-09-20'] = Commit(1, 1, "1111111111")
         assert cache.keys() == ['2014-09-20', '2014-09-19']
+        asserted_time = datetime.utcfromtimestamp(mocked_commit.commit_time)
+        asserted_time = "%s:%s:%s" % (asserted_time.hour, asserted_time.minute,
+                                      asserted_time.second)
         assert repr(cache['2014-09-19']) == '[16:56:40-1111111111]'
         del cache['2014-09-20']
         for commit_date in cache:
