@@ -4,6 +4,7 @@ from logging.handlers import TimedRotatingFileHandler, SysLogHandler
 import sys
 
 from fuse import FUSE
+from pygit2 import Keypair, UserPass
 from gitfs.log import log
 
 from gitfs.utils import Args
@@ -25,6 +26,12 @@ def prepare_components(args):
     # initialize merge queue
     merge_queue = MergeQueue()
 
+    if args.password:
+        credentials = UserPass(args.username, args.password)
+    else:
+        credentials = Keypair(args.username, args.ssh_key + ".pub",
+                              args.ssh_key, "")
+
     # setting router
     router = Router(remote_url=args.remote_url,
                     mount_path=args.mount_point,
@@ -34,7 +41,8 @@ def prepare_components(args):
                     group=args.group,
                     max_size=args.max_size * 1024 * 1024,
                     max_offset=args.max_size * 1024 * 1024,
-                    merge_queue=merge_queue)
+                    merge_queue=merge_queue,
+                    credentials=credentials)
 
     # register all the routes
     router.register(routes)
