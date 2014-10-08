@@ -8,6 +8,10 @@ A FUSE filesystem for git repositories, with local cache
 pip install -e .
 mount.fuse gitfs#http://github.com/vtemian/testing.git /tmp/mnt -o repos_path="/tmp"
 ```
+You can create the pex file using
+```
+pex -r 'pygit2==0.21.3' -r 'fusepy==2.0.2' -s . -e gitfs.mount:start_fuse -o install.pex
+```
 
 ### MVP
 Mount a repository:
