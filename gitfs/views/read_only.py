@@ -24,7 +24,7 @@ from .view import View
 
 
 class ReadOnlyView(View):
-    def getxattr(self, path, fh):
+    def getxattr(self, path, name, fh):
         raise FuseMethodNotImplemented
 
     def open(self, path, flags):
