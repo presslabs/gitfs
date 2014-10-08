@@ -19,10 +19,10 @@ GITCONFIG_PATH=$(TEST_DIR)/.gitconfig
 all: $(BUILD_DIR)/gitfs
 
 install: $(BUILD_DIR)/gitfs
-	install -m 0755 $(BUILD_DIR)/gitfs $(PREFIX)/bin/gitfs
+	install -m 0755 $(BUILD_DIR)/gitfs $(DESTDIR)$(PREFIX)/bin/gitfs
 
 uninstall:
-	rm -rf $(PREFIX)/bin/gitfs
+	rm -rf $(DESTDIR)$(PREFIX)/bin/gitfs
 
 $(BUILD_DIR)/gitfs: $(BUILD_DIR) $(VIRTUAL_ENV)/bin/pex
 	$(VIRTUAL_ENV)/bin/pex -r 'pygit2==0.21.3' -r 'fusepy==2.0.2' -s . -e gitfs:mount -o $(BUILD_DIR)/gitfs
