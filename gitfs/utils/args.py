@@ -11,6 +11,9 @@ class Args(object):
             "repos_path": (self.get_repos_path, "s"),
             "user": (self.get_current_user, "s"),
             "group": (self.get_current_group, "s"),
+            "username": ("", "s"),
+            "password": ("", "s"),
+            "ssh_key": (self.get_ssh_key, "s"),
             "foreground": (True, "b"),
             "branch": ("master", "s"),
             "allow_other": (False, "b"),
@@ -78,3 +81,6 @@ class Args(object):
 
     def get_repos_path(self):
         return tempfile.mkdtemp(dir="/var/lib/gitfs")
+
+    def get_ssh_key(self):
+        return os.environ["HOME"] + "/.ssh/id_rsa"
