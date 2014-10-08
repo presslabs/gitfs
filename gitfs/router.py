@@ -30,7 +30,7 @@ from fuse import Operations, FUSE, FuseOSError
 from gitfs.utils import Repository
 from gitfs.cache import LRUCache, CachedIgnore
 from gitfs.log import log
-from gitfs.events import shutting_down
+from gitfs.events import shutting_down, fetch
 
 
 lru = LRUCache(40000)
@@ -70,8 +70,8 @@ class Router(object):
 
         log.info('Cloning into %s' % self.repo_path)
 
-        credentials = Keypair("git", "/home/zalman/.ssh/id_rsa.pub",
-                              "/home/zalman/.ssh/id_rsa", "")
+        credentials = Keypair("git", "/home/dragos/.ssh/gitfs.pub",
+                              "/home/dragos/.ssh/gitfs", "")
         self.repo = Repository.clone(self.remote_url, self.repo_path,
                                      self.branch, credentials)
         self.repo.credentials = credentials
@@ -101,6 +101,7 @@ class Router(object):
 
     def destroy(self, path):
         shutting_down.set()
+        fetch.set()
 
         for worker in self.workers:
             worker.join()

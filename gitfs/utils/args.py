@@ -18,25 +18,26 @@ import os
 import socket
 import tempfile
 import grp
+from collections import OrderedDict
 
 
 class Args(object):
     def __init__(self, parser):
-        self.DEFAULTS = {
-            "repos_path": self.get_repos_path,
-            "user": self.get_current_user,
-            "group": self.get_current_group,
-            "foreground": True,
-            "branch": "master",
-            "allow_other": False,
-            "allow_root": False,
-            "commiter_name": self.get_current_user,
-            "commiter_email": self.get_current_email,
-            "max_size": 10,
-            "fetch_timeout": 30,
-            "merge_timeout": 5,
-            "log": "syslog"
-        }
+        self.DEFAULTS = OrderedDict({
+            "repos_path": (self.get_repos_path, "string"),
+            "user": (self.get_current_user, "string"),
+            "group": (self.get_current_group, "string"),
+            "foreground": (True, "bool"),
+            "branch": ("master", "string"),
+            "allow_other": (False, "bool"),
+            "allow_root": (False, "bool"),
+            "commiter_name": (self.get_current_user, "string"),
+            "commiter_email": (self.get_current_email, "string"),
+            "max_size": (10, "float"),
+            "fetch_timeout": (30, "float"),
+            "merge_timeout": (5, "float"),
+            "log": ("syslog", "string")
+        })
         self.config = self.build_config(parser.parse_args())
 
     def build_config(self, args):
@@ -44,10 +45,7 @@ class Args(object):
             for arg in args.o.split(","):
                 if "=" in arg:
                     item, value = arg.split("=")
-                    if value == "True":
-                        value = True
-                    if value == "False":
-                        value = False
+
                     setattr(args, item, value)
 
         args = self.set_defaults(args)
@@ -81,7 +79,6 @@ class Args(object):
                     value = float(new_value)
 
             setattr(args, option, value)
-
         return args
 
     def get_current_group(self, args):

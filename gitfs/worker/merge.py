@@ -40,6 +40,7 @@ class MergeWorker(FetchWorker):
         commits = []
 
         while True:
+            print shutting_down.is_set(), "merge worker"
             if shutting_down.is_set():
                 break
 
