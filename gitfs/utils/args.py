@@ -62,22 +62,37 @@ class Args(object):
 
     def set_defaults(self, args):
         for option, value in self.DEFAULTS.iteritems():
-            if not getattr(args, option, None):
+            new_value = getattr(args, option, None)
+
+            if not new_value:
+                value = value[0]
+
                 if callable(value):
-                    value = value()
-                setattr(args, option, value)
+                    value = value(args)
+            else:
+                if value[1] == "string":
+                    value = new_value
+                elif value[1] == "bool":
+                    if new_value.lower() == "true":
+                        value = True
+                    if new_value.lower() == "false":
+                        value = False
+                elif value[1] == "float":
+                    value = float(new_value)
+
+            setattr(args, option, value)
 
         return args
 
-    def get_current_group(self):
+    def get_current_group(self, args):
         gid = os.getegid()
         return grp.getgrgid(gid).gr_name
 
-    def get_current_user(self):
+    def get_current_user(self, args):
         return getpass.getuser()
 
-    def get_current_email(self):
-        return self.get_current_user() + "@" + socket.gethostname()
+    def get_current_email(self, args):
+        return "%s@%s" % (args.user, socket.gethostname())
 
-    def get_repos_path(self):
+    def get_repos_path(self, args):
         return tempfile.mkdtemp(dir="/var/lib/gitfs")
