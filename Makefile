@@ -64,7 +64,7 @@ test: testenv
 	$(VIRTUAL_ENV)/bin/pip install -e .
 	$(VIRTUAL_ENV)/bin/gitfs $(BARE_REPO) $(MNT_DIR) -o repos_path=$(REPO_DIR) & echo "$$!" > $(GITFS_PID)
 	sleep 2
-	MOUNT_PATH=$(MNT_DIR) REPO_PATH=$(REPO_DIR) REPO_NAME=$(REPO_NAME) $(VIRTUAL_ENV)/bin/py.test tests
+	MOUNT_PATH=$(MNT_DIR) REPO_PATH=$(REPO_DIR) REPO_NAME=$(REPO_NAME) REMOTE=$(REPO) $(VIRTUAL_ENV)/bin/py.test tests
 	kill -9 `cat $(GITFS_PID)`
 	sudo umount -f $(MNT_DIR)
 

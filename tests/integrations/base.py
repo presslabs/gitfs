@@ -20,13 +20,15 @@ class Sh:
         return subprocess.Popen(command, shell=True, stdout=subprocess.PIPE,
                                 cwd=self.cwd).stdout.read()
 
+class pull:
+    def __init__(self, sh):
+        self.sh = sh
 
-def pull(function):
-    def call(*args, **kwargs):
-        args[0].sh.git.pull("origin", "master")
+    def __enter__(self):
+        self.sh.git.pull("origin", "master")
 
-        return function(*args, **kwargs)
-    return call
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        pass
 
 
 class BaseTest(object):
@@ -38,7 +40,7 @@ class BaseTest(object):
 
         self.current_path = "%s/current" % self.mount_path
 
-        self.sh = Sh(self.repo_path)
+        self.sh = Sh(os.environ["REMOTE"])
 
         self.last_commit_hash = self.commit_hash()
 
@@ -47,15 +49,12 @@ class BaseTest(object):
         now = datetime.now()
         return now.strftime("%Y-%m-%d")
 
-    @pull
     def commit_hash(self, index=0):
         return self.sh.git.log("--pretty=%H").splitlines()[index]
 
-    @pull
     def commit_message(self, index=0):
         return self.sh.git.log("--pretty=%B").splitlines()[index]
 
-    @pull
     def get_commits_by_date(self, date=None):
         if date is None:
             date = self.today
@@ -68,16 +67,13 @@ class BaseTest(object):
 
         return map(lambda tokens: "%s-%s" % (tokens[1], tokens[3][:10]), lines)
 
-    @pull
     def get_commit_dates(self):
         return list(set(self.sh.git.log("--pretty=%ad", "--date=short").
                         splitlines()))
 
-    @pull
     def assert_commit_message(self, message):
         assert message == self.commit_message()
 
-    @pull
     def assert_new_commit(self, steps=1):
         current_index = 0
 
@@ -88,7 +84,6 @@ class BaseTest(object):
 
         assert current_index == steps
 
-    @pull
     def assert_file_content(self, file_path, content):
         with open(self.repo_path + "/" + file_path) as f:
             assert f.read() == content

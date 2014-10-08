@@ -1,7 +1,7 @@
 import os
 import time
 
-from tests.integrations.base import BaseTest
+from tests.integrations.base import BaseTest, pull
 
 
 class TestWriteCurrentView(BaseTest):
@@ -19,11 +19,13 @@ class TestWriteCurrentView(BaseTest):
             assert f.read() == content
 
         # check if a commit was made
-        self.assert_new_commit(2)
+        with pull(self.sh):
+            self.assert_new_commit()
 
         time.sleep(1)
 
-        self.assert_commit_message("merging: Update /new_file")
+        with pull(self.sh):
+            self.assert_commit_message("Update /new_file")
 
     def test_create_a_directory(self):
         directory = "%s/new_directory" % self.current_path
@@ -32,16 +34,17 @@ class TestWriteCurrentView(BaseTest):
 
         time.sleep(6)
 
-        # check if directory exists or not
-        directory_path = "%s/new_directory" % self.repo_path
-        assert os.path.exists(directory_path)
+        with pull(self.sh):
+            # check if directory exists or not
+            directory_path = "%s/new_directory" % self.repo_path
+            assert os.path.exists(directory_path)
 
-        # check for .keep file
-        keep_path = "%s/new_directory/.keep" % self.repo_path
-        assert os.path.exists(keep_path)
+            # check for .keep file
+            keep_path = "%s/new_directory/.keep" % self.repo_path
+            assert os.path.exists(keep_path)
 
-        self.assert_new_commit(1)
-        self.assert_commit_message("Created new_directory/.keep")
+            self.assert_new_commit()
+            self.assert_commit_message("Created new_directory/.keep")
 
     def test_chmod(self):
         filename = "%s/testing" % self.current_path
@@ -53,7 +56,7 @@ class TestWriteCurrentView(BaseTest):
         stats = os.stat(filename)
         assert stats.st_mode == 0100766
 
-        self.assert_new_commit()
+        # self.assert_new_commit()
         self.assert_commit_message("Chmod to 0766 on /testing")
 
     def test_rename(self):
@@ -64,11 +67,12 @@ class TestWriteCurrentView(BaseTest):
 
         time.sleep(6)
 
-        # check for new file
-        assert os.path.exists(new_filename)
+        with pull(self.sh):
+            # check for new file
+            assert os.path.exists(new_filename)
 
-        self.assert_new_commit(1)
-        self.assert_commit_message("Rename /testing to /new_testing")
+            self.assert_new_commit(2)
+            self.assert_commit_message("Rename /testing to /new_testing")
 
     def test_fsync(self):
         filename = "%s/me" % self.current_path
@@ -80,8 +84,9 @@ class TestWriteCurrentView(BaseTest):
 
         time.sleep(6)
 
-        self.assert_new_commit(1)
-        self.assert_commit_message("Update 1 items")
+        with pull(self.sh):
+            self.assert_new_commit()
+            self.assert_commit_message("Update 1 items")
 
     def test_create(self):
         filename = "%s/new_empty_file" % self.current_path
@@ -89,8 +94,9 @@ class TestWriteCurrentView(BaseTest):
 
         time.sleep(6)
 
-        self.assert_new_commit(1)
-        self.assert_commit_message("Created /new_empty_file")
+        with pull(self.sh):
+            self.assert_new_commit()
+            self.assert_commit_message("Created /new_empty_file")
 
     def test_symbolic_link(self):
         target = "me"
@@ -99,12 +105,13 @@ class TestWriteCurrentView(BaseTest):
 
         time.sleep(6)
 
-        # check if link exists
-        assert os.path.exists(name)
+        with pull(self.sh):
+            # check if link exists
+            assert os.path.exists(name)
 
-        self.assert_new_commit(1)
-        self.assert_commit_message("Create symlink to %s for /links" %
-                                   (target))
+            self.assert_new_commit()
+            self.assert_commit_message("Create symlink to %s for "
+                                       "/links" % (target))
 
     def test_edit_file(self):
         content = "first part"
@@ -116,28 +123,32 @@ class TestWriteCurrentView(BaseTest):
 
         time.sleep(5)
 
-        with open(filename) as f:
-            assert f.read() == content
+        with pull(self.sh):
+            with open(filename) as f:
+                assert f.read() == content
 
-        self.assert_new_commit(2)
+            self.assert_new_commit()
 
         time.sleep(1)
 
-        self.assert_commit_message("merging: Update /some_file")
+        with pull(self.sh):
+            self.assert_commit_message("Update /some_file")
 
-        with open(filename, "w") as f:
-            f.write(continuation)
+            with open(filename, "w") as f:
+                f.write(continuation)
 
         time.sleep(5)
 
-        with open(filename) as f:
-            assert f.read() == continuation
+        with pull(self.sh):
+            with open(filename) as f:
+                assert f.read() == continuation
 
-        self.assert_new_commit(2)
+            self.assert_new_commit()
 
         time.sleep(1)
 
-        self.assert_commit_message("merging: Update /some_file")
+        with pull(self.sh):
+            self.assert_commit_message("Update /some_file")
 
     def test_create_multiple_files(self):
         content = "Just a small file"
@@ -150,15 +161,17 @@ class TestWriteCurrentView(BaseTest):
 
         time.sleep(5)
 
-        for i in range(no_of_files):
-            with open(filename + str(i)) as f:
-                assert f.read() == content
+        with pull(self.sh):
+            for i in range(no_of_files):
+                with open(filename + str(i)) as f:
+                    assert f.read() == content
 
-        self.assert_new_commit(2)
+            self.assert_new_commit()
 
         time.sleep(1)
 
-        self.assert_commit_message("merging: Update %d items" % no_of_files)
+        with pull(self.sh):
+            self.assert_commit_message("Update %d items" % no_of_files)
 
     def test_delete_file(self):
         filename = "%s/deletable_file" % self.current_path
@@ -168,18 +181,22 @@ class TestWriteCurrentView(BaseTest):
 
         time.sleep(5)
 
-        self.assert_new_commit(2)
+        with pull(self.sh):
+            self.assert_new_commit()
 
         time.sleep(1)
 
-        self.assert_commit_message("merging: Update /deletable_file")
+        with pull(self.sh):
+            self.assert_commit_message("Update /deletable_file")
 
         os.remove(filename)
 
         time.sleep(10)
 
-        assert not os.path.exists(filename)
+        with pull(self.sh):
+            assert not os.path.exists(filename)
 
         time.sleep(1)
 
-        self.assert_commit_message("merging: Deleted /deletable_file")
+        with pull(self.sh):
+            self.assert_commit_message("Deleted /deletable_file")
