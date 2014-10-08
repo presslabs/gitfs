@@ -15,3 +15,4 @@ synctool/*
 .vagrant
 docs/build
 *.egg-info
+test/*
