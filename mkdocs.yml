@@ -1,1 +1,6 @@
-site_name: My Docs
+site_name: gitfs
+theme: readthedocs
+pages:
+    - [index.md, Home]
+    - [usage.md, Usage]
+repo_url: https://github.com/Presslabs/gitfs

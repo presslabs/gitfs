@@ -31,6 +31,9 @@ $(BUILD_DIR)/gitfs: $(BUILD_DIR) $(VIRTUAL_ENV)/bin/pex
 $(VIRTUAL_ENV)/bin/pex: virtualenv
 	$(VIRTUAL_ENV)/bin/pip install pex wheel
 
+$(VIRTUAL_ENV)/bin/mkdocs: virtualenv
+	$(VIRTUAL_ENV)/bin/pip install mkdocs
+
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
 
@@ -81,6 +84,9 @@ test: testenv
 
 clean:
 	rm -rf $(BUILD_DIR)
-	rm -rf $(TEST_DIR)
+	vtemian/zipa/rm -rf $(TEST_DIR)
+
+docs: $(VIRTUAL_ENV)/bin/mkdocs
+	$(VIRTUAL_ENV)/bin/mkdocs build
 
 .PHONY: clean test testenv virtualenv drone all

@@ -1,17 +1,9 @@
-# Welcome to MkDocs
+# Welcome to GitFS
 
-For full documentation visit [mkdocs.org](http://mkdocs.org).
+gitfs is a [FUSE](http://fuse.sourceforge.net/) file system that fully integrates with git. You can mount a remote repository's branch locally, and any subsequent changes made to the files will be automatically committed to the remote.
 
-## Commands
+## What's its purpose?
 
-* `mkdocs new [dir-name]` - Create a new project.
-* `mkdocs serve` - Start the live-reloading docs server.
-* `mkdocs build` - Build the documentation site.
-* `mkdocs help` - Print this help message.
+gitfs was designed to bring the full powers of git to everyone, no matter how little they know about versioning. A user can mount any repository and all the his changes will be automatically converted into commits. gitfs will also expose the history of the branch you're currently working on by simulating snapshots of every commit.
 
-## Project layout
-
-    mkdocs.yml    # The configuration file.
-    docs/
-        index.md  # The documentation homepage.
-        ...       # Other markdown pages, images and other files.
+gitfs is useful in places where you want to keep track of all your files, but at the same time you don't have the possibility of organizing everything into commits yourself.
