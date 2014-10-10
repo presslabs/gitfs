@@ -13,11 +13,9 @@
 # limitations under the License.
 
 
-import os
+# -*- coding: utf-8 -*-
+# vim: ft=python:sw=4:ts=4:sts=4:et:
 
-from tests.integrations.base import BaseTest
+from . import mount
 
-
-class TestReadIndexView(BaseTest):
-    def test_listdirs(self):
-        assert os.listdir(self.mount_path) == ['current', 'history']
+mount()

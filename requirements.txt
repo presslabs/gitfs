@@ -1,7 +1,0 @@
-argparse==1.2.1
-mock==1.0.1
-py==1.4.23
-pycparser==2.10
-pygit2==0.21.2
-pytest==2.6.1
-wsgiref==0.1.2

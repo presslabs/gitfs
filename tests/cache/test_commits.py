@@ -1,3 +1,20 @@
+# Copyright 2014 PressLabs SRL
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
+from datetime import datetime
+
 from mock import MagicMock, call
 
 from pygit2 import GIT_SORT_TIME
@@ -29,7 +46,10 @@ class TestCommitCache(object):
 
         cache['2014-09-20'] = Commit(1, 1, "1111111111")
         assert cache.keys() == ['2014-09-20', '2014-09-19']
-        assert repr(cache['2014-09-19']) == '[16:56:40-1111111111]'
+        asserted_time = datetime.fromtimestamp(mocked_commit.commit_time)
+        asserted_time = "%s:%s:%s" % (asserted_time.hour, asserted_time.minute,
+                                      asserted_time.second)
+        assert repr(cache['2014-09-19']) == '[%s-1111111111]' % asserted_time
         del cache['2014-09-20']
         for commit_date in cache:
             assert commit_date == '2014-09-19'

@@ -1,6 +1,21 @@
+# Copyright 2014 PressLabs SRL
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
 from mock import MagicMock, patch, call
 
-from gitfs.mount import prepare_components, parse_args, start_fuse
+from gitfs.mounter import prepare_components, parse_args, start_fuse
 
 
 class EmptyObject(object):
@@ -53,7 +68,7 @@ class TestMount(object):
         mocked_router.repo = 'repo'
         mocked_router.repo_path = 'repo_path'
 
-        with patch.multiple('gitfs.mount',
+        with patch.multiple('gitfs.mounter',
                             MergeQueue=MagicMock(return_value=mocked_queue),
                             Router=MagicMock(return_value=mocked_router),
                             routes=mocked_routes, MergeWorker=mocked_merger,
@@ -88,7 +103,7 @@ class TestMount(object):
 
         mocked_args.return_value = "args"
 
-        with patch.multiple('gitfs.mount', Args=mocked_args):
+        with patch.multiple('gitfs.mounter', Args=mocked_args):
             assert parse_args(mocked_parser) == "args"
             asserted_calls = [call('remote_url', help='repo to be cloned'),
                               call('mount_point',
@@ -114,7 +129,7 @@ class TestMount(object):
         mocked_argp.ArgumentParser.return_value = "args"
         mocked_parse_args.return_value = mocked_args
 
-        with patch.multiple('gitfs.mount', argparse=mocked_argp,
+        with patch.multiple('gitfs.mounter', argparse=mocked_argp,
                             parse_args=mocked_parse_args,
                             prepare_components=mocked_prepare,
                             FUSE=mocked_fuse):
