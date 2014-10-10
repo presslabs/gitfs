@@ -1,0 +1,15 @@
+Source: gitfs
+Maintainer: PressLabs <ping@presslabs.com>
+Section: python
+Priority: optional
+Build-Depends: python-setuptools (>= 0.6b3), python-all (>= 2.6.6-3), debhelper (>= 7.4.3),
+    python-fusepy, python-pygit2, python-all-dev
+Standards-Version: 3.9.3
+
+Package: gitfs
+Architecture: any
+Depends: ${misc:Depends}, ${python:Depends}
+Description: Git backed filesystem
+  gitfs is a filesystem in userspace (FUSE) backed by git. It tries to be smart
+  and group multiple files into one commit and allows browsing of 
+  repository history.

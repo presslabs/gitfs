@@ -1,0 +1,8 @@
+Format: http://dep.debian.net/deps/dep5
+Upstream-Name: gitfs
+Source: https://github.com/PressLabs/gitfs/
+
+Files: *
+Copyright: 2014 PressLabs SRL
+License: Apache-2.0
+ See /usr/share/common-licenses/Apache-2.0

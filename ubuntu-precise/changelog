@@ -1,0 +1,17 @@
+gitfs (0.0.1~git2+da85818-precise~ppa1) precise; urgency=low
+
+  * Added python-all-dev as build dependency
+
+ -- Calin Don <calin@presslabs.com>  Thu, 09 Oct 2014 20:48:37 +0300
+
+gitfs (0.0.1~git2+da85818-1precise2) precise; urgency=low
+
+  * update gitfs to commit (da85818)
+
+ -- Calin Don <calin@presslabs.com>  Thu, 09 Oct 2014 14:57:57 +0000
+
+gitfs (0.0.1~git1+8e89468-1precise2) precise; urgency=low
+
+  * gitfs pre-release from git at commit (8e89468)
+
+ -- Presslabs <gitfs@gmail.com>  Thu, 09 Oct 2014 13:32:43 +0000
