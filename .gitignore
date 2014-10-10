@@ -17,3 +17,6 @@ docs/build
 *.egg-info
 test/*
 build/*
+*.egg
+*.so
+*.dylib
