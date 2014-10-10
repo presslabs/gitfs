@@ -148,11 +148,10 @@ class Router(object):
 
             cache_key = result.group(0) + relative_path
             log.info("Cache key for %s: %s", path, cache_key)
-            try:
+
+            if cache_key in lru:
                 view = lru[cache_key]
                 return view, relative_path
-            except:
-                pass
 
             kwargs = result.groupdict()
 

@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+from Queue import Empty
 
 import pygit2
 
@@ -26,7 +26,7 @@ class TestMergeWorker(object):
         mocked_queue = MagicMock()
         mocked_idle = MagicMock(side_effect=ValueError)
 
-        mocked_queue.get.side_effect = ValueError()
+        mocked_queue.get.side_effect = Empty()
 
         worker = MergeWorker("name", "email", "name", "email",
                              strategy="strategy", merge_queue=mocked_queue)

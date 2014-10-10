@@ -11,9 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from Queue import Empty
 
-
-import time
 import pygit2
 
 from gitfs.merges import AcceptMine
@@ -47,7 +46,7 @@ class MergeWorker(FetchWorker):
                 job = self.merge_queue.get(timeout=self.timeout, block=True)
                 if job['type'] == 'commit':
                     commits.append(job)
-            except:
+            except Empty:
                 commits = self.on_idle(commits)
 
     def on_idle(self, commits):

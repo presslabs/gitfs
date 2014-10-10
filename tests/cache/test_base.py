@@ -54,7 +54,7 @@ class TestBaseCache(object):
         del cache['key']
 
         with pytest.raises(KeyError):
-            print cache['key']
+            cache['key']
 
         assert cache.currsize == 0
 

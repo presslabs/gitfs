@@ -66,10 +66,4 @@ class CachedIgnore(object):
         if item == key:
             return True
 
-        try:
-            if fnmatch.fnmatch(key, item):
-                return True
-        except:
-            pass
-
-        return False
+        return fnmatch.fnmatch(key, item)
