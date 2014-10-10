@@ -21,7 +21,6 @@ from gitfs.events import (fetch, fetch_successful, shutting_down,
 class FetchWorker(Peasant):
     def run(self):
         while True:
-            print shutting_down.is_set(), "fetch worker"
             fetch.wait(self.timeout)
 
             if shutting_down.is_set():
@@ -31,12 +30,10 @@ class FetchWorker(Peasant):
 
     def fetch(self):
         with remote_operation:
-            print "acum fac fetch"
             fetch.clear()
 
             try:
                 self.repository.fetch(self.upstream, self.branch)
                 fetch_successful.set()
             except:
-                print "fetch failed"
                 fetch_successful.clear()

@@ -52,11 +52,9 @@ class AcceptMine(Merger):
 
         # actual merging
         for commit in diverge_commits.first_commits:
-            print "Want to merge this:", commit.message
             self.repository.merge(commit.hex)
 
             # resolve conflicts
-            print "conflicte %s" % self.repository.index.conflicts
             self.solve_conflicts(self.repository.index.conflicts)
 
             # create new commit

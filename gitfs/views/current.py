@@ -201,7 +201,6 @@ class CurrentView(PassthroughView):
             non_empty = True
 
         if non_empty:
-            print "queue", add
             self.queue.commit(add=add, remove=remove, message=message)
 
     def _sanitize(self, path):

@@ -40,18 +40,14 @@ class MergeWorker(FetchWorker):
         commits = []
 
         while True:
-            print shutting_down.is_set(), "merge worker"
             if shutting_down.is_set():
                 break
 
             try:
                 job = self.merge_queue.get(timeout=self.timeout, block=True)
-                print job, time.time()
                 if job['type'] == 'commit':
                     commits.append(job)
-                print "ceva treaba boss?"
             except:
-                print "idle", time.time()
                 commits = self.on_idle(commits)
 
     def on_idle(self, commits):
@@ -91,16 +87,12 @@ class MergeWorker(FetchWorker):
         if need_to_push:
             try:
                 with remote_operation:
-                    print "start pushing", time.time()
                     self.repository.push(self.upstream, self.branch)
-                    print "push done", time.time()
                     self.repository.behind = False
                 syncing.clear()
                 sync_done.set()
                 push_successful.set()
-            except Exception as e:
-                print "push failed", time.time()
-                print e
+            except:
                 push_successful.clear()
                 fetch.set()
 
@@ -115,7 +107,6 @@ class MergeWorker(FetchWorker):
 
             message = "Update %s items" % len(updates)
 
-        print "commiting %s" % message
         self.repository.commit(message, self.author, self.commiter)
         self.repository.commits.update()
         self.repository.checkout_head(strategy=pygit2.GIT_CHECKOUT_FORCE)

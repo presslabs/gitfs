@@ -64,7 +64,6 @@ class Repository(object):
         remote_branch = self.lookup_branch(reference, GIT_BRANCH_REMOTE)
         local_branch = self.lookup_branch(branch, GIT_BRANCH_LOCAL)
 
-        print "branches:", local_branch.name, remote_branch.name
         diverge_commits = self.find_diverge_commits(local_branch,
                                                     remote_branch)
         behind = len(diverge_commits.second_commits) > 0
@@ -109,7 +108,6 @@ class Repository(object):
                 repo.push("origin", "master")
         """
 
-        print upstream, branch
         remote = self.get_remote(upstream)
         remote.push("refs/heads/%s" % (branch))
 
