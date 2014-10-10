@@ -1,6 +1,10 @@
 ## Installing
 
-TODO
+```
+sudo add-apt-repository ppa:presslabs/gitfs
+sudo apt-get update
+sudo apt-get install gitfs
+```
 
 ## Mounting
 

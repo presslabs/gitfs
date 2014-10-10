@@ -3,4 +3,5 @@ theme: readthedocs
 pages:
     - [index.md, Home]
     - [usage.md, Usage]
+    - [mount_options.md, Mount Options]
 repo_url: https://github.com/Presslabs/gitfs
