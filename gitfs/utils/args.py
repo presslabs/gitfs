@@ -23,24 +23,24 @@ from collections import OrderedDict
 
 class Args(object):
     def __init__(self, parser):
-        self.DEFAULTS = OrderedDict({
-            "repos_path": (self.get_repos_path, "string"),
-            "user": (self.get_current_user, "string"),
-            "group": (self.get_current_group, "string"),
-            "username": ("", "string"),
-            "password": ("", "string"),
-            "ssh_key": (self.get_ssh_key, "string"),
-            "foreground": (False, "bool"),
-            "branch": ("master", "string"),
-            "allow_other": (True, "bool"),
-            "allow_root": (False, "bool"),
-            "commiter_name": (self.get_current_user, "string"),
-            "commiter_email": (self.get_current_email, "string"),
-            "max_size": (10, "float"),
-            "fetch_timeout": (30, "float"),
-            "merge_timeout": (5, "float"),
-            "log": ("syslog", "string")
-        })
+        self.DEFAULTS = OrderedDict([
+            ("repos_path", (self.get_repos_path, "string")),
+            ("user", (self.get_current_user, "string")),
+            ("group", (self.get_current_group, "string")),
+            ("username", ("", "string")),
+            ("password", ("", "string")),
+            ("ssh_key", (self.get_ssh_key, "string")),
+            ("foreground", (False, "bool")),
+            ("branch", ("master", "string")),
+            ("allow_other", (True, "bool")),
+            ("allow_root", (False, "bool")),
+            ("commiter_name", (self.get_current_user, "string")),
+            ("commiter_email", (self.get_current_email, "string")),
+            ("max_size", (10, "float")),
+            ("fetch_timeout", (30, "float")),
+            ("merge_timeout", (5, "float")),
+            ("log", ("syslog", "string"))
+        ])
         self.config = self.build_config(parser.parse_args())
 
     def build_config(self, args):
@@ -96,5 +96,5 @@ class Args(object):
     def get_repos_path(self, args):
         return tempfile.mkdtemp(dir="/var/lib/gitfs")
 
-    def get_ssh_key(self):
+    def get_ssh_key(self, args):
         return os.environ["HOME"] + "/.ssh/id_rsa"
