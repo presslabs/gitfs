@@ -22,7 +22,7 @@ import time
 from pwd import getpwnam
 from grp import getgrnam
 
-from errno import EFAULT
+from errno import ENOSYS
 
 from pygit2.credentials import Keypair
 from fuse import Operations, FUSE, FuseOSError
@@ -55,23 +55,12 @@ class Router(object):
         self.branch = branch
         self.repo_path = self._get_repo(repos_path)
 
-        self.operations = Operations()
         self.routes = []
-
-        fuse_ops = set([elem[0]
-                        for elem
-                        in inspect.getmembers(FUSE,
-                                              predicate=inspect.ismethod)])
-        operations_ops = set([elem[0]
-                              for elem in
-                              inspect.getmembers(Operations,
-                                                 predicate=inspect.ismethod)])
-        self.fuse_class_ops = fuse_ops - operations_ops
 
         log.info('Cloning into %s' % self.repo_path)
 
-        credentials = Keypair("git", "/home/dragos/.ssh/gitfs.pub",
-                              "/home/dragos/.ssh/gitfs", "")
+        credentials = Keypair("git", "/home/zalman/.ssh/id_rsa.pub",
+                              "/home/zalman/.ssh/id_rsa", "")
         self.repo = Repository.clone(self.remote_url, self.repo_path,
                                      self.branch, credentials)
         self.repo.credentials = credentials
@@ -93,10 +82,6 @@ class Router(object):
         log.info('Done INIT')
 
     def init(self, path):
-        # XXX: Move back to __init__?
-        # log.info('Cloning into %s' % self.repo_path)
-        # self.repo = Repository.clone(self.remote_url, self.repo_path,
-                                       # self.branch)
         log.info('Done INIT')
 
     def destroy(self, path):
@@ -109,7 +94,22 @@ class Router(object):
         shutil.rmtree(self.repo_path)
 
     def __call__(self, operation, *args):
-        # TODO: check args for special methods
+        """
+        Magic method which calls a specific method from a view.
+
+        In Fuse API, almost each method receives a path argument. Based on that
+        path we can route each call to a specific view. For example, if a
+        method which has a path argument like `/current/dir1/dir2/file1` is
+        called, we need to get the certain view that will know how to handle
+        this path, instantiate it and then call our method on the newly created
+        object.
+
+        :param str operation: Method name to be called
+        :param args: tuple containing the arguments to be transmitted to
+            the method
+        :rtype: function
+        """
+
         if operation in ['destroy', 'init']:
             view = self
         else:
@@ -118,7 +118,7 @@ class Router(object):
             args = (relative_path,) + args[1:]
         log.info('CALL %s %s with %r' % (operation, view, args))
         if not hasattr(view, operation):
-            raise FuseOSError(EFAULT)
+            raise FuseOSError(ENOSYS)
         return getattr(view, operation)(*args)
 
     def register(self, routes):
@@ -185,48 +185,16 @@ class Router(object):
 
     def __getattr__(self, attr_name):
         """
-        Magic method which calls a specific method from a view.
-
-        In Fuse API, almost each method receives a path argument. Based on that
-        path we can route each call to a specific view. For example, if a
-        method which has a path argument like `/current/dir1/dir2/file1` is
-        called, we need to get the certain view that will know how to handle
-        this path, instantiate it and then call our method on the newly created
-        object.
-
-        :param str attr_name: Method name to be called
-        :rtype: function
+        It will only be called by the `__init__` method from `fuse.FUSE` to
+        establish which operations will be allowed after mounting the filesystem.
         """
 
-        log.info('Getting %s attribute.' % attr_name)
-        if attr_name in self.fuse_class_ops:
-            return None
+        fuse_allowed_methods = set([elem[0]
+                                    for elem in
+                                    inspect.getmembers(FUSE,
+                                                       predicate=inspect.ismethod)])
 
-        if attr_name not in dir(self.operations):
-            message = 'Method %s is not implemented by this FS' % attr_name
-            raise NotImplementedError(message)
-
-        attr = getattr(self.operations, attr_name)
-        if not callable(attr):
-            raise ValueError('Invalid method')
-
-        args = inspect.getargspec(attr).args
-        if 'path' not in args:
-            pass
-            # TODO: route to special methods
-            # - symlink
-            # - rename
-            # - link
-            # - init
-            # - destroy
-            # raise Exception('route to special methods')
-
-        def placeholder(path, *arg, **kwargs):
-            view, relative_path = self.get_view(path)
-            method = getattr(view, attr_name)
-            return method(relative_path, *arg, **kwargs)
-
-        return placeholder
+        return  attr_name in fuse_allowed_methods - set(['bmap', 'lock'])
 
     def _get_repo(self, repos_path):
         match = re.search(r"/(?P<repo_name>[\w\-\_]+)(\.git/?)?/?$",
