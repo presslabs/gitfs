@@ -24,8 +24,7 @@ from grp import getgrnam
 
 from errno import ENOSYS
 
-from pygit2.credentials import Keypair
-from fuse import Operations, FUSE, FuseOSError
+from fuse import FUSE, FuseOSError
 
 from gitfs.utils import Repository
 from gitfs.cache import LRUCache, CachedIgnore
@@ -37,8 +36,8 @@ lru = LRUCache(40000)
 
 
 class Router(object):
-    def __init__(self, remote_url, repos_path, mount_path, branch=None,
-                 user="root", group="root", **kwargs):
+    def __init__(self, remote_url, repos_path, mount_path, credentials,
+                 branch=None, user="root", group="root", **kwargs):
         """
         Clone repo from a remote into repos_path/<repo_name> and checkout to
         a specific branch.
@@ -59,8 +58,6 @@ class Router(object):
 
         log.info('Cloning into %s' % self.repo_path)
 
-        credentials = Keypair("git", "/home/zalman/.ssh/id_rsa.pub",
-                              "/home/zalman/.ssh/id_rsa", "")
         self.repo = Repository.clone(self.remote_url, self.repo_path,
                                      self.branch, credentials)
         self.repo.credentials = credentials
@@ -186,15 +183,14 @@ class Router(object):
     def __getattr__(self, attr_name):
         """
         It will only be called by the `__init__` method from `fuse.FUSE` to
-        establish which operations will be allowed after mounting the filesystem.
+        establish which operations will be allowed after mounting the
+        filesystem.
         """
 
-        fuse_allowed_methods = set([elem[0]
-                                    for elem in
-                                    inspect.getmembers(FUSE,
-                                                       predicate=inspect.ismethod)])
+        methods = inspect.getmembers(FUSE, predicate=inspect.ismethod)
+        fuse_allowed_methods = set([elem[0] for elem in methods])
 
-        return  attr_name in fuse_allowed_methods - set(['bmap', 'lock'])
+        return attr_name in fuse_allowed_methods - set(['bmap', 'lock'])
 
     def _get_repo(self, repos_path):
         match = re.search(r"/(?P<repo_name>[\w\-\_]+)(\.git/?)?/?$",

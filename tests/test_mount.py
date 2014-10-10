@@ -41,6 +41,9 @@ class TestMount(object):
         args = EmptyObject(**{
             'remote_url': 'remote_url',
             'mount_point': 'mount_point',
+            'username': 'user',
+            'password': '',
+            'ssh_key': '/home/user/.ssh/id_rsa',
             'foreground': True,
             'allow_root': True,
             'allow_others': True,

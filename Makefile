@@ -84,7 +84,6 @@ test: testenv
 
 clean:
 	rm -rf $(BUILD_DIR)
-	vtemian/zipa/rm -rf $(TEST_DIR)
 
 docs: $(VIRTUAL_ENV)/bin/mkdocs
 	$(VIRTUAL_ENV)/bin/mkdocs build
