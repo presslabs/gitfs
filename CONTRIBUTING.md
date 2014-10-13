@@ -26,7 +26,7 @@ In order to mount for development, you should mount with `foreground` and
 `debug` set to `true` and `log` set to `/dev/stderr`:
 
 ```
-mount.fuse gitfs#http://github.com/vtemian/testing.git /tmp/mnt -o repo_path="/tmp/git-test",foreground=true,debug=true,log=/dev/stderr
+gitfs /path/to/bare/repo /path/to/mount/point -o repo_path="/cloned/repo",foreground=true,debug=true,log=/dev/stderr
 ```
 
 ## Code style
