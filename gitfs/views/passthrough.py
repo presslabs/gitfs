@@ -54,8 +54,8 @@ class PassthroughView(View):
 
     def getattr(self, path, fh=None):
         full_path = self._full_path(path)
-        st = os.lstat(full_path)
-        return dict((key, getattr(st, key)) for key in STATS)
+        status = os.lstat(full_path)
+        return dict((key, getattr(status, key)) for key in STATS)
 
     def readdir(self, path, fh):
         full_path = self._full_path(path)
