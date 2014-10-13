@@ -13,7 +13,7 @@
 # limitations under the License.
 
 
-from views import IndexView, CurrentView, HistoryView, CommitView
+from gitfs.views import IndexView, CurrentView, HistoryView, CommitView
 
 
 # TODO: replace regex with the strict one for the Historyview

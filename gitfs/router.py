@@ -80,9 +80,6 @@ class Router(object):
 
         log.info('Done INIT')
 
-    def init(self, path):
-        log.info('Done INIT')
-
     def destroy(self, path):
         log.info('Stopping workers')
         shutting_down.set()

@@ -22,30 +22,30 @@ MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug",
 
 SPEC = {
     # map formatting code to a regular expression fragment
-    "%a": "(?P<weekday>[a-z]+)",
-    "%A": "(?P<weekday>[a-z]+)",
-    "%b": "(?P<month>[a-z]+)",
-    "%B": "(?P<month>[a-z]+)",
-    "%C": "(?P<century>\d\d?)",
-    "%d": "(?P<day>\d\d?)",
-    "%D": "(?P<month>\d\d?)/(?P<day>\d\d?)/(?P<year>\d\d)",
-    "%e": "(?P<day>\d\d?)",
-    "%h": "(?P<month>[a-z]+)",
-    "%H": "(?P<hour>\d\d?)",
-    "%I": "(?P<hour12>\d\d?)",
-    "%j": "(?P<yearday>\d\d?\d?)",
-    "%m": "(?P<month>\d\d?)",
-    "%M": "(?P<minute>\d\d?)",
-    "%p": "(?P<ampm12>am|pm)",
-    "%R": "(?P<hour>\d\d?):(?P<minute>\d\d?)",
-    "%S": "(?P<second>\d\d?)",
-    "%T": "(?P<hour>\d\d?):(?P<minute>\d\d?):(?P<second>\d\d?)",
-    "%U": "(?P<week>\d\d)",
-    "%w": "(?P<weekday>\d)",
-    "%W": "(?P<weekday>\d\d)",
-    "%y": "(?P<year>\d\d)",
-    "%Y": "(?P<year>\d\d\d\d)",
-    "%%": "%"
+    "%a": r"(?P<weekday>[a-z]+)",
+    "%A": r"(?P<weekday>[a-z]+)",
+    "%b": r"(?P<month>[a-z]+)",
+    "%B": r"(?P<month>[a-z]+)",
+    "%C": r"(?P<century>\d\d?)",
+    "%d": r"(?P<day>\d\d?)",
+    "%D": r"(?P<month>\d\d?)/(?P<day>\d\d?)/(?P<year>\d\d)",
+    "%e": r"(?P<day>\d\d?)",
+    "%h": r"(?P<month>[a-z]+)",
+    "%H": r"(?P<hour>\d\d?)",
+    "%I": r"(?P<hour12>\d\d?)",
+    "%j": r"(?P<yearday>\d\d?\d?)",
+    "%m": r"(?P<month>\d\d?)",
+    "%M": r"(?P<minute>\d\d?)",
+    "%p": r"(?P<ampm12>am|pm)",
+    "%R": r"(?P<hour>\d\d?):(?P<minute>\d\d?)",
+    "%S": r"(?P<second>\d\d?)",
+    "%T": r"(?P<hour>\d\d?):(?P<minute>\d\d?):(?P<second>\d\d?)",
+    "%U": r"(?P<week>\d\d)",
+    "%w": r"(?P<weekday>\d)",
+    "%W": r"(?P<weekday>\d\d)",
+    "%y": r"(?P<year>\d\d)",
+    "%Y": r"(?P<year>\d\d\d\d)",
+    "%%": r"%"
 }
 
 
@@ -75,44 +75,46 @@ class TimeParser(object):
         tm = [0] * 9
 
         # extract year
-        y = get("year")
-        if y:
-            y = int(y)
-            if y < 68:
-                y = 2000 + y
-            elif y < 100:
-                y = 1900 + y
-            tm[0] = y
+        year = get("year")
+        if year:
+            year = int(year)
+            if year < 68:
+                year = 2000 + year
+            elif year < 100:
+                year = 1900 + year
+            tm[0] = year
 
         # extract month
-        m = get("month")
-        if m:
-            if m in MONTHS:
-                m = MONTHS.index(m) + 1
-            tm[1] = int(m)
+        month = get("month")
+        if month:
+            if month in MONTHS:
+                month = MONTHS.index(month) + 1
+            tm[1] = int(month)
 
         # extract day
-        d = get("day")
-        if d:
-            tm[2] = int(d)
+        day = get("day")
+        if day:
+            tm[2] = int(day)
 
         # extract time elements
-        h = get("hour")
-        if h:
-            tm[3] = int(h)
+        hour = get("hour")
+        if hour:
+            tm[3] = int(hour)
         else:
-            h = get("hour12")
-            if h:
-                h = int(h)
+            hour = get("hour12")
+            if hour:
+                hour = int(hour)
                 if string.lower(get("ampm12", "")) == "pm":
-                    h = h + 12
-                tm[3] = h
-        m = get("minute")
-        if m:
-            tm[4] = int(m)
-        s = get("second")
-        if s:
-            tm[5] = int(s)
+                    hour = hour + 12
+                tm[3] = hour
+
+        minute = get("minute")
+        if minute:
+            tm[4] = int(minute)
+
+        second = get("second")
+        if second:
+            tm[5] = int(second)
 
         # ignore weekday/yearday for now
         return tuple(tm)

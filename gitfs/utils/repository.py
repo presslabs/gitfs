@@ -26,8 +26,8 @@ from gitfs.utils.path import split_path_into_components
 from gitfs.utils.commits import CommitsList
 
 
-DivergeCommits = namedtuple("DivergeCommits", ["common_parent",
-                            "first_commits", "second_commits"])
+DivergeCommits = namedtuple("DivergeCommits", ["common_parent", "first_commits",
+                                               "second_commits"])
 
 
 class Repository(object):
@@ -56,7 +56,7 @@ class Repository(object):
             return self.__dict__[attr]
 
     def ahead(self, upstream, branch):
-        ahead, behind = self.diverge(upstream, branch)
+        ahead, _ = self.diverge(upstream, branch)
         return ahead
 
     def diverge(self, upstream, branch):
@@ -119,7 +119,7 @@ class Repository(object):
         remote = self.get_remote(upstream)
         remote.fetch()
 
-        ahead, behind = self.diverge(upstream, branch_name)
+        _, behind = self.diverge(upstream, branch_name)
         self.behind = behind
 
     def commit(self, message, author, commiter, parents=None, ref="HEAD"):
@@ -377,7 +377,7 @@ class Repository(object):
 
         """
 
-        iterators = [self._repo.walk(branch.target) for branch in branches]
+        iterators = [self._repo.walk(branch.target, sort) for branch in branches]
         stop_iteration = [False for branch in branches]
 
         commits = []
@@ -395,7 +395,7 @@ class Repository(object):
                 try:
                     commit = iterator.next()
                     commits[index] = commit
-                except:
+                except StopIteration:
                     stop_iteration[index] = True
 
             if not all(stop_iteration):
@@ -460,7 +460,7 @@ class Repository(object):
 
         for first_commit, second_commit in walker:
             if (first_commit in second_commits or
-               second_commit in first_commits):
+                second_commit in first_commits):
                 break
 
             if first_commit not in first_commits:

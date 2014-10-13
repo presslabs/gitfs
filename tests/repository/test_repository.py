@@ -195,7 +195,7 @@ class TestRepository(RepositoryBaseTest):
 
         mocked_repo = MagicMock()
 
-        def mocked_walk(target):
+        def mocked_walk(target, sort):
             return BranchWalker() if target == "first" else BranchWalker(2)
         mocked_repo.walk = mocked_walk
 
