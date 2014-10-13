@@ -26,6 +26,7 @@ class TestArgs(object):
         mocked_grp = MagicMock()
         mocked_pass = MagicMock()
         mocked_file = MagicMock()
+        mocked_log_handler = MagicMock()
 
         mocked_file.mkdtemp.return_value = "/tmp"
         mocked_pass.getuser.return_value = "test_user"
@@ -39,7 +40,8 @@ class TestArgs(object):
         mocked_args.branch = None
 
         with patch.multiple('gitfs.utils.args', os=mocked_os, grp=mocked_grp,
-                            getpass=mocked_pass, tempfile=mocked_file):
+                            getpass=mocked_pass, tempfile=mocked_file,
+                            TimedRotatingFileHandler=mocked_log_handler):
 
             args = Args(mocked_parser)
             asserted_results = {

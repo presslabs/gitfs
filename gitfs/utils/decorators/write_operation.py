@@ -20,6 +20,7 @@ from fuse import FuseOSError
 
 from gitfs.events import (sync_done, syncing, writers, push_successful,
                           fetch_successful)
+from gitfs.log import log
 
 
 def write_operation(f):
@@ -32,6 +33,7 @@ def write_operation(f):
         writers += 1
 
         if syncing.is_set():
+            log.debug("WriteOperation: Wait until syncing is done")
             sync_done.wait()
 
         try:

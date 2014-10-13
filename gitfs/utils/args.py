@@ -18,7 +18,11 @@ import os
 import socket
 import tempfile
 import grp
+from logging import Formatter
+from logging.handlers import TimedRotatingFileHandler, SysLogHandler
 from collections import OrderedDict
+
+from gitfs.log import log
 
 
 class Args(object):
@@ -41,7 +45,7 @@ class Args(object):
             ("merge_timeout", (5, "float")),
             ("debug", (False, "bool")),
             ("log", ("syslog", "string")),
-            ("log_level", ("warn", "string")),
+            ("log_level", ("warning", "string")),
         ])
         self.config = self.build_config(parser.parse_args())
 
@@ -62,9 +66,19 @@ class Args(object):
             args.allow_root = True
 
         # check log_level
-        print args.debug
-        if args.log_level == 'warn' and args.debug:
+        if args.debug:
             args.log_level = 'debug'
+
+        if args.log != "syslog":
+            handler = TimedRotatingFileHandler(args.log, when="midnight")
+            handler.setFormatter(Formatter(fmt='%(asctime)s %(message)s',
+                                           datefmt='%B-%d-%Y %H:%M:%S'))
+        else:
+            handler = SysLogHandler(address="/dev/log")
+            handler.setFormatter(Formatter(fmt='GitFS: %(message)s'))
+
+        log.addHandler(handler)
+        log.setLevel(args.log_level.upper())
 
         return args
 

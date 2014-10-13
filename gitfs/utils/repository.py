@@ -26,8 +26,8 @@ from gitfs.utils.path import split_path_into_components
 from gitfs.utils.commits import CommitsList
 
 
-DivergeCommits = namedtuple("DivergeCommits", ["common_parent", "first_commits",
-                                               "second_commits"])
+DivergeCommits = namedtuple("DivergeCommits", ["common_parent",
+                            "first_commits", "second_commits"])
 
 
 class Repository(object):
@@ -377,7 +377,8 @@ class Repository(object):
 
         """
 
-        iterators = [self._repo.walk(branch.target, sort) for branch in branches]
+        iterators = [self._repo.walk(branch.target, sort)
+                     for branch in branches]
         stop_iteration = [False for branch in branches]
 
         commits = []
@@ -460,7 +461,7 @@ class Repository(object):
 
         for first_commit, second_commit in walker:
             if (first_commit in second_commits or
-                second_commit in first_commits):
+               second_commit in first_commits):
                 break
 
             if first_commit not in first_commits:
