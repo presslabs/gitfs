@@ -119,7 +119,8 @@ class Router(object):
             view, relative_path = self.get_view(path)
             args = (relative_path,) + args[1:]
 
-        log.debug('Router: Call %s %s with %r' % (operation, view.__name__,
+        log.debug('Router: Call %s %s with %r' % (operation,
+                                                  view.__class__.__name__,
                                                   args))
 
         if not hasattr(view, operation):

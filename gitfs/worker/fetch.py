@@ -25,7 +25,7 @@ class FetchWorker(Peasant):
             fetch.wait(self.timeout)
 
             if shutting_down.is_set():
-                log.info("Stop fetch worker")
+                log.info("FetchWorker: Stop fetch worker")
                 break
 
             self.fetch()
@@ -35,10 +35,10 @@ class FetchWorker(Peasant):
             fetch.clear()
 
             try:
-                log.debug("Start fetching")
+                log.debug("FetchWorker: Start fetching")
                 self.repository.fetch(self.upstream, self.branch)
                 fetch_successful.set()
-                log.debug("Fetch done")
+                log.debug("FetchWorker: Fetch done")
             except:
-                log.warn("Fetch failed")
+                log.warn("FetchWorker: Fetch failed")
                 fetch_successful.clear()

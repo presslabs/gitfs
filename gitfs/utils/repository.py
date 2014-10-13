@@ -377,7 +377,8 @@ class Repository(object):
 
         """
 
-        iterators = [self._repo.walk(branch.target) for branch in branches]
+        iterators = [self._repo.walk(branch.target, sort)
+                     for branch in branches]
         stop_iteration = [False for branch in branches]
 
         commits = []

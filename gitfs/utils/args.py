@@ -73,7 +73,6 @@ class Args(object):
             handler = TimedRotatingFileHandler(args.log, when="midnight")
             handler.setFormatter(Formatter(fmt='%(asctime)s %(message)s',
                                            datefmt='%B-%d-%Y %H:%M:%S'))
-
         else:
             handler = SysLogHandler(address="/dev/log")
             handler.setFormatter(Formatter(fmt='GitFS: %(message)s'))

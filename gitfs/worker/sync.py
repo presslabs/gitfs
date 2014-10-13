@@ -89,6 +89,7 @@ class SyncWorker(Peasant):
         self.repository.ignore.update()
 
     def sync(self):
+        log.debug("SyncWorker: Check if I'm ahead")
         need_to_push = self.repository.ahead(self.upstream, self.branch)
         sync_done.clear()
 
@@ -114,6 +115,9 @@ class SyncWorker(Peasant):
                 log.warn("SyncWorker: Push failed")
                 push_successful.clear()
                 fetch.set()
+        else:
+            sync_done.set()
+            syncing.clear()
 
     def commit(self, jobs):
         if len(jobs) == 1:

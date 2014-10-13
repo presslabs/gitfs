@@ -165,7 +165,7 @@ class CurrentView(PassthroughView):
 
     def open_for_read(self, path, flags):
         full_path = self._full_path(path)
-        log.info("Open %s for read", path)
+        log.info("CurrentView: Open %s for read", path)
         return os.open(full_path, flags)
 
     def open(self, path, flags):
