@@ -119,7 +119,7 @@ class Repository(object):
         remote = self.get_remote(upstream)
         remote.fetch()
 
-        ahead, behind = self.diverge(upstream, branch_name)
+        _, behind = self.diverge(upstream, branch_name)
         self.behind = behind
 
     def commit(self, message, author, commiter, parents=None, ref="HEAD"):
