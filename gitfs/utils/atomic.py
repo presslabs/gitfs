@@ -78,7 +78,7 @@ class AtomicLong(object):
             return self.value == other
 
     def __ne__(self, other):
-        return not (self == other)
+        return not self == other
 
     def __lt__(self, other):
         # See __eq__ for an explanation of why this is a thing.
