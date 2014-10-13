@@ -20,6 +20,7 @@ from gitfs.worker.fetch import FetchWorker
 
 from gitfs.events import (fetch, syncing, sync_done, writers, shutting_down,
                           remote_operation, push_successful)
+from gitfs.log import log
 
 
 class MergeWorker(FetchWorker):
@@ -46,7 +47,9 @@ class MergeWorker(FetchWorker):
                 job = self.merge_queue.get(timeout=self.timeout, block=True)
                 if job['type'] == 'commit':
                     commits.append(job)
+                log.debug("SyncWorker: Got a commit job")
             except Empty:
+                log.debug("SyncWorker: Nothing to do right now, going idle")
                 commits = self.on_idle(commits)
 
     def on_idle(self, commits):
@@ -61,8 +64,10 @@ class MergeWorker(FetchWorker):
         """
 
         if commits:
+            log.debug("SyncWorker: Get some commits")
             self.commit(commits)
             commits = []
+            log.debug("SyncWorker: Set syncing event")
             syncing.set()
 
         if writers == 0:
@@ -71,8 +76,13 @@ class MergeWorker(FetchWorker):
         return commits
 
     def merge(self):
+        log.debug("SyncWorker: Start merging")
         self.strategy(self.branch, self.branch, self.upstream)
+
+        log.debug("SyncWorker: Update commits cache")
         self.repository.commits.update()
+
+        log.debug("SyncWorker: Update ignore list")
         self.repository.ignore.update()
 
     def sync(self):
@@ -80,18 +90,25 @@ class MergeWorker(FetchWorker):
         sync_done.clear()
 
         if self.repository.behind:
+            log.debug("SyncWorker: I'm behind so I start merging")
             self.merge()
             need_to_push = True
 
         if need_to_push:
             try:
                 with remote_operation:
+                    log.info("SyncWorker: Start pushing")
                     self.repository.push(self.upstream, self.branch)
                     self.repository.behind = False
+                    log.info("SyncWorker: Push done")
+                log.debug("SyncWorker: Clear syncing")
                 syncing.clear()
+                log.debug("SyncWorker: Set sync_done")
                 sync_done.set()
+                log.debug("SyncWorker: Set push_successful")
                 push_successful.set()
             except:
+                log.info("SyncWorker: Push failed")
                 push_successful.clear()
                 fetch.set()
 
@@ -107,5 +124,9 @@ class MergeWorker(FetchWorker):
             message = "Update %s items" % len(updates)
 
         self.repository.commit(message, self.author, self.commiter)
+        log.info("SyncWorker: Commit %s with %s as author and %s as commiter",
+                 message, self.author, self.commiter)
         self.repository.commits.update()
+        log.debug("Update commits cache")
         self.repository.checkout_head(strategy=pygit2.GIT_CHECKOUT_FORCE)
+        log.debug("Checkout to HEAD")

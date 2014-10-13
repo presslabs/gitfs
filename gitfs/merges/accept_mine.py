@@ -17,6 +17,7 @@ import os
 
 import pygit2
 
+from gitfs.log import log
 from .base import Merger
 
 
@@ -39,69 +40,83 @@ class AcceptMine(Merger):
         return old_branch.rename(new_branch, True)
 
     def __call__(self, local_branch, remote_branch, upstream):
-        # create copies
+        log.debug("AcceptMine: Copy local branch to merging_local")
         local = self._create_local_copy(local_branch, "merging_local")
+
+        log.debug("AcceptMine: Copy remote branch to merging_remote")
         remote = self._create_remote_copy(remote_branch, upstream,
                                           "merging_remote")
-        # get diverge commits
+
+        log.debug("AcceptMine: Find diverge commis")
         diverge_commits = self.repository.find_diverge_commits(local, remote)
 
         reference = "refs/heads/%s" % "merging_remote"
+        log.debug("AcceptMine: Checkout to %s", reference)
         self.repository.checkout(reference,
                                  strategy=pygit2.GIT_CHECKOUT_FORCE)
 
         # actual merging
         for commit in diverge_commits.first_commits:
+            log.debug("AcceptMine: Merging %s", commit.hex)
             self.repository.merge(commit.hex)
 
-            # resolve conflicts
+            log.debug("AcceptMine: Solving conflicts")
             self.solve_conflicts(self.repository.index.conflicts)
 
-            # create new commit
+            log.debug("AcceptMine: Commiting changes")
             ref = self.repository.lookup_reference(reference)
             message = "merging: %s" % commit.message
             parents = [ref.target, commit.id]
             new_commit = self.repository.commit(message, self.author,
                                                 self.commiter, ref=reference,
                                                 parents=parents)
-            # if index is not empty
             if new_commit is not None:
+                log.debug("AcceptMine: We have a non-empty commit")
                 self.repository.create_reference(reference,
                                                  new_commit, force=True)
 
-            # checkout on new head
+            log.debug("AcceptMine: Checkout to %s", reference)
             self.repository.checkout(reference,
                                      strategy=pygit2.GIT_CHECKOUT_FORCE)
-            # cleanup after merge
+
+            log.debug("AcceptMine: Clean the state")
             self.repository.state_cleanup()
 
+        log.debug("AcceptMine: Checkout to %s", local_branch)
         ref = self.repository.lookup_reference(reference)
-        self.repository.create_reference("refs/heads/master",
+        self.repository.create_reference("refs/heads/%s" % local_branch,
                                          ref.target,
                                          force=True)
         self.repository.checkout("refs/heads/%s" % local_branch,
                                  strategy=pygit2.GIT_CHECKOUT_FORCE)
-        # delete merging_local
+
+        log.debug("AcceptMine: Delete merging_local")
         ref = self.repository.lookup_reference("refs/heads/merging_local")
         ref.delete()
 
+        log.debug("AcceptMine: Delete merging_remote")
         ref = self.repository.lookup_reference("refs/heads/merging_remote")
         ref.delete()
 
     def solve_conflicts(self, conflicts):
         if conflicts:
             for common, theirs, ours in conflicts:
-                # if we deleted the file and they didn't, remove the file
                 if not ours and theirs:
+                    log.debug("AcceptMine: if we deleted the file and they "
+                              "didn't, remove the file")
                     self.repository.index.remove(theirs.path)
-                # if they deleted the file and we didn't, add the file
                 elif ours and not theirs:
+                    log.debug("AcceptMine: if they deleted the file and we "
+                              "didn't, add the file")
                     self.repository.index.add(ours.path)
-                # otherwise, overwrite all file with our content
                 else:
+                    log.debug("AcceptMine: overwrite all file with our "
+                              "content")
                     with open(self._full_path(ours.path), "w") as f:
                         f.write(self.repository.get(ours.id).data)
                     self.repository.index.add(ours.path)
+        else:
+            log.debug("AcceptMine: No conflicts to resolve")
 
     def _full_path(self, partial):
         if partial.startswith("/"):

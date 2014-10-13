@@ -15,6 +15,8 @@
 
 from Queue import Queue
 
+from gitfs.log import log
+
 
 class BaseQueue(object):
     def __init__(self):
@@ -48,6 +50,7 @@ class MergeQueue(BaseQueue):
                 'remove': self._to_list(remove),
             }
         })
+        log.debug("Got a new commit job on queue")
 
     def _to_list(self, variable):
         variable = variable or []

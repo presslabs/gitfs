@@ -60,6 +60,8 @@ class Router(object):
 
         self.repo = Repository.clone(self.remote_url, self.repo_path,
                                      self.branch, credentials)
+        log.info('Done cloning')
+
         self.repo.credentials = credentials
         self.repo.ignore = CachedIgnore(submodules=True, ignore=True)
 
@@ -82,13 +84,16 @@ class Router(object):
         log.info('Done INIT')
 
     def destroy(self, path):
+        log.info('Stopping workers')
         shutting_down.set()
         fetch.set()
 
         for worker in self.workers:
             worker.join()
+        log.info('Workers stopped')
 
         shutil.rmtree(self.repo_path)
+        log.info('Repository path is not empty')
 
     def __call__(self, operation, *args):
         """
@@ -113,14 +118,17 @@ class Router(object):
             path = args[0]
             view, relative_path = self.get_view(path)
             args = (relative_path,) + args[1:]
+
         log.info('CALL %s %s with %r' % (operation, view, args))
+
         if not hasattr(view, operation):
             raise FuseOSError(ENOSYS)
+
         return getattr(view, operation)(*args)
 
     def register(self, routes):
         for regex, view in routes:
-            log.info('registring %s for %s', view, regex)
+            log.info('Registring %s for %s', view, regex)
             self.routes.append({
                 'regex': regex,
                 'view': view
@@ -147,10 +155,11 @@ class Router(object):
             relative_path = '/' if not relative_path else relative_path
 
             cache_key = result.group(0) + relative_path
-            log.info("Cache key for %s: %s", path, cache_key)
+            log.debug("Cache key for %s: %s", path, cache_key)
 
             if cache_key in lru:
                 view = lru[cache_key]
+                log.debug("Serving %s from cache", path)
                 return view, relative_path
 
             kwargs = result.groupdict()
@@ -171,9 +180,10 @@ class Router(object):
             kwargs['max_offset'] = self.max_offset
 
             args = set(groups) - set(kwargs.values())
-
             view = route['view'](*args, **kwargs)
+
             lru[cache_key] = view
+            log.debug("Added %s to cache", path)
 
             return view, relative_path
 
