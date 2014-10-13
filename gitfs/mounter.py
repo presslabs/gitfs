@@ -25,7 +25,7 @@ from gitfs.log import log
 from gitfs.utils import Args
 from gitfs.routes import routes
 from gitfs.router import Router
-from gitfs.worker import MergeQueue, MergeWorker, FetchWorker
+from gitfs.worker import CommitQueue, SyncWorker, FetchWorker
 
 
 def parse_args(parser):
@@ -38,8 +38,7 @@ def parse_args(parser):
 
 
 def prepare_components(args):
-    # initialize merge queue
-    merge_queue = MergeQueue()
+    commit_queue = CommitQueue()
 
     if args.password:
         credentials = UserPass(args.username, args.password)
@@ -56,21 +55,21 @@ def prepare_components(args):
                     group=args.group,
                     max_size=args.max_size * 1024 * 1024,
                     max_offset=args.max_size * 1024 * 1024,
-                    merge_queue=merge_queue,
+                    commit_queue=commit_queue,
                     credentials=credentials)
 
     # register all the routes
     router.register(routes)
 
     # setup workers
-    merge_worker = MergeWorker(args.commiter_name, args.commiter_email,
-                               args.commiter_name, args.commiter_email,
-                               merge_queue=merge_queue,
-                               repository=router.repo,
-                               upstream="origin",
-                               branch=args.branch,
-                               repo_path=router.repo_path,
-                               timeout=args.merge_timeout)
+    merge_worker = SyncWorker(args.commiter_name, args.commiter_email,
+                              args.commiter_name, args.commiter_email,
+                              commit_queue=commit_queue,
+                              repository=router.repo,
+                              upstream="origin",
+                              branch=args.branch,
+                              repo_path=router.repo_path,
+                              timeout=args.merge_timeout)
 
     fetch_worker = FetchWorker(upstream="origin",
                                branch=args.branch,

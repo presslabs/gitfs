@@ -11,22 +11,23 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 from Queue import Empty
 
 import pygit2
 
+from gitfs.worker.peasant import Peasant
 from gitfs.merges import AcceptMine
-from gitfs.worker.fetch import FetchWorker
 
 from gitfs.events import (fetch, syncing, sync_done, writers, shutting_down,
                           remote_operation, push_successful)
 from gitfs.log import log
 
 
-class MergeWorker(FetchWorker):
+class SyncWorker(Peasant):
     def __init__(self, author_name, author_email, commiter_name,
                  commiter_email, strategy=None, *args, **kwargs):
-        super(MergeWorker, self).__init__(*args, **kwargs)
+        super(SyncWorker, self).__init__(*args, **kwargs)
 
         self.author = (author_name, author_email)
         self.commiter = (commiter_name, commiter_email)
@@ -44,7 +45,7 @@ class MergeWorker(FetchWorker):
                 break
 
             try:
-                job = self.merge_queue.get(timeout=self.timeout, block=True)
+                job = self.commit_queue.get(timeout=self.timeout, block=True)
                 if job['type'] == 'commit':
                     commits.append(job)
                 log.debug("SyncWorker: Got a commit job")

@@ -16,7 +16,7 @@
 import pytest
 from mock import patch, MagicMock
 
-from gitfs.worker.queue import BaseQueue, MergeQueue
+from gitfs.worker.queue import BaseQueue, CommitQueue
 
 
 class TestBaseQueue(object):
@@ -38,11 +38,11 @@ class TestBaseQueue(object):
             mocked_queue.get.assert_called_once_with("args", arg="kwarg")
 
 
-class TestMergeQueue(object):
+class TestCommitQueue(object):
     def test_add(self):
         mocked_queue = MagicMock()
 
-        queue = MergeQueue()
+        queue = CommitQueue()
         queue.queue = mocked_queue
 
         queue.add("job")
@@ -50,17 +50,17 @@ class TestMergeQueue(object):
         mocked_queue.put.assert_called_once_with("job")
 
     def test_to_list(self):
-        queue = MergeQueue()
+        queue = CommitQueue()
         assert queue._to_list("a") == ["a"]
 
     def test_commit_witth_no_message(self):
-        queue = MergeQueue()
+        queue = CommitQueue()
 
         with pytest.raises(ValueError):
             queue.commit()
 
     def test_commit_witth_no_add_and_no_remove(self):
-        queue = MergeQueue()
+        queue = CommitQueue()
 
         with pytest.raises(ValueError):
             queue.commit(message="message")
@@ -68,7 +68,7 @@ class TestMergeQueue(object):
     def test_commit(self):
         mocked_queue = MagicMock()
 
-        queue = MergeQueue()
+        queue = CommitQueue()
         queue.queue = mocked_queue
 
         queue.commit(message="message", add="add", remove="remove")

@@ -13,6 +13,6 @@
 # limitations under the License.
 
 
-from .merge import MergeWorker
-from .queue import MergeQueue
+from .sync import SyncWorker
+from .queue import CommitQueue
 from .fetch import FetchWorker

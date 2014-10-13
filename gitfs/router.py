@@ -68,7 +68,7 @@ class Router(object):
         self.uid = getpwnam(user).pw_uid
         self.gid = getgrnam(group).gr_gid
 
-        self.merge_queue = kwargs['merge_queue']
+        self.commit_queue = kwargs['commit_queue']
         self.mount_time = int(time.time())
 
         self.max_size = kwargs['max_size']
@@ -175,7 +175,7 @@ class Router(object):
             kwargs['gid'] = self.gid
             kwargs['branch'] = self.branch
             kwargs['mount_time'] = self.mount_time
-            kwargs['queue'] = self.merge_queue
+            kwargs['queue'] = self.commit_queue
             kwargs['max_size'] = self.max_size
             kwargs['max_offset'] = self.max_offset
 

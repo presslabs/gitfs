@@ -18,18 +18,18 @@ import pygit2
 import pytest
 from mock import MagicMock, patch
 
-from gitfs.worker.merge import MergeWorker
+from gitfs.worker.sync import SyncWorker
 
 
-class TestMergeWorker(object):
+class TestSyncWorker(object):
     def test_run(self):
         mocked_queue = MagicMock()
         mocked_idle = MagicMock(side_effect=ValueError)
 
         mocked_queue.get.side_effect = Empty()
 
-        worker = MergeWorker("name", "email", "name", "email",
-                             strategy="strategy", merge_queue=mocked_queue)
+        worker = SyncWorker("name", "email", "name", "email",
+                            strategy="strategy", commit_queue=mocked_queue)
         worker.on_idle = mocked_idle
         worker.timeout = 1
 
@@ -44,10 +44,10 @@ class TestMergeWorker(object):
         mocked_syncing = MagicMock()
         mocked_commit = MagicMock()
 
-        with patch.multiple("gitfs.worker.merge", syncing=mocked_syncing,
+        with patch.multiple("gitfs.worker.sync", syncing=mocked_syncing,
                             writers=0):
-            worker = MergeWorker("name", "email", "name", "email",
-                                 strategy="strategy")
+            worker = SyncWorker("name", "email", "name", "email",
+                                strategy="strategy")
             worker.commit = mocked_commit
             worker.sync = mocked_sync
 
@@ -64,10 +64,10 @@ class TestMergeWorker(object):
         upstream = "origin"
         branch = "master"
 
-        worker = MergeWorker("name", "email", "name", "email",
-                             strategy=mocked_strategy,
-                             repository=mocked_repo,
-                             upstream=upstream, branch=branch)
+        worker = SyncWorker("name", "email", "name", "email",
+                            strategy=mocked_strategy,
+                            repository=mocked_repo,
+                            upstream=upstream, branch=branch)
         worker.merge()
 
         mocked_strategy.assert_called_once_with(branch, branch, upstream)
@@ -87,14 +87,14 @@ class TestMergeWorker(object):
         mocked_repo.behind = True
         mocked_push_successful.set.side_effect = ValueError
 
-        with patch.multiple('gitfs.worker.merge', sync_done=mocked_sync_done,
+        with patch.multiple('gitfs.worker.sync', sync_done=mocked_sync_done,
                             syncing=mocked_syncing,
                             push_successful=mocked_push_successful,
                             fetch=mocked_fetch):
-            worker = MergeWorker("name", "email", "name", "email",
-                                 repository=mocked_repo,
-                                 strategy=mocked_strategy,
-                                 upstream=upstream, branch=branch)
+            worker = SyncWorker("name", "email", "name", "email",
+                                repository=mocked_repo,
+                                strategy=mocked_strategy,
+                                upstream=upstream, branch=branch)
             worker.merge = mocked_merge
 
             worker.sync()
@@ -115,9 +115,9 @@ class TestMergeWorker(object):
         jobs = [{'params': {'message': message}}]
         author = ("name", "email")
 
-        worker = MergeWorker(author[0], author[1], author[0], author[1],
-                             strategy="strategy",
-                             repository=mocked_repo)
+        worker = SyncWorker(author[0], author[1], author[0], author[1],
+                            strategy="strategy",
+                            repository=mocked_repo)
         worker.commit(jobs)
 
         mocked_repo.commit.assert_called_once_with(message, author, author)
@@ -136,9 +136,9 @@ class TestMergeWorker(object):
                             'add': []}}]
         author = ("name", "email")
 
-        worker = MergeWorker(author[0], author[1], author[0], author[1],
-                             strategy="strategy",
-                             repository=mocked_repo)
+        worker = SyncWorker(author[0], author[1], author[0], author[1],
+                            strategy="strategy",
+                            repository=mocked_repo)
         worker.commit(jobs)
 
         asserted_message = "Update 2 items"

@@ -29,7 +29,7 @@ class BaseQueue(object):
         return self.queue.get(*args, **kwargs)
 
 
-class MergeQueue(BaseQueue):
+class CommitQueue(BaseQueue):
 
     def add(self, job):
         self.queue.put(job)

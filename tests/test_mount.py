@@ -69,9 +69,9 @@ class TestMount(object):
         mocked_router.repo_path = 'repo_path'
 
         with patch.multiple('gitfs.mounter',
-                            MergeQueue=MagicMock(return_value=mocked_queue),
+                            CommitQueue=MagicMock(return_value=mocked_queue),
                             Router=MagicMock(return_value=mocked_router),
-                            routes=mocked_routes, MergeWorker=mocked_merger,
+                            routes=mocked_routes, SyncWorker=mocked_merger,
                             FetchWorker=mocked_fetcher, FUSE=mocked_fuse):
 
             assert_result = (mocked_merge_worker, mocked_fetch_worker,
@@ -89,7 +89,7 @@ class TestMount(object):
                 'branch': 'branch',
                 'timeout': 10,
                 'repo_path': 'repo_path',
-                'merge_queue': mocked_queue
+                'commit_queue': mocked_queue
             }
             mocked_merger.assert_called_once_with('commit',
                                                   'commiter@commiting.org',
