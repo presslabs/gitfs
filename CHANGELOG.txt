@@ -1,0 +1,5 @@
+=== (ongoing) ===
+* implement behavior for .gitignore
+
+=== 0.1.0 ===
+Initial release
