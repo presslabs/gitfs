@@ -27,7 +27,7 @@ class View(LoggingMixIn, Operations):
         for attr in kwargs:
             setattr(self, attr, kwargs[attr])
 
-    def getattr(self, *args, **kwargs):
+    def getattr(self, path, fh=None):
         return {
             'st_uid': self.uid,
             'st_gid': self.gid,
