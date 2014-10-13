@@ -56,7 +56,7 @@ class Repository(object):
             return self.__dict__[attr]
 
     def ahead(self, upstream, branch):
-        ahead, behind = self.diverge(upstream, branch)
+        ahead, _ = self.diverge(upstream, branch)
         return ahead
 
     def diverge(self, upstream, branch):
@@ -119,7 +119,7 @@ class Repository(object):
         remote = self.get_remote(upstream)
         remote.fetch()
 
-        ahead, behind = self.diverge(upstream, branch_name)
+        _, behind = self.diverge(upstream, branch_name)
         self.behind = behind
 
     def commit(self, message, author, commiter, parents=None, ref="HEAD"):
@@ -396,7 +396,7 @@ class Repository(object):
                 try:
                     commit = iterator.next()
                     commits[index] = commit
-                except:
+                except StopIteration:
                     stop_iteration[index] = True
 
             if not all(stop_iteration):

@@ -48,8 +48,8 @@ class CommitView(ReadOnlyView):
         is_valid = False
         for entry in tree:
             if (entry.name == path_components[0] and
-               entry.filemode == GIT_FILEMODE_TREE and
-               len(path_components) == 1):
+                entry.filemode == GIT_FILEMODE_TREE and
+                len(path_components) == 1):
                 return True
             elif (entry.name == path_components[0] and
                   entry.filemode == GIT_FILEMODE_TREE and

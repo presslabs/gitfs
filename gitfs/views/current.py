@@ -67,9 +67,9 @@ class CurrentView(PassthroughView):
 
     def getattr(self, path, fh=None):
         full_path = self._full_path(path)
-        st = os.lstat(full_path)
+        status = os.lstat(full_path)
 
-        attrs = dict((key, getattr(st, key)) for key in STATS)
+        attrs = dict((key, getattr(status, key)) for key in STATS)
         attrs.update({
             'st_uid': self.uid,
             'st_gid': self.gid,

@@ -54,8 +54,8 @@ class PassthroughView(View):
 
     def getattr(self, path, fh=None):
         full_path = self._full_path(path)
-        st = os.lstat(full_path)
-        return dict((key, getattr(st, key)) for key in STATS)
+        status = os.lstat(full_path)
+        return dict((key, getattr(status, key)) for key in STATS)
 
     def readdir(self, path, fh):
         full_path = self._full_path(path)
@@ -122,8 +122,8 @@ class PassthroughView(View):
 
     def truncate(self, path, length, fh=None):
         full_path = self._full_path(path)
-        with open(full_path, 'r+') as f:
-            f.truncate(length)
+        with open(full_path, 'r+') as input_file:
+            input_file.truncate(length)
 
     def flush(self, path, fh):
         return os.fsync(fh)
