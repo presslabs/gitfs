@@ -60,15 +60,8 @@ contains the time and SHA of that commit.
 ### Mount options
 
 * `branch`: the branch name to follow. Defaults to `master`.
-
-* `remote_url`: the URL of the remote. The accepted formats are:
-
-    * https://username:password@hostname.com/repo.git - for http
-    * username@hostname.com:repo.git - for ssh
-
 * `repo_path`: the location where the repos will be cloned. Defaults to
   `/var/lib/gitfs/CLONE_DIR`
-
 * `max_size`: the maximum file size in MB allowed for an individual file. If set
   to 0 then allow any file size.  The default value is __10__ MB.
 * `user`: mount filesystem as this user. Defaults to `root`.
@@ -94,7 +87,12 @@ contains the time and SHA of that commit.
   previous section. Defaults to `False`
 * `allow_root`: This option is similar to allow_other but file access is limited
   to the user mounting the filesystem and root. This option and allow_other are
-  mutu‐ ally exclusive. Defaults to `True`
+  mutually exclusive. Defaults to `True`
+* `username`: username for HTTP Basic auth
+* `password`: password for HTTP Basic auth
+* `ssh_key`: path for the ssh private key for SSH transport. (__NOTE__: the
+  public key is constructed by appending `.pub` to this path and the file
+  __MUST__ exist). Defaults to `$HOME/.ssh/id_rsa`
 
 ## Development
 
