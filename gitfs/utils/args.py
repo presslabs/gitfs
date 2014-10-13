@@ -32,14 +32,16 @@ class Args(object):
             ("ssh_key", (self.get_ssh_key, "string")),
             ("foreground", (False, "bool")),
             ("branch", ("master", "string")),
-            ("allow_other", (True, "bool")),
-            ("allow_root", (False, "bool")),
+            ("allow_other", (False, "bool")),
+            ("allow_root", (True, "bool")),
             ("commiter_name", (self.get_current_user, "string")),
             ("commiter_email", (self.get_current_email, "string")),
             ("max_size", (10, "float")),
             ("fetch_timeout", (30, "float")),
             ("merge_timeout", (5, "float")),
             ("log", ("syslog", "string"))
+            ("debug", (False, "bool")),
+            ("log_level", ("warn", "string")),
         ])
         self.config = self.build_config(parser.parse_args())
 
@@ -50,7 +52,18 @@ class Args(object):
                     item, value = arg.split("=")
                     setattr(args, item, value)
 
-        args = self.set_defaults(args)
+        return self.check_args(self.set_defaults(args))
+
+    def check_args(self, args):
+        # check allow_other and allow_root
+        if args.allow_other:
+            args.allow_root = False
+        else:
+            args.allow_root = True
+
+        # check log_level
+        if args.log_level == 'warn' and args.debug:
+            args.log_level = 'debug'
 
         return args
 
