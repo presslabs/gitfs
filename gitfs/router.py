@@ -78,8 +78,6 @@ class Router(object):
 
         log.info('Done INIT')
 
-    def init(self, path):
-        log.info('Done INIT')
 
     def destroy(self, path):
         shutting_down.set()
