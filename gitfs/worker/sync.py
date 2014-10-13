@@ -42,6 +42,7 @@ class SyncWorker(Peasant):
 
         while True:
             if shutting_down.is_set():
+                log.info("Stop sync worker")
                 break
 
             try:
@@ -65,13 +66,14 @@ class SyncWorker(Peasant):
         """
 
         if commits:
-            log.debug("SyncWorker: Get some commits")
+            log.info("SyncWorker: Get some commits")
             self.commit(commits)
             commits = []
             log.debug("SyncWorker: Set syncing event")
             syncing.set()
 
         if writers == 0:
+            log.debug("SyncWorker: Start syncing")
             self.sync()
 
         return commits
@@ -98,7 +100,7 @@ class SyncWorker(Peasant):
         if need_to_push:
             try:
                 with remote_operation:
-                    log.info("SyncWorker: Start pushing")
+                    log.debug("SyncWorker: Start pushing")
                     self.repository.push(self.upstream, self.branch)
                     self.repository.behind = False
                     log.info("SyncWorker: Push done")
@@ -109,7 +111,7 @@ class SyncWorker(Peasant):
                 log.debug("SyncWorker: Set push_successful")
                 push_successful.set()
             except:
-                log.info("SyncWorker: Push failed")
+                log.warn("SyncWorker: Push failed")
                 push_successful.clear()
                 fetch.set()
 
@@ -125,8 +127,8 @@ class SyncWorker(Peasant):
             message = "Update %s items" % len(updates)
 
         self.repository.commit(message, self.author, self.commiter)
-        log.info("SyncWorker: Commit %s with %s as author and %s as commiter",
-                 message, self.author, self.commiter)
+        log.debug("SyncWorker: Commit %s with %s as author and %s as commiter",
+                  message, self.author, self.commiter)
         self.repository.commits.update()
         log.debug("Update commits cache")
         self.repository.checkout_head(strategy=pygit2.GIT_CHECKOUT_FORCE)

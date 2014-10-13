@@ -116,7 +116,7 @@ class AcceptMine(Merger):
                         f.write(self.repository.get(ours.id).data)
                     self.repository.index.add(ours.path)
         else:
-            log.debug("AcceptMine: No conflicts to resolve")
+            log.info("AcceptMine: No conflicts to solve")
 
     def _full_path(self, partial):
         if partial.startswith("/"):

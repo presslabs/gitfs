@@ -56,11 +56,11 @@ class Router(object):
 
         self.routes = []
 
-        log.info('Cloning into %s' % self.repo_path)
+        log.info('Router: Cloning into %s' % self.repo_path)
 
         self.repo = Repository.clone(self.remote_url, self.repo_path,
                                      self.branch, credentials)
-        log.info('Done cloning')
+        log.info('Router: Done cloning')
 
         self.repo.credentials = credentials
         self.repo.ignore = CachedIgnore(submodules=True, ignore=True)
@@ -78,22 +78,22 @@ class Router(object):
 
         self.workers = []
 
-        log.info('Done INIT')
+        log.debug('Router: Done init')
 
     def init(self, path):
-        log.info('Done INIT')
+        log.debug('Router: Done init')
 
     def destroy(self, path):
-        log.info('Stopping workers')
+        log.debug('Router: Stopping workers')
         shutting_down.set()
         fetch.set()
 
         for worker in self.workers:
             worker.join()
-        log.info('Workers stopped')
+        log.debug('Router: Workers stopped')
 
         shutil.rmtree(self.repo_path)
-        log.info('Repository path is not empty')
+        log.info('Router: Successfully umounted %s', self.mount_path)
 
     def __call__(self, operation, *args):
         """
@@ -119,16 +119,19 @@ class Router(object):
             view, relative_path = self.get_view(path)
             args = (relative_path,) + args[1:]
 
-        log.info('CALL %s %s with %r' % (operation, view, args))
+        log.debug('Router: Call %s %s with %r' % (operation, view.__name__,
+                                                  args))
 
         if not hasattr(view, operation):
+            log.debug('Router: No attribute %s on %s' % (operation,
+                      view.__name__, args))
             raise FuseOSError(ENOSYS)
 
         return getattr(view, operation)(*args)
 
     def register(self, routes):
         for regex, view in routes:
-            log.info('Registring %s for %s', view, regex)
+            log.debug('Router: Registering %s for %s', view, regex)
             self.routes.append({
                 'regex': regex,
                 'view': view
@@ -155,11 +158,11 @@ class Router(object):
             relative_path = '/' if not relative_path else relative_path
 
             cache_key = result.group(0) + relative_path
-            log.debug("Cache key for %s: %s", path, cache_key)
+            log.debug("Router: Cache key for %s: %s", path, cache_key)
 
             if cache_key in lru:
                 view = lru[cache_key]
-                log.debug("Serving %s from cache", path)
+                log.debug("Router: Serving %s from cache", path)
                 return view, relative_path
 
             kwargs = result.groupdict()
@@ -183,7 +186,7 @@ class Router(object):
             view = route['view'](*args, **kwargs)
 
             lru[cache_key] = view
-            log.debug("Added %s to cache", path)
+            log.debug("Router: Added %s to cache", path)
 
             return view, relative_path
 

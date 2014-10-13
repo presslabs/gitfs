@@ -47,7 +47,7 @@ class CurrentView(PassthroughView):
             'message': message
         })
 
-        log.info("Renamed %s to %s", old, new)
+        log.debug("CurrentView: Renamed %s to %s", old, new)
         return result
 
     @write_operation
@@ -58,11 +58,11 @@ class CurrentView(PassthroughView):
         message = "Create symlink to %s for %s" % (target, name)
         self._stage(add=name, message=message)
 
-        log.info("Created symlink to %s from %s", name, target)
+        log.debug("CurrentView: Created symlink to %s from %s", name, target)
         return result
 
     def readlink(self, path):
-        log.info("Read link %s", path)
+        log.debug("CurrentView: Read link %s", path)
         return os.readlink(self._full_path(path))
 
     def getattr(self, path, fh=None):
@@ -75,7 +75,7 @@ class CurrentView(PassthroughView):
             'st_gid': self.gid,
         })
 
-        log.info("Get attributes %s for %s", str(attrs), path)
+        log.debug("CurrentView: Get attributes %s for %s", str(attrs), path)
         return attrs
 
     @write_operation
@@ -95,14 +95,14 @@ class CurrentView(PassthroughView):
             'message': 'Update %s' % path,
         }
 
-        log.info("Wrote %s to %s", len(buf), path)
+        log.debug("CurrentView: Wrote %s to %s", len(buf), path)
         return result
 
     @write_operation
     @not_in("ignore", check=["path"])
     def mkdir(self, path, mode):
         result = super(CurrentView, self).mkdir(path, mode)
-        log.info("Created directory %s with mode %s", path, mode)
+        log.debug("CurrentView: Created directory %s with mode %s", path, mode)
 
         path = "%s/.keep" % os.path.split(path)[1]
         if not os.path.exists(path):
@@ -119,7 +119,7 @@ class CurrentView(PassthroughView):
             'message': "Created %s" % path,
         }
 
-        log.info("Created %s", path)
+        log.debug("CurrentView: Created %s", path)
         return fh
 
     @write_operation
@@ -134,7 +134,8 @@ class CurrentView(PassthroughView):
         message = 'Chmod to %s on %s' % (str(oct(mode))[3:-1], path)
         self._stage(add=path, message=message)
 
-        log.info("Change %s mode to %s", path, str(oct(mode))[3:-1])
+        log.debug("CurrentView: Change %s mode to %s", path,
+                  str(oct(mode))[3:-1])
         return result
 
     @write_operation
@@ -149,7 +150,7 @@ class CurrentView(PassthroughView):
         message = 'Fsync %s' % path
         self._stage(add=path, message=message)
 
-        log.info("Fsync %s", path)
+        log.debug("CurrentView: Fsync %s", path)
         return result
 
     @write_operation
@@ -159,7 +160,7 @@ class CurrentView(PassthroughView):
         fh = self.open_for_read(path, flags)
         writers += 1
 
-        log.info("Open %s for write", path)
+        log.debug("CurrentView: Open %s for write", path)
         return fh
 
     def open_for_read(self, path, flags):
@@ -185,10 +186,10 @@ class CurrentView(PassthroughView):
             del self.dirty[fh]
             global writers
             writers -= 1
-            log.info("Staged %s for commit", path)
+            log.debug("CurrentView: Staged %s for commit", path)
             self._stage(add=path, message=message)
 
-        log.info("Release %s", path)
+        log.debug("CurrentView: Release %s", path)
         return os.close(fh)
 
     @write_operation
@@ -199,7 +200,7 @@ class CurrentView(PassthroughView):
         message = 'Deleted %s' % path
         self._stage(remove=path, message=message)
 
-        log.info("Deleted %s", path)
+        log.debug("CurrentView: Deleted %s", path)
         return result
 
     def _stage(self, message, add=None, remove=None):
