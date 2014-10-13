@@ -122,8 +122,8 @@ class PassthroughView(View):
 
     def truncate(self, path, length, fh=None):
         full_path = self._full_path(path)
-        with open(full_path, 'r+') as f:
-            f.truncate(length)
+        with open(full_path, 'r+') as input_file:
+            input_file.truncate(length)
 
     def flush(self, path, fh):
         return os.fsync(fh)
