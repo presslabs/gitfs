@@ -28,7 +28,7 @@ from gitfs.log import log
 class Args(object):
     def __init__(self, parser):
         self.DEFAULTS = OrderedDict([
-            ("repos_path", (self.get_repos_path, "string")),
+            ("repo_path", (self.get_repo_path, "string")),
             ("user", (self.get_current_user, "string")),
             ("group", (self.get_current_group, "string")),
             ("username", ("", "string")),
@@ -121,7 +121,7 @@ class Args(object):
     def get_current_email(self, args):
         return "%s@%s" % (args.user, socket.gethostname())
 
-    def get_repos_path(self, args):
+    def get_repo_path(self, args):
         return tempfile.mkdtemp(dir="/var/lib/gitfs")
 
     def get_ssh_key(self, args):

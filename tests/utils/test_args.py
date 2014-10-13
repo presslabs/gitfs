@@ -35,7 +35,7 @@ class TestArgs(object):
         mocked_parser.parse_args.return_value = mocked_args
         mocked_args.o = "magic=True,not_magic=False"
         mocked_args.group = None
-        mocked_args.repos_path = None
+        mocked_args.repo_path = None
         mocked_args.user = None
         mocked_args.branch = None
 
@@ -45,7 +45,7 @@ class TestArgs(object):
 
             args = Args(mocked_parser)
             asserted_results = {
-                "repos_path": "/tmp",
+                "repo_path": "/tmp",
                 "user": "test_user",
                 "group": "test_group",
                 "branch": "master",

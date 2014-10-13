@@ -28,7 +28,7 @@ from gitfs.worker import CommitQueue, SyncWorker, FetchWorker
 def parse_args(parser):
     parser.add_argument('remote_url', help='repo to be cloned')
     parser.add_argument('mount_point', help='where the repo should be mount')
-    parser.add_argument('-o', help='other options: repos_path, user, '
+    parser.add_argument('-o', help='other options: repo_path, user, '
                                    'group, branch, max_size, max_offset, '
                                    'fetch_timeout, merge_timeout')
 
@@ -47,7 +47,7 @@ def prepare_components(args):
     # setting router
     router = Router(remote_url=args.remote_url,
                     mount_path=args.mount_point,
-                    repos_path=args.repos_path,
+                    repo_path=args.repo_path,
                     branch=args.branch,
                     user=args.user,
                     group=args.group,

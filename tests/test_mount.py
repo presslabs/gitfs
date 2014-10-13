@@ -47,7 +47,7 @@ class TestMount(object):
             'foreground': True,
             'allow_root': True,
             'allow_others': True,
-            'repos_path': 'repos_path',
+            'repo_path': 'repo_path',
             'branch': 'branch',
             'user': 'user',
             'group': 'group',
@@ -108,7 +108,7 @@ class TestMount(object):
             asserted_calls = [call('remote_url', help='repo to be cloned'),
                               call('mount_point',
                                    help='where the repo should be mount'),
-                              call('-o', help='other options: repos_path, ' +
+                              call('-o', help='other options: repo_path, ' +
                                    'user, group, branch, max_size, ' +
                                    'max_offset, fetch_timeout, merge_timeout')]
             mocked_parser.add_argument.has_calls(asserted_calls)

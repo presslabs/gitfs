@@ -14,7 +14,6 @@
 
 
 import re
-import os
 import inspect
 import shutil
 import time
@@ -36,23 +35,22 @@ lru = LRUCache(40000)
 
 
 class Router(object):
-    def __init__(self, remote_url, repos_path, mount_path, credentials,
+    def __init__(self, remote_url, repo_path, mount_path, credentials,
                  branch=None, user="root", group="root", **kwargs):
         """
-        Clone repo from a remote into repos_path/<repo_name> and checkout to
+        Clone repo from a remote into repo_path/<repo_name> and checkout to
         a specific branch.
 
         :param str remote_url: URL of the repository to clone
-        :param str repos_path: Where are all the repos are cloned
+        :param str repo_path: Where are all the repos are cloned
         :param str branch: Branch to checkout after the
             clone. The default is to use the remote's default branch.
 
         """
         self.remote_url = remote_url
-        self.repos_path = repos_path
+        self.repo_path = repo_path
         self.mount_path = mount_path
         self.branch = branch
-        self.repo_path = self._get_repo(repos_path)
 
         self.routes = []
 
@@ -204,8 +202,3 @@ class Router(object):
         fuse_allowed_methods = set([elem[0] for elem in methods])
 
         return attr_name in fuse_allowed_methods - set(['bmap', 'lock'])
-
-    def _get_repo(self, repos_path):
-        match = re.search(r"/(?P<repo_name>[\w\-\_]+)(\.git/?)?/?$",
-                          self.remote_url)
-        return os.path.join(repos_path, match.group('repo_name'))

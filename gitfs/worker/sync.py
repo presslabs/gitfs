@@ -42,7 +42,7 @@ class SyncWorker(Peasant):
 
         while True:
             if shutting_down.is_set():
-                log.info("Stop sync worker")
+                log.info("SyncWorker: Stop sync worker")
                 break
 
             try:

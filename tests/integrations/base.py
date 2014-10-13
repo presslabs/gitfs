@@ -52,7 +52,7 @@ class BaseTest(object):
         self.mount_path = "%s" % os.environ["MOUNT_PATH"]
 
         self.repo_name = os.environ["REPO_NAME"]
-        self.repo_path = "%s/%s" % (os.environ["REPO_PATH"], self.repo_name)
+        self.repo_path = os.environ["REPO_PATH"]
 
         self.current_path = "%s/current" % self.mount_path
 
