@@ -81,7 +81,8 @@ class BaseTest(object):
 
         lines = map(lambda line: line.split(), lines)
 
-        return map(lambda tokens: "%s-%s" % (tokens[1], tokens[3][:10]), lines)
+        return map(lambda tokens: "%s-%s" % (tokens[1].replace(":", "-"),
+                                             tokens[3][:10]), lines)
 
     def get_commit_dates(self):
         return list(set(self.sh.git.log("--pretty=%ad", "--date=short").

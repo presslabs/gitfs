@@ -32,7 +32,7 @@ class CommitCache(object):
             commit_time = datetime.fromtimestamp(commit.commit_time)
 
             date = commit_time.date().strftime('%Y-%m-%d')
-            time = commit_time.time().strftime('%H:%M:%S')
+            time = commit_time.time().strftime('%H-%M-%S')
 
             if date not in new_commits:
                 new_commits[date] = []
