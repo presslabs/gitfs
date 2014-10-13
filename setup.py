@@ -24,7 +24,7 @@ cmdclass = {
 }
 
 setup(name='gitfs',
-      version='0.0.1',
+      version='0.1.0',
       platforms='any',
       description='Mount git repositories as local folders.',
       author='Presslabs',
