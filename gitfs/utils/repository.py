@@ -56,7 +56,7 @@ class Repository(object):
             return self.__dict__[attr]
 
     def ahead(self, upstream, branch):
-        ahead, behind = self.diverge(upstream, branch)
+        ahead, _ = self.diverge(upstream, branch)
         return ahead
 
     def diverge(self, upstream, branch):
@@ -460,7 +460,7 @@ class Repository(object):
 
         for first_commit, second_commit in walker:
             if (first_commit in second_commits or
-               second_commit in first_commits):
+                second_commit in first_commits):
                 break
 
             if first_commit not in first_commits:
