@@ -26,8 +26,8 @@ from gitfs.utils.path import split_path_into_components
 from gitfs.utils.commits import CommitsList
 
 
-DivergeCommits = namedtuple("DivergeCommits", ["common_parent",
-                            "first_commits", "second_commits"])
+DivergeCommits = namedtuple("DivergeCommits", ["common_parent", "first_commits",
+                                               "second_commits"])
 
 
 class Repository(object):
