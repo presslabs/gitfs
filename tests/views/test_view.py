@@ -34,4 +34,4 @@ class TestView(object):
             'st_ctime': "now",
             'st_mtime': "now",
         }
-        assert simple_view.getattr() == asserted_getattr
+        assert simple_view.getattr("/fake/test/path") == asserted_getattr
