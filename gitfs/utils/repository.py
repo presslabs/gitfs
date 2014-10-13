@@ -377,7 +377,7 @@ class Repository(object):
 
         """
 
-        iterators = [self._repo.walk(branch.target) for branch in branches]
+        iterators = [self._repo.walk(branch.target, sort) for branch in branches]
         stop_iteration = [False for branch in branches]
 
         commits = []
@@ -395,7 +395,7 @@ class Repository(object):
                 try:
                     commit = iterator.next()
                     commits[index] = commit
-                except:
+                except StopIteration:
                     stop_iteration[index] = True
 
             if not all(stop_iteration):
