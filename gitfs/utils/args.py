@@ -39,8 +39,8 @@ class Args(object):
             ("max_size", (10, "float")),
             ("fetch_timeout", (30, "float")),
             ("merge_timeout", (5, "float")),
-            ("log", ("syslog", "string"))
             ("debug", (False, "bool")),
+            ("log", ("syslog", "string")),
             ("log_level", ("warn", "string")),
         ])
         self.config = self.build_config(parser.parse_args())
@@ -62,6 +62,7 @@ class Args(object):
             args.allow_root = True
 
         # check log_level
+        print args.debug
         if args.log_level == 'warn' and args.debug:
             args.log_level = 'debug'
 
