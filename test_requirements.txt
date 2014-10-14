@@ -1,2 +1,4 @@
+fusepy==2.0.2
+pygit2==0.21.3
 mock==1.0.1
 pytest==2.6.1

@@ -12,9 +12,17 @@ DEBIAN_FRONTEND=noninteractive apt-get install -y -q python-software-properties
 add-apt-repository ppa:presslabs/gitfs
 apt-get update
 DEBIAN_FRONTEND=noninteractive apt-get install -y -q python-virtualenv python-dev libffi-dev build-essential libgit2-dev git-core
+adduser vagrant fuse
+echo 'user_allow_other' >> /etc/fuse.conf
 sudo -u vagrant virtualenv -q --setuptools /home/vagrant/gitfs
 echo "source /home/vagrant/gitfs/bin/activate" >> /home/vagrant/.bashrc
-sudo -u vagrant -i pip install -e /vagrant
+echo Installing cffi
+sudo -u vagrant -- /home/vagrant/gitfs/bin/pip install -q 'cffi'
+echo Installing requirements
+sudo -u vagrant -- /home/vagrant/gitfs/bin/pip install -q -r /vagrant/test_requirements.txt
+echo Installing gitfs
+sudo -u vagrant -- /home/vagrant/gitfs/bin/pip install -q -e /vagrant
+echo "export TEST_DIR=/tmp/gitfs-tests/" >> /home/vagrant/.bashrc
 SCRIPT
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
