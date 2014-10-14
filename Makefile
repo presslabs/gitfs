@@ -2,7 +2,8 @@ PREFIX:=/usr/local
 BUILD_DIR:=build
 VIRTUAL_ENV?=$(BUILD_DIR)/virtualenv
 
-TEST_DIR:=test
+TESTS?=tests
+TEST_DIR?=test
 MNT_DIR:=$(TEST_DIR)/$(shell bash -c 'echo $$RANDOM')_mnt
 REPO_DIR:=$(TEST_DIR)/$(shell bash -c 'echo $$RANDOM')_repo
 REPO_NAME:=testing_repo
@@ -78,7 +79,7 @@ test: testenv
 	$(VIRTUAL_ENV)/bin/pip install -e .
 	$(VIRTUAL_ENV)/bin/gitfs $(BARE_REPO) $(MNT_DIR) -o repo_path=$(REPO_DIR),fetch_timeout=2,merge_timeout=2,allow_other=true,foreground=true,log=/dev/null & echo "$$!" > $(GITFS_PID)
 	sleep 2
-	MOUNT_PATH=$(MNT_DIR) REPO_PATH=$(REPO_DIR) REPO_NAME=$(REPO_NAME) REMOTE=$(REMOTE) $(VIRTUAL_ENV)/bin/py.test tests
+	MOUNT_PATH=$(MNT_DIR) REPO_PATH=$(REPO_DIR) REPO_NAME=$(REPO_NAME) REMOTE=$(REMOTE) $(VIRTUAL_ENV)/bin/py.test $(TESTS)
 	kill -9 `cat $(GITFS_PID)`
 	sudo umount -f $(MNT_DIR)
 
