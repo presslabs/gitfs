@@ -1,0 +1,3 @@
+fusepy==2.0.2
+pygit2==0.21.3
+atomiclong
