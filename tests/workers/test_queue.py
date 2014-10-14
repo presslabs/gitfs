@@ -16,7 +16,7 @@
 import pytest
 from mock import patch, MagicMock
 
-from gitfs.worker.queue import BaseQueue, CommitQueue
+from gitfs.worker.commit_queue import BaseQueue, CommitQueue
 
 
 class TestBaseQueue(object):
@@ -30,7 +30,7 @@ class TestBaseQueue(object):
         mocked_queue = MagicMock()
         mocked_queue.get.return_value = "get"
 
-        with patch('gitfs.worker.queue.Queue') as mocked_queue_module:
+        with patch('gitfs.worker.commit_queue.Queue') as mocked_queue_module:
             mocked_queue_module.return_value = mocked_queue
 
             queue = BaseQueue()

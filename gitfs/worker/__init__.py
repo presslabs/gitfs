@@ -14,5 +14,5 @@
 
 
 from .sync import SyncWorker
-from .queue import CommitQueue
+from .commit_queue import CommitQueue
 from .fetch import FetchWorker
