@@ -79,6 +79,9 @@ class Router(object):
         log.debug('Router: Done init')
 
     def init(self, path):
+        for worker in self.workers:
+            worker.start()
+
         log.debug('Router: Done init')
 
     def destroy(self, path):

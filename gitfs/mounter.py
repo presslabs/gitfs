@@ -88,9 +88,6 @@ def start_fuse():
 
     merge_worker, fetch_worker, router = prepare_components(args)
 
-    merge_worker.start()
-    fetch_worker.start()
-
     # ready to mount it
     if sys.platform == 'darwin':
         FUSE(router, args.mount_point, foreground=args.foreground,
