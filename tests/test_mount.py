@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
+import sys
 from mock import MagicMock, patch, call
 
 from gitfs.mounter import prepare_components, parse_args, start_fuse
@@ -143,12 +143,15 @@ class TestMount(object):
 
             excepted_call = {
                 'foreground': mocked_args.foreground,
-                'nonempty': True,
                 'allow_root': mocked_args.allow_root,
                 'allow_other': mocked_args.allow_other,
                 'subtype': 'gitfs',
                 'fsname': mocked_args.remote_url
             }
+
+            if sys.platform != 'darwin':
+                excepted_call['nonempty'] = True
+
             mocked_fuse.assert_called_once_with(mocked_router,
                                                 mocked_args.mount_point,
                                                 **excepted_call)
