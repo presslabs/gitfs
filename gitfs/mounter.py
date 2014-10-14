@@ -30,7 +30,7 @@ def parse_args(parser):
     parser.add_argument('mount_point', help='where the repo should be mount')
     parser.add_argument('-o', help='other options: repo_path, user, '
                                    'group, branch, max_size, max_offset, '
-                                   'fetch_timeout, merge_timeout')
+                                   'fetch_timeout, merge_timeout, ssh_user')
 
     return Args(parser)
 
@@ -41,7 +41,7 @@ def prepare_components(args):
     if args.password:
         credentials = UserPass(args.username, args.password)
     else:
-        credentials = Keypair(args.username, args.ssh_key + ".pub",
+        credentials = Keypair(args.ssh_user, args.ssh_key + ".pub",
                               args.ssh_key, "")
 
     # setting router
