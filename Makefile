@@ -58,6 +58,7 @@ drone:
 virtualenv: $(VIRTUAL_ENV)/bin/pip
 
 testenv: virtualenv
+	$(VIRTUAL_ENV)/bin/pip install cffi
 	$(VIRTUAL_ENV)/bin/pip install -r test_requirements.txt
 	mkdir -p $(TEST_DIR)
 	mkdir -p $(MNT_DIR)
