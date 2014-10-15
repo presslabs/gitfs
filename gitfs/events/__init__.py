@@ -15,7 +15,7 @@
 
 import threading
 
-from gitfs.utils.atomic import AtomicLong
+from atomiclong import AtomicLong
 
 
 syncing = threading.Event()
