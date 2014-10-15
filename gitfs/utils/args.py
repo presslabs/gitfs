@@ -21,6 +21,7 @@ import grp
 from logging import Formatter
 from logging.handlers import TimedRotatingFileHandler, SysLogHandler
 from collections import OrderedDict
+from urlparse import urlparse
 
 from gitfs.log import log
 
@@ -34,6 +35,7 @@ class Args(object):
             ("username", ("", "string")),
             ("password", ("", "string")),
             ("ssh_key", (self.get_ssh_key, "string")),
+            ("ssh_user", (self.get_ssh_user, "string")),
             ("foreground", (False, "bool")),
             ("branch", ("master", "string")),
             ("allow_other", (False, "bool")),
@@ -126,3 +128,11 @@ class Args(object):
 
     def get_ssh_key(self, args):
         return os.environ["HOME"] + "/.ssh/id_rsa"
+
+    def get_ssh_user(self, args):
+        url = args.remote_url
+        parse_result = urlparse(url)
+        if not parse_result.scheme:
+            url = 'ssh://' + url
+            parse_result = urlparse(url)
+        return parse_result.username if parse_result.username else ""

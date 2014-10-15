@@ -44,6 +44,7 @@ class TestMount(object):
             'username': 'user',
             'password': '',
             'ssh_key': '/home/user/.ssh/id_rsa',
+            'ssh_user': 'user',
             'foreground': True,
             'allow_root': True,
             'allow_others': True,
@@ -138,8 +139,6 @@ class TestMount(object):
             mocked_argp.ArgumentParser.assert_called_once_with(prog='GitFS')
             mocked_parse_args.assert_called_once_with("args")
             mocked_prepare.assert_called_once_with(mocked_args)
-            assert mocked_merge.start.call_count == 1
-            assert mocked_fetch.start.call_count == 1
 
             excepted_call = {
                 'foreground': mocked_args.foreground,
