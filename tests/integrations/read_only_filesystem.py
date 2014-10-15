@@ -14,6 +14,7 @@
 
 
 import pytest
+import errno
 
 from tests.integrations.base import BaseTest
 
@@ -29,5 +30,5 @@ class ReadOnlyFSTest(BaseTest):
             with open(filename, "w") as f:
                     f.write(content)
 
-        assert err.value.errno == 30
+        assert err.value.errno == errno.EROFS
         assert "Read-only file system" in str(err.value)
