@@ -14,7 +14,7 @@
 
 
 import os
-from errno import EROFS, EACCES
+from errno import EROFS
 
 from fuse import FuseOSError
 
@@ -56,7 +56,7 @@ class ReadOnlyView(View):
 
     def access(self, path, amode):
         if amode & os.W_OK:
-            raise FuseOSError(EACCES)
+            raise FuseOSError(EROFS)
         return 0
 
     def mkdir(self, path, mode):
