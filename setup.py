@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 from distutils.command.build import build
 
-REQUIREMENTS = [i.strip() for i in open("requirements.txt").readlines()]
+REQUIREMENTS = [line.strip() for line in open("requirements.txt").readlines()]
 
 setup(name='gitfs',
       version='0.1.0',
