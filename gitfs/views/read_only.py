@@ -55,7 +55,7 @@ class ReadOnlyView(View):
         return 0
 
     def access(self, path, amode):
-        if amode & (os.R_OK | os.F_OK):
+        if amode & os.W_OK:
             raise FuseOSError(EACCES)
         return 0
 
