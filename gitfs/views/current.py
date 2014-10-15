@@ -131,11 +131,11 @@ class CurrentView(PassthroughView):
 
         result = super(CurrentView, self).chmod(path, mode)
 
-        message = 'Chmod to %s on %s' % (str(oct(mode))[3:-1], path)
+        message = 'Chmod to %s on %s' % (('0%o' % mode)[-4:], path)
         self._stage(add=path, message=message)
 
         log.debug("CurrentView: Change %s mode to %s", path,
-                  str(oct(mode))[3:-1])
+                  ('0%o' % mode)[-4:])
         return result
 
     @write_operation

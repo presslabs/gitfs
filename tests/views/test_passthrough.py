@@ -67,10 +67,10 @@ class TestPassthrough(object):
         with patch('gitfs.views.passthrough.os.chmod', mocked_chmod):
             view = PassthroughView(repo_path=self.repo_path)
 
-            view.chmod('/magic/path', 777)
+            view.chmod('/magic/path', 0777)
 
             mocked_chmod.assert_called_once_with('/the/root/path/magic/path',
-                                                 777)
+                                                 0777)
 
     def test_chown(self):
         mocked_chown = MagicMock()

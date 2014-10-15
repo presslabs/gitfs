@@ -240,7 +240,7 @@ class TestCurrentView(object):
         current._stage = mocked_index
 
         assert current.chmod("/path", 0644) == "done"
-        message = 'Chmod to %s on %s' % (str(oct(0644))[3:-1], "/path")
+        message = 'Chmod to %s on %s' % (str(oct(0644))[-4:], "/path")
         mocked_index.assert_called_once_with(add="/path", message=message)
 
         current_view.PassthroughView.chmod = old_chmod
