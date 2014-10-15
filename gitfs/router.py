@@ -54,11 +54,11 @@ class Router(object):
 
         self.routes = []
 
-        log.info('Router: Cloning into %s' % self.repo_path)
+        log.info('Cloning into %s' % self.repo_path)
 
         self.repo = Repository.clone(self.remote_url, self.repo_path,
                                      self.branch, credentials)
-        log.info('Router: Done cloning')
+        log.info('Done cloning')
 
         self.repo.credentials = credentials
         self.repo.ignore = CachedIgnore(submodules=True, ignore=True)
@@ -76,25 +76,25 @@ class Router(object):
 
         self.workers = []
 
-        log.debug('Router: Done init')
+        log.debug('Done init')
 
     def init(self, path):
         for worker in self.workers:
             worker.start()
 
-        log.debug('Router: Done init')
+        log.debug('Done init')
 
     def destroy(self, path):
-        log.debug('Router: Stopping workers')
+        log.debug('Stopping workers')
         shutting_down.set()
         fetch.set()
 
         for worker in self.workers:
             worker.join()
-        log.debug('Router: Workers stopped')
+        log.debug('Workers stopped')
 
         shutil.rmtree(self.repo_path)
-        log.info('Router: Successfully umounted %s', self.mount_path)
+        log.info('Successfully umounted %s', self.mount_path)
 
     def __call__(self, operation, *args):
         """
@@ -120,12 +120,12 @@ class Router(object):
             view, relative_path = self.get_view(path)
             args = (relative_path,) + args[1:]
 
-        log.debug('Router: Call %s %s with %r' % (operation,
+        log.debug('Call %s %s with %r' % (operation,
                                                   view.__class__.__name__,
                                                   args))
 
         if not hasattr(view, operation):
-            log.debug('Router: No attribute %s on %s' % (operation,
+            log.debug('No attribute %s on %s' % (operation,
                       view.__name__, args))
             raise FuseOSError(ENOSYS)
 
@@ -133,7 +133,7 @@ class Router(object):
 
     def register(self, routes):
         for regex, view in routes:
-            log.debug('Router: Registering %s for %s', view, regex)
+            log.debug('Registering %s for %s', view, regex)
             self.routes.append({
                 'regex': regex,
                 'view': view
