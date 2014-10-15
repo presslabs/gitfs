@@ -1,5 +1,9 @@
 === (ongoing) ===
 * implement behavior for .gitignore
 
+=== 0.1.1 ===
+* fix #129: use ssh user from clone url
+* fix #134: pushing on repos requiring authentication was not working
+
 === 0.1.0 ===
 Initial release
