@@ -18,6 +18,7 @@ import os
 import socket
 import tempfile
 import grp
+import sys
 from logging import Formatter
 from logging.handlers import TimedRotatingFileHandler, SysLogHandler
 from collections import OrderedDict
@@ -77,7 +78,11 @@ class Args(object):
                                            '%(message)s',
                                            datefmt='%B-%d-%Y %H:%M:%S'))
         else:
-            handler = SysLogHandler(address="/dev/log")
+            if sys.platform == 'darwin':
+                handler = SysLogHandler(address="/var/run/syslog")
+            else:
+                handler = SysLogHandler(address="/dev/log")
+
             handler.setFormatter(Formatter(fmt='GitFS: %(threadName)s: '
                                            '%(message)s'))
 
