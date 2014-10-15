@@ -20,12 +20,14 @@ from gitfs.log import log
 
 
 class FetchWorker(Peasant):
+    name = 'FetchWorker'
+
     def run(self):
         while True:
             fetch.wait(self.timeout)
 
             if shutting_down.is_set():
-                log.info("FetchWorker: Stop fetch worker")
+                log.info("Stop fetch worker")
                 break
 
             self.fetch()
@@ -35,10 +37,10 @@ class FetchWorker(Peasant):
             fetch.clear()
 
             try:
-                log.debug("FetchWorker: Start fetching")
+                log.debug("Start fetching")
                 self.repository.fetch(self.upstream, self.branch)
                 fetch_successful.set()
-                log.debug("FetchWorker: Fetch done")
+                log.debug("Fetch done")
             except:
-                log.warn("FetchWorker: Fetch failed")
+                log.warn("Fetch failed")
                 fetch_successful.clear()

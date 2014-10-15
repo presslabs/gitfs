@@ -73,11 +73,13 @@ class Args(object):
 
         if args.log != "syslog":
             handler = TimedRotatingFileHandler(args.log, when="midnight")
-            handler.setFormatter(Formatter(fmt='%(asctime)s %(message)s',
+            handler.setFormatter(Formatter(fmt='%(asctime)s %(threadName)s: '
+                                           '%(message)s',
                                            datefmt='%B-%d-%Y %H:%M:%S'))
         else:
             handler = SysLogHandler(address="/dev/log")
-            handler.setFormatter(Formatter(fmt='GitFS: %(message)s'))
+            handler.setFormatter(Formatter(fmt='GitFS: %(threadName)s: '
+                                           '%(message)s'))
 
         log.addHandler(handler)
         log.setLevel(args.log_level.upper())
