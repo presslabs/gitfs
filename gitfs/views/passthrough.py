@@ -43,6 +43,9 @@ class PassthroughView(View):
         full_path = self._full_path(path)
         if not os.access(full_path, mode):
             raise FuseOSError(EACCES)
+        if path.endswith('/.git'):
+            raise FuseOSError(EACCES)
+        return 0
 
     def chmod(self, path, mode):
         full_path = self._full_path(path)

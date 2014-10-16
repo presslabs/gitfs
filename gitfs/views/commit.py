@@ -15,13 +15,17 @@
 
 import os
 from errno import ENOENT
-from pygit2 import GIT_FILEMODE_TREE
+from pygit2 import GIT_FILEMODE_TREE, GIT_FILEMODE_BLOB,\
+    GIT_FILEMODE_BLOB_EXECUTABLE, GIT_FILEMODE_LINK
 from fuse import FuseOSError
 
 from gitfs.utils import split_path_into_components
 from gitfs.cache import lru_cache
 
 from .read_only import ReadOnlyView
+
+VALID_FILE_MODES = [GIT_FILEMODE_BLOB, GIT_FILEMODE_BLOB_EXECUTABLE,
+                    GIT_FILEMODE_LINK, GIT_FILEMODE_TREE]
 
 
 class CommitView(ReadOnlyView):
@@ -47,13 +51,11 @@ class CommitView(ReadOnlyView):
 
         is_valid = False
         for entry in tree:
-            if (entry.name == path_components[0] and
-                entry.filemode == GIT_FILEMODE_TREE and
-                len(path_components) == 1):
+            valid_mode = (entry.name == path_components[0] and
+                          entry.filemode in VALID_FILE_MODES)
+            if valid_mode and len(path_components) == 1:
                 return True
-            elif (entry.name == path_components[0] and
-                  entry.filemode == GIT_FILEMODE_TREE and
-                  len(path_components) > 1):
+            elif valid_mode and len(path_components) > 1:
                 is_valid = self._validate_commit_path(self.repo[entry.id],
                                                       path_components[1:])
                 if is_valid:
