@@ -239,7 +239,7 @@ class TestCurrentView(object):
 
         current._stage = mocked_index
 
-        assert current.chmod("/path", 0644) == "done"
+        assert current.chmod("/path", 0100644) == "done"
         message = 'Chmod to %s on %s' % (str(oct(0644))[-4:], "/path")
         mocked_index.assert_called_once_with(add="/path", message=message)
 
@@ -255,7 +255,7 @@ class TestCurrentView(object):
 
             current = CurrentView(repo_path="repo", uid=1, gid=1,
                                   ignore=CachedIgnore("f"))
-            assert current.chmod("/path/to/dir", 0777) == "done"
+            assert current.chmod("/path/to/dir", 0040755) == "done"
 
             mocked_os.path.isdir.assert_called_once_with('repo/path/to/dir')
 
