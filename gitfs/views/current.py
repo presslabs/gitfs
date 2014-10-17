@@ -131,6 +131,9 @@ class CurrentView(PassthroughView):
 
         result = super(CurrentView, self).chmod(path, mode)
 
+        if os.path.isdir(self._full_path(path)):
+            return result
+
         message = 'Chmod to %s on %s' % (('0%o' % mode)[-4:], path)
         self._stage(add=path, message=message)
 

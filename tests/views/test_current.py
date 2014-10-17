@@ -245,6 +245,22 @@ class TestCurrentView(object):
 
         current_view.PassthroughView.chmod = old_chmod
 
+    def test_chmod_on_dir(self):
+        from gitfs.views import current as current_view
+        old_chmod = current_view.PassthroughView.chmod
+        current_view.PassthroughView.chmod = lambda self, path, mode: "done"
+
+        with patch('gitfs.views.current.os') as mocked_os:
+            mocked_os.path.isdir.return_value = True
+
+            current = CurrentView(repo_path="repo", uid=1, gid=1,
+                                  ignore=CachedIgnore("f"))
+            assert current.chmod("/path/to/dir", 0777) == "done"
+
+            mocked_os.path.isdir.assert_called_once_with('repo/path/to/dir')
+
+        current_view.PassthroughView.chmod = old_chmod
+
     def test_fsync_a_file_from_git_dir(self):
         current = CurrentView(repo_path="repo", uid=1, gid=1,
                               ignore=CachedIgnore("f"))
