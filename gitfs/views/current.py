@@ -128,10 +128,16 @@ class CurrentView(PassthroughView):
         """
         Executes chmod on the file at os level and then it commits the change.
         """
+        str_mode = ('%o' % mode)[-4:]
+        if str_mode not in ['0755', '0644']:
+            raise FuseOSError(errno.EINVAL)
 
         result = super(CurrentView, self).chmod(path, mode)
 
-        message = 'Chmod to %s on %s' % (('0%o' % mode)[-4:], path)
+        if os.path.isdir(self._full_path(path)):
+            return result
+
+        message = 'Chmod to %s on %s' % (str_mode, path)
         self._stage(add=path, message=message)
 
         log.debug("CurrentView: Change %s mode to %s", path,
