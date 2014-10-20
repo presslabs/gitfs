@@ -55,11 +55,11 @@ class TestWriteCurrentView(BaseTest):
             assert os.path.exists(directory_path)
 
             # check for .keep file
-            keep_path = "%s/new_directory/.keep" % self.repo_path
+            keep_path = "%s/new_directory/.__keep__gitfs__" % self.repo_path
             assert os.path.exists(keep_path)
 
             self.assert_new_commit()
-            self.assert_commit_message("Created /new_directory/.keep")
+            self.assert_commit_message("Created /new_directory/.__keep__gitfs__")
 
     def test_chmod(self):
         filename = "%s/testing" % self.current_path
