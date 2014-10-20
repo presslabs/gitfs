@@ -195,6 +195,19 @@ class CurrentView(PassthroughView):
 
     @write_operation
     @not_in("ignore", check=["path"])
+    def rmdir(self, path):
+        keep_file = os.path.join(path, '.keep')
+        self.unlink(keep_file)
+
+        result = super(CurrentView, self).rmdir(path)
+
+        message = 'Deleted the %s directory' % path
+        log.debug("CurrentView: %s", message)
+
+        return result
+
+    @write_operation
+    @not_in("ignore", check=["path"])
     def unlink(self, path):
         result = super(CurrentView, self).unlink(path)
 
