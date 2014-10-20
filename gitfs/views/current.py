@@ -105,7 +105,7 @@ class CurrentView(PassthroughView):
 
         log.debug("CurrentView: Created directory %s with mode %s", path, mode)
 
-        path = "%s/.keep" % path
+        path = "%s/.__keep__gitfs__" % path
         if not os.path.exists(path):
             fh = self.create(path, 0644)
             self.release(path, fh)
@@ -196,7 +196,7 @@ class CurrentView(PassthroughView):
     @write_operation
     @not_in("ignore", check=["path"])
     def rmdir(self, path):
-        keep_file = os.path.join(path, '.keep')
+        keep_file = os.path.join(path, '.__keep__gitfs__')
         self.unlink(keep_file)
 
         result = super(CurrentView, self).rmdir(path)
