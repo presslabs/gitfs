@@ -102,9 +102,10 @@ class CurrentView(PassthroughView):
     @not_in("ignore", check=["path"])
     def mkdir(self, path, mode):
         result = super(CurrentView, self).mkdir(path, mode)
+
         log.debug("CurrentView: Created directory %s with mode %s", path, mode)
 
-        path = "%s/.keep" % os.path.split(path)[1]
+        path = "%s/.keep" % path
         if not os.path.exists(path):
             fh = self.create(path, 0644)
             self.release(path, fh)

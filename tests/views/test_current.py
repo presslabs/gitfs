@@ -174,7 +174,6 @@ class TestCurrentView(object):
 
         with patch('gitfs.views.current.os') as mocked_os:
             mocked_os.path.exists.return_value = False
-            mocked_os.path.split.return_value = [1, 1]
 
             current = CurrentView(repo_path="repo", uid=1, gid=1,
                                   ignore=CachedIgnore("f"))
@@ -182,10 +181,9 @@ class TestCurrentView(object):
             current.release = mocked_release
 
             assert current.mkdir("/path", "mode") == "done"
-            mocked_os.path.split.assert_called_once_with("/path")
-            mocked_os.path.exists.assert_called_once_with("1/.keep")
-            mocked_create.assert_called_once_with("1/.keep", 0644)
-            mocked_release.assert_called_once_with("1/.keep", 1)
+            mocked_os.path.exists.assert_called_once_with("/path/.keep")
+            mocked_create.assert_called_once_with("/path/.keep", 0644)
+            mocked_release.assert_called_once_with("/path/.keep", 1)
         current_view.PassthroughView.mkdir = old_mkdir
 
     def test_mkdir_in_git_dir(self):
