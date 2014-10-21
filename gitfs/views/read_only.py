@@ -16,16 +16,14 @@
 import os
 from errno import EROFS
 
-from fuse import FuseOSError
-
-from gitfs import FuseMethodNotImplemented
+from fuse import FuseOSError, ENOTSUP
 
 from .view import View
 
 
 class ReadOnlyView(View):
     def getxattr(self, path, name, *args):
-        raise FuseMethodNotImplemented
+        raise FuseOSError(ENOTSUP)
 
     def open(self, path, flags):
         write_flags = (os.O_WRONLY | os.O_RDWR | os.O_APPEND | os.O_TRUNC
