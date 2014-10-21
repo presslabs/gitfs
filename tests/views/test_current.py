@@ -24,7 +24,6 @@ from gitfs.views.current import CurrentView
 from gitfs.cache.gitignore import CachedIgnore
 
 
-@pytest.mark.current_to_test
 class TestCurrentView(object):
     def test_rename(self):
         mocked_re = MagicMock()
@@ -180,8 +179,10 @@ class TestCurrentView(object):
         keep_path = '/path/.keep'
         mode = (os.O_WRONLY | os.O_CREAT)
 
-        with patch('gitfs.views.current.os.path') as mocked_os_path:
-            mocked_os_path.exists.return_value = False
+        with patch('gitfs.views.current.os') as mocked_os:
+            mocked_os.path.exists.return_value = False
+            mocked_os.O_WRONLY = os.O_WRONLY
+            mocked_os.O_CREAT = os.O_CREAT
 
             current = CurrentView(repo_path="repo", uid=1, gid=1,
                                   ignore=CachedIgnore("f"))
@@ -189,7 +190,7 @@ class TestCurrentView(object):
             current.open_for_write = mocked_open_for_write
 
             assert current.mkdir("/path", "mode") == "done"
-            mocked_os_path.exists.assert_called_once_with(keep_path)
+            mocked_os.path.exists.assert_called_once_with(keep_path)
             mocked_open_for_write.assert_called_once_with(keep_path, mode)
             mocked_chmod.assert_called_once_with(keep_path, 0644)
             assert current.dirty == {
