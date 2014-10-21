@@ -48,6 +48,8 @@ sudo apt-get install gitfs
 gitfs http://your.com/repository.git /mount/directory
 ```
 
+![usage](docs/screenshots/diff.gif)
+
 ### Directory structure
 
 `current/` - contains a snapshot of the commit that the branch's HEAD is
