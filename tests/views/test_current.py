@@ -24,6 +24,7 @@ from gitfs.views.current import CurrentView
 from gitfs.cache.gitignore import CachedIgnore
 
 
+@pytest.mark.current_to_test
 class TestCurrentView(object):
     def test_rename(self):
         mocked_re = MagicMock()
@@ -165,26 +166,41 @@ class TestCurrentView(object):
     def test_mkdir(self):
         from gitfs.views import current as current_view
         old_mkdir = current_view.PassthroughView.mkdir
+        old_chmod = current_view.PassthroughView.chmod
         mocked_mkdir = lambda self, path, mode: "done"
+        mocked_chmod = MagicMock()
+        mocked_chmod.return_value = None
         current_view.PassthroughView.mkdir = mocked_mkdir
+        current_view.PassthroughView.chmod = mocked_chmod
 
-        mocked_create = MagicMock()
-        mocked_create.return_value = 1
         mocked_release = MagicMock()
+        mocked_open_for_write = MagicMock()
+        mocked_open_for_write.return_value = 10
 
-        with patch('gitfs.views.current.os') as mocked_os:
-            mocked_os.path.exists.return_value = False
+        keep_path = '/path/.keep'
+        mode = (os.O_WRONLY | os.O_CREAT)
+
+        with patch('gitfs.views.current.os.path') as mocked_os_path:
+            mocked_os_path.exists.return_value = False
 
             current = CurrentView(repo_path="repo", uid=1, gid=1,
                                   ignore=CachedIgnore("f"))
-            current.create = mocked_create
             current.release = mocked_release
+            current.open_for_write = mocked_open_for_write
 
             assert current.mkdir("/path", "mode") == "done"
-            mocked_os.path.exists.assert_called_once_with("/path/.keep")
-            mocked_create.assert_called_once_with("/path/.keep", 0644)
-            mocked_release.assert_called_once_with("/path/.keep", 1)
+            mocked_os_path.exists.assert_called_once_with(keep_path)
+            mocked_open_for_write.assert_called_once_with(keep_path, mode)
+            mocked_chmod.assert_called_once_with(keep_path, 0644)
+            assert current.dirty == {
+                10: {
+                    'message': "Create the /path directory"
+                }
+            }
+            mocked_release.assert_called_once_with(keep_path, 10)
+
         current_view.PassthroughView.mkdir = old_mkdir
+        current_view.PassthroughView.chmod = old_chmod
 
     def test_mkdir_in_git_dir(self):
         current = CurrentView(repo_path="repo", uid=1, gid=1,
