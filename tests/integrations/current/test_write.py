@@ -61,7 +61,7 @@ class TestWriteCurrentView(BaseTest):
             assert os.path.exists(keep_path)
 
             self.assert_new_commit()
-            self.assert_commit_message("Created /new_directory/.keep")
+            self.assert_commit_message("Create the /new_directory directory")
 
 
     def test_chmod_valid_mode(self):
