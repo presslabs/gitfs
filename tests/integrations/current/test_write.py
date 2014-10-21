@@ -15,8 +15,10 @@
 
 import os
 import time
+import pytest
 
 from tests.integrations.base import BaseTest, pull
+from fuse import FuseOSError
 
 
 class TestWriteCurrentView(BaseTest):
@@ -61,19 +63,26 @@ class TestWriteCurrentView(BaseTest):
             self.assert_new_commit()
             self.assert_commit_message("Created /new_directory/.__keep__gitfs__")
 
-    def test_chmod(self):
+    def test_chmod_valid_mode(self):
         filename = "%s/testing" % self.current_path
-        os.chmod(filename, 0766)
+        os.chmod(filename, 0755)
 
         time.sleep(5)
 
         with pull(self.sh):
             # check if the right mode was set
             stats = os.stat(filename)
-            assert stats.st_mode == 0100766
+            assert stats.st_mode == 0100755
 
             self.assert_new_commit()
-            self.assert_commit_message("Chmod to 0766 on /testing")
+            self.assert_commit_message("Chmod to 0755 on /testing")
+
+    def test_chmod_invalid_mode(self):
+        filename = "%s/testing" % self.current_path
+
+        with pytest.raises(OSError):
+            os.chmod(filename, 0777)
+
 
     def test_rename(self):
         old_filename = "%s/testing" % self.current_path
