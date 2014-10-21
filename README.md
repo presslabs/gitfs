@@ -96,6 +96,8 @@ contains the time and SHA of that commit.
 
 ## Development
 
+You can find more documentation on [readthedocs](http://gitfs.readthedocs.org/en/latest/)
+
 ### Contributing
 
 Development of gitfs happens at http://github.com/PressLabs/gitfs.
