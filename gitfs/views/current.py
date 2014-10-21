@@ -103,12 +103,18 @@ class CurrentView(PassthroughView):
     def mkdir(self, path, mode):
         result = super(CurrentView, self).mkdir(path, mode)
 
-        log.debug("CurrentView: Created directory %s with mode %s", path, mode)
+        keep_path = "%s/.keep" % path
+        if not os.path.exists(keep_path):
+            fh = self.open_for_write(keep_path, os.O_WRONLY | os.O_CREAT)
+            super(CurrentView, self).chmod(keep_path, 0644)
 
-        path = "%s/.__keep__gitfs__" % path
-        if not os.path.exists(path):
-            fh = self.create(path, 0644)
-            self.release(path, fh)
+            self.dirty[fh] = {
+                'message': "Create the %s directory" % path,
+            }
+
+            self.release(keep_path, fh)
+
+        log.debug("CurrentView: Created directory %s with mode %s", path, mode)
 
         return result
 
@@ -202,7 +208,9 @@ class CurrentView(PassthroughView):
     @write_operation
     @not_in("ignore", check=["path"])
     def rmdir(self, path):
-        keep_file = os.path.join(path, '.__keep__gitfs__')
+        keep_file = os.path.join(path, '.keep')
+        # TODO: don`t use the self.unlink method as it will create an unnecessary
+        # commit (for the .keep file)
         self.unlink(keep_file)
 
         result = super(CurrentView, self).rmdir(path)

@@ -181,9 +181,9 @@ class TestCurrentView(object):
             current.release = mocked_release
 
             assert current.mkdir("/path", "mode") == "done"
-            mocked_os.path.exists.assert_called_once_with("/path/.__keep__gitfs__")
-            mocked_create.assert_called_once_with("/path/.__keep__gitfs__", 0644)
-            mocked_release.assert_called_once_with("/path/.__keep__gitfs__", 1)
+            mocked_os.path.exists.assert_called_once_with("/path/.keep")
+            mocked_create.assert_called_once_with("/path/.keep", 0644)
+            mocked_release.assert_called_once_with("/path/.keep", 1)
         current_view.PassthroughView.mkdir = old_mkdir
 
     def test_mkdir_in_git_dir(self):
