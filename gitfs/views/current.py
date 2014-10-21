@@ -208,11 +208,11 @@ class CurrentView(PassthroughView):
     @write_operation
     @not_in("ignore", check=["path"])
     def rmdir(self, path):
+        # Unlink the .keep file
         keep_file = os.path.join(path, '.keep')
-        # TODO: don`t use the self.unlink method as it will create an unnecessary
-        # commit (for the .keep file)
         self.unlink(keep_file)
 
+        # Delete the actual directory
         result = super(CurrentView, self).rmdir(path)
 
         message = 'Deleted the %s directory' % path
