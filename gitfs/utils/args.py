@@ -42,8 +42,8 @@ class Args(object):
             ("branch", ("master", "string")),
             ("allow_other", (False, "bool")),
             ("allow_root", (True, "bool")),
-            ("commiter_name", (self.get_current_user, "string")),
-            ("commiter_email", (self.get_current_email, "string")),
+            ("commiter_name", (self.get_commiter_user, "string")),
+            ("commiter_email", (self.get_commiter_email, "string")),
             ("max_size", (10, "float")),
             ("fetch_timeout", (30, "float")),
             ("merge_timeout", (5, "float")),
@@ -85,7 +85,6 @@ class Args(object):
                 handler = SysLogHandler(address="/var/run/syslog")
             else:
                 handler = SysLogHandler(address="/dev/log")
-
             handler.setFormatter(Formatter(fmt='GitFS: %(threadName)s: '
                                            '%(message)s'))
 
@@ -135,7 +134,10 @@ class Args(object):
     def get_current_user(self, args):
         return getpass.getuser()
 
-    def get_current_email(self, args):
+    def get_commiter_user(self, args):
+        return args.user
+
+    def get_commiter_email(self, args):
         return "%s@%s" % (args.user, socket.gethostname())
 
     def get_repo_path(self, args):
