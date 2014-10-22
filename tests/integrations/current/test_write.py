@@ -16,6 +16,7 @@
 import os
 import time
 import pytest
+import string
 
 from tests.integrations.base import BaseTest, pull
 from fuse import FuseOSError
@@ -63,6 +64,104 @@ class TestWriteCurrentView(BaseTest):
             self.assert_new_commit()
             self.assert_commit_message("Create the /new_directory directory")
 
+    def test_create_embedded_directory(self):
+        directory = "%s/directory/embedded-directory" % self.current_path
+
+        os.makedirs(directory)
+
+        time.sleep(5)
+
+        with pull(self.sh):
+            # check if directory exists or not
+            directory_path = "%s/directory/embedded-directory" % self.repo_path
+            assert os.path.exists(directory_path)
+
+            # check the existence of the .keep files
+            keep_files = [
+                "%s/directory/.keep" % self.repo_path,
+                "%s/directory/embedded-directory/.keep" % self.repo_path
+            ]
+            for keep_file in keep_files:
+                assert os.path.exists(keep_file)
+
+            self.assert_new_commit()
+            commit_msg = "Update 2 items"
+            self.assert_commit_message(commit_msg)
+
+    def test_create_directory_inside_an_already_existing_directory(self):
+        directory = "%s/directory/new-embedded-directory" % self.current_path
+
+        os.makedirs(directory)
+
+        time.sleep(5)
+
+        with pull(self.sh):
+            # check if directory exists or not
+            directory_path = "%s/directory/new-embedded-directory" % self.repo_path
+            assert os.path.exists(directory_path)
+
+            # check the existence of the .keep files
+            keep_files = [
+                "%s/directory/.keep" % self.repo_path,
+                "%s/directory/new-embedded-directory/.keep" % self.repo_path
+            ]
+            for keep_file in keep_files:
+                assert os.path.exists(keep_file)
+
+            self.assert_new_commit()
+            commit_msg = "Create the /directory/new-embedded-directory directory"
+            self.assert_commit_message(commit_msg)
+
+    def test_create_embedded_directory_on_multiple_levels(self):
+        directory = "%s/a/b/c" % self.current_path
+
+        os.makedirs(directory)
+
+        time.sleep(5)
+
+        with pull(self.sh):
+            # check if directory exists or not
+            directory_path = "%s/a/b/c" % self.repo_path
+            assert os.path.exists(directory_path)
+
+            # check the existence of the .keep files
+            keep_files = [
+                "%s/a/.keep" % self.repo_path,
+                "%s/a/b/.keep" % self.repo_path,
+                "%s/a/b/c/.keep" % self.repo_path,
+            ]
+            for keep_file in keep_files:
+                assert os.path.exists(keep_file)
+
+            self.assert_new_commit()
+            commit_msg = "Update %s items" % len(keep_files)
+            self.assert_commit_message(commit_msg)
+
+    def test_create_embedded_directory_big_depth(self):
+        path = ""
+        for letter in string.letters:
+            path = os.path.join(path, letter)
+
+        os.makedirs(os.path.join(self.current_path, path))
+
+        time.sleep(5)
+
+        with pull(self.sh):
+            # check if directory exists or not
+            directory_path = os.path.join(self.repo_path, path)
+            assert os.path.exists(directory_path)
+
+            # build the paths for the keep files
+            keep_files = []
+            path = self.repo_path
+            for letter in string.letters:
+                path = os.path.join(path, letter)
+                path_with_keep = os.path.join(path, '.keep')
+                keep_files.append(path_with_keep)
+
+            # check the existence of the .keep files
+            for keep_file in keep_files:
+                assert os.path.exists(keep_file)
 
     def test_chmod_valid_mode(self):
         filename = "%s/testing" % self.current_path
