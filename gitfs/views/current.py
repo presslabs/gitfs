@@ -210,12 +210,14 @@ class CurrentView(PassthroughView):
     def rmdir(self, path):
         # Unlink the .keep file
         keep_file = os.path.join(path, '.keep')
-        self.unlink(keep_file)
+        result = super(CurrentView, self).unlink(keep_file)
+
+        message = 'Delete the %s directory' % path
+        self._stage(remove=keep_file, message=message)
 
         # Delete the actual directory
         result = super(CurrentView, self).rmdir(path)
 
-        message = 'Deleted the %s directory' % path
         log.debug("CurrentView: %s", message)
 
         return result
