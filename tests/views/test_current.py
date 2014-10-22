@@ -173,25 +173,27 @@ class TestCurrentView(object):
         current_view.PassthroughView.chmod = mocked_chmod
 
         mocked_release = MagicMock()
-        mocked_open_for_write = MagicMock()
-        mocked_open_for_write.return_value = 10
+        mocked_full_path = MagicMock()
+        mocked_full_path.return_value = "full_path"
 
         keep_path = '/path/.keep'
         mode = (os.O_WRONLY | os.O_CREAT)
 
         with patch('gitfs.views.current.os') as mocked_os:
             mocked_os.path.exists.return_value = False
+            mocked_os.open.return_value = 10
             mocked_os.O_WRONLY = os.O_WRONLY
             mocked_os.O_CREAT = os.O_CREAT
 
             current = CurrentView(repo_path="repo", uid=1, gid=1,
                                   ignore=CachedIgnore("f"))
             current.release = mocked_release
-            current.open_for_write = mocked_open_for_write
+            current._full_path = mocked_full_path
 
             assert current.mkdir("/path", "mode") == "done"
+            mocked_full_path.assert_called_once_with(keep_path)
             mocked_os.path.exists.assert_called_once_with(keep_path)
-            mocked_open_for_write.assert_called_once_with(keep_path, mode)
+            mocked_os.open.assert_called_once_with("full_path", mode)
             mocked_chmod.assert_called_once_with(keep_path, 0644)
             assert current.dirty == {
                 10: {
