@@ -32,7 +32,7 @@ class TestCachedIgnore(object):
                                 re=mocked_re):
                 gitignore = CachedIgnore("some_file", "some_file")
 
-                assert gitignore.items == ['/.git', '.git/*', '/.git/*',
+                assert gitignore.items == ['/.git', '.git/*', '/.git/*', '*.keep',
                                            'file', '/found/*', '/found',
                                            'found']
 
