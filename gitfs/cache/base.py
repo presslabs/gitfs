@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import gc
 import collections
 
 
@@ -82,6 +81,11 @@ class Cache(collections.MutableMapping):
     def maxsize(self):
         """Return the maximum size of the cache."""
         return self.__maxsize
+
+    @maxsize.setter
+    def maxsize(self, size):
+        """Set maximum size of the cache."""
+        self.__maxsize = size
 
     @property
     def currsize(self):

@@ -25,6 +25,7 @@ from collections import OrderedDict
 from urlparse import urlparse
 
 from gitfs.log import log
+from gitfs.cache import lru_cache
 
 
 class Args(object):
@@ -49,6 +50,7 @@ class Args(object):
             ("debug", (False, "bool")),
             ("log", ("syslog", "string")),
             ("log_level", ("warning", "string")),
+            ("cache_size", (800, "int")),
         ])
         self.config = self.build_config(parser.parse_args())
 
@@ -72,6 +74,7 @@ class Args(object):
         if args.debug:
             args.log_level = 'debug'
 
+        # setup logging
         if args.log != "syslog":
             handler = TimedRotatingFileHandler(args.log, when="midnight")
             handler.setFormatter(Formatter(fmt='%(asctime)s %(threadName)s: '
@@ -88,6 +91,9 @@ class Args(object):
 
         log.addHandler(handler)
         log.setLevel(args.log_level.upper())
+
+        # set cache size
+        lru_cache.maxsize = args.cache_size
 
         return args
 
@@ -116,6 +122,8 @@ class Args(object):
                         value = False
                 elif value[1] == "float":
                     value = float(new_value)
+                elif value[1] == "int":
+                    value = int(new_value)
 
             setattr(args, option, value)
         return args

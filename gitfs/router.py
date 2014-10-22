@@ -26,13 +26,9 @@ from errno import ENOSYS
 from fuse import FUSE, FuseOSError
 
 from gitfs.utils import Repository
-from gitfs.cache import CachedIgnore, LRUCache
+from gitfs.cache import CachedIgnore, lru_cache
 from gitfs.log import log
 from gitfs.events import shutting_down, fetch
-# from guppy import hpy
-
-# hp = hpy()
-lru = LRUCache(100)
 
 
 class Router(object):
@@ -99,15 +95,6 @@ class Router(object):
         shutil.rmtree(self.repo_path)
         log.info('Successfully umounted %s', self.mount_path)
 
-        # h = hp.heap()
-        # print h.byrcs
-        # b = h.byrcs
-
-        # for i in range(4):
-        #    print b[i].byclodo
-        #    print b[i].byid
-        #    print b[i].bysize
-
     def __call__(self, operation, *args):
         """
         Magic method which calls a specific method from a view.
@@ -171,10 +158,10 @@ class Router(object):
             relative_path = re.sub(route['regex'], '', path)
             relative_path = '/' if not relative_path else relative_path
 
-            cache_key = result.group(0) + relative_path
+            cache_key = result.group(0)
             log.debug("Router: Cache key for %s: %s", path, cache_key)
 
-            view = lru.get_if_exists(cache_key)
+            view = lru_cache.get_if_exists(cache_key)
             if view is not None:
                 log.debug("Router: Serving %s from cache", path)
                 return view, relative_path
@@ -199,7 +186,7 @@ class Router(object):
             args = set(groups) - set(kwargs.values())
             view = route['view'](*args, **kwargs)
 
-            lru[cache_key] = view
+            lru_cache[cache_key] = view
             log.debug("Router: Added %s to cache", path)
 
             return view, relative_path

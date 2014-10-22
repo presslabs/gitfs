@@ -17,8 +17,6 @@ import re
 import os
 import fnmatch
 
-from gitfs.cache.lru import lru_cache
-
 
 class CachedIgnore(object):
     def __init__(self, ignore=False, submodules=False):
@@ -61,7 +59,6 @@ class CachedIgnore(object):
                 return True
         return False
 
-    # @lru_cache(5)
     def _check_item_and_key(self, item, key):
         if item == key:
             return True

@@ -15,7 +15,8 @@
 
 import pytest
 
-from gitfs.cache.lru import LRUCache, lru_cache
+from gitfs.cache.lru import LRUCache
+from gitfs.cache.decorators import lru_cache
 
 
 @lru_cache(maxsize=2)
