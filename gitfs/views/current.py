@@ -104,8 +104,13 @@ class CurrentView(PassthroughView):
         result = super(CurrentView, self).mkdir(path, mode)
 
         keep_path = "%s/.keep" % path
+        full_path = self._full_path(keep_path)
         if not os.path.exists(keep_path):
-            fh = self.open_for_write(keep_path, os.O_WRONLY | os.O_CREAT)
+            global writers
+            fh = os.open(full_path, os.O_WRONLY | os.O_CREAT)
+            writers += 1
+            log.info("CurrentView: Open %s for write", full_path)
+
             super(CurrentView, self).chmod(keep_path, 0644)
 
             self.dirty[fh] = {
