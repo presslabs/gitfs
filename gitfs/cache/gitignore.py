@@ -61,7 +61,7 @@ class CachedIgnore(object):
                 return True
         return False
 
-    @lru_cache(40000)
+    # @lru_cache(5)
     def _check_item_and_key(self, item, key):
         if item == key:
             return True

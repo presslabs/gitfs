@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
+import gc
 import collections
 
 
@@ -35,6 +35,9 @@ class Cache(collections.MutableMapping):
         self.__mapping = dict()
         self.__maxsize = maxsize
         self.__currsize = 0
+
+    def __contains__(self, key):
+        return key in self.__mapping
 
     def __getitem__(self, key):
         return self.__mapping[key][0]

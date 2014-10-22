@@ -44,6 +44,8 @@ class LRUCache(Cache):
         root.prev = root.next = root
         self.__root = root
 
+        self.__lock = RLock()
+
     def __getitem__(self, key):
         value, link = super(LRUCache, self).__getitem__(key)
         root = self.__root
@@ -55,33 +57,35 @@ class LRUCache(Cache):
         return value
 
     def __setitem__(self, key, value):
-        try:
-            _, link = super(LRUCache, self).__getitem__(key)
-        except KeyError:
-            link = Node()
+        with self.__lock:
+            try:
+                _, link = super(LRUCache, self).__getitem__(key)
+            except KeyError:
+                link = Node()
 
-        super(LRUCache, self).__setitem__(key, (value, link))
+            super(LRUCache, self).__setitem__(key, (value, link))
 
-        try:
-            link.prev.next = link.next
-            link.next.prev = link.prev
-        except AttributeError:
-            link.data = key
+            try:
+                link.prev.next = link.next
+                link.next.prev = link.prev
+            except AttributeError:
+                link.data = key
 
-        root = self.__root
-        link.prev = tail = root.prev
-        link.next = root
-        tail.next = root.prev = link
+            root = self.__root
+            link.prev = tail = root.prev
+            link.next = root
+            tail.next = root.prev = link
 
     def __delitem__(self, key):
-        _, link = super(LRUCache, self).__getitem__(key)
-        super(LRUCache, self).__delitem__(key)
+        with self.__lock:
+            _, link = super(LRUCache, self).__getitem__(key)
+            super(LRUCache, self).__delitem__(key)
 
-        link.prev.next = link.next
-        link.next.prev = link.prev
+            link.prev.next = link.next
+            link.next.prev = link.prev
 
-        del link.next
-        del link.prev
+            del link.next
+            del link.prev
 
     def __repr__(self):
         return '%s(%r, maxsize=%d, currsize=%d)' % (
@@ -94,14 +98,24 @@ class LRUCache(Cache):
     def popitem(self):
         """Remove and return the `(key, value)` pair least recently used."""
 
-        root = self.__root
-        link = root.next
+        with self.__lock:
+            root = self.__root
+            link = root.next
 
-        if link is root:
-            raise KeyError('cache is empty')
+            if link is root:
+                raise KeyError('cache is empty')
 
-        key = link.data
-        return (key, self.pop(key))
+            key = link.data
+            return (key, self.pop(key))
+
+    def get_if_exists(self, key):
+        with self.__lock:
+            exists = super(LRUCache, self).__contains__(key)
+            if not exists:
+                return None
+
+            return self.__getitem__(key)
+
 
 CacheInfo = collections.namedtuple('CacheInfo', 'hits misses maxsize currsize')
 

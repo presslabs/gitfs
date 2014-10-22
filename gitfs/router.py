@@ -26,12 +26,13 @@ from errno import ENOSYS
 from fuse import FUSE, FuseOSError
 
 from gitfs.utils import Repository
-from gitfs.cache import LRUCache, CachedIgnore
+from gitfs.cache import CachedIgnore, LRUCache
 from gitfs.log import log
 from gitfs.events import shutting_down, fetch
+# from guppy import hpy
 
-
-lru = LRUCache(40000)
+# hp = hpy()
+lru = LRUCache(100)
 
 
 class Router(object):
@@ -47,6 +48,8 @@ class Router(object):
             clone. The default is to use the remote's default branch.
 
         """
+        # hp.setrelheap()
+
         self.remote_url = remote_url
         self.repo_path = repo_path
         self.mount_path = mount_path
@@ -96,6 +99,15 @@ class Router(object):
         shutil.rmtree(self.repo_path)
         log.info('Successfully umounted %s', self.mount_path)
 
+        # h = hp.heap()
+        # print h.byrcs
+        # b = h.byrcs
+
+        # for i in range(4):
+        #    print b[i].byclodo
+        #    print b[i].byid
+        #    print b[i].bysize
+
     def __call__(self, operation, *args):
         """
         Magic method which calls a specific method from a view.
@@ -121,8 +133,8 @@ class Router(object):
             args = (relative_path,) + args[1:]
 
         log.debug('Call %s %s with %r' % (operation,
-                                                  view.__class__.__name__,
-                                                  args))
+                                          view.__class__.__name__,
+                                          args))
 
         if not hasattr(view, operation):
             log.debug('No attribute %s on %s' % (operation,
@@ -162,8 +174,8 @@ class Router(object):
             cache_key = result.group(0) + relative_path
             log.debug("Router: Cache key for %s: %s", path, cache_key)
 
-            if cache_key in lru:
-                view = lru[cache_key]
+            view = lru.get_if_exists(cache_key)
+            if view is not None:
                 log.debug("Router: Serving %s from cache", path)
                 return view, relative_path
 
