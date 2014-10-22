@@ -95,6 +95,7 @@ contains the time and SHA of that commit.
 * `ssh_key`: path for the ssh private key for SSH transport. (__NOTE__: the
   public key is constructed by appending `.pub` to this path and the file
   __MUST__ exist). Defaults to `$HOME/.ssh/id_rsa`
+* `cache_size`: maximum lru cache size for views objects. Defaults to 800 items
 
 ## Development
 
