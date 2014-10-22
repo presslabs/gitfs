@@ -132,10 +132,15 @@ class SyncWorker(Peasant):
 
             message = "Update %s items" % len(updates)
 
-        self.repository.commit(message, self.author, self.commiter)
-        log.debug("Commit %s with %s as author and %s as commiter",
-                  message, self.author, self.commiter)
-        self.repository.commits.update()
-        log.debug("Update commits cache")
+        old_head = self.repository.head.target
+        new_commit = self.repository.commit(message, self.author, self.commiter)
+        if new_commit:
+            log.debug("Commit %s with %s as author and %s as commiter",
+                      message, self.author, self.commiter)
+            self.repository.commits.update()
+            log.debug("Update commits cache")
+        else:
+            self.repository.create_reference("refs/heads/%s" % self.branch,
+                                             old_head, force=True)
         self.repository.checkout_head(strategy=pygit2.GIT_CHECKOUT_FORCE)
         log.debug("Checkout to HEAD")
