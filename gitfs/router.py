@@ -26,12 +26,9 @@ from errno import ENOSYS
 from fuse import FUSE, FuseOSError
 
 from gitfs.utils import Repository
-from gitfs.cache import LRUCache, CachedIgnore
+from gitfs.cache import CachedIgnore, lru_cache
 from gitfs.log import log
 from gitfs.events import shutting_down, fetch
-
-
-lru = LRUCache(40000)
 
 
 class Router(object):
@@ -47,6 +44,8 @@ class Router(object):
             clone. The default is to use the remote's default branch.
 
         """
+        # hp.setrelheap()
+
         self.remote_url = remote_url
         self.repo_path = repo_path
         self.mount_path = mount_path
@@ -61,7 +60,8 @@ class Router(object):
         log.info('Done cloning')
 
         self.repo.credentials = credentials
-        self.repo.ignore = CachedIgnore(submodules=True, ignore=True)
+        self.repo.ignore = CachedIgnore(submodules=True, ignore=True,
+                                        path=self.repo_path)
 
         self.uid = getpwnam(user).pw_uid
         self.gid = getgrnam(group).gr_gid
@@ -121,8 +121,8 @@ class Router(object):
             args = (relative_path,) + args[1:]
 
         log.debug('Call %s %s with %r' % (operation,
-                                                  view.__class__.__name__,
-                                                  args))
+                                          view.__class__.__name__,
+                                          args))
 
         if not hasattr(view, operation):
             log.debug('No attribute %s on %s' % (operation,
@@ -159,11 +159,11 @@ class Router(object):
             relative_path = re.sub(route['regex'], '', path)
             relative_path = '/' if not relative_path else relative_path
 
-            cache_key = result.group(0) + relative_path
+            cache_key = result.group(0)
             log.debug("Router: Cache key for %s: %s", path, cache_key)
 
-            if cache_key in lru:
-                view = lru[cache_key]
+            view = lru_cache.get_if_exists(cache_key)
+            if view is not None:
                 log.debug("Router: Serving %s from cache", path)
                 return view, relative_path
 
@@ -187,7 +187,7 @@ class Router(object):
             args = set(groups) - set(kwargs.values())
             view = route['view'](*args, **kwargs)
 
-            lru[cache_key] = view
+            lru_cache[cache_key] = view
             log.debug("Router: Added %s to cache", path)
 
             return view, relative_path

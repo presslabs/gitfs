@@ -13,6 +13,9 @@
 # limitations under the License.
 
 
-from .lru import LRUCache, lru_cache
+from .lru import LRUCache
 from .commits import CommitCache
 from .gitignore import CachedIgnore
+
+
+lru_cache = LRUCache(0)

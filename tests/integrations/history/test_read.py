@@ -43,10 +43,10 @@ class TestHistoryView(BaseTest):
             assert getattr(stats, name) == value
 
         ctime = self._get_commit_time(0)
+        mtime = self._get_commit_time(-1)
 
         assert ctime == self._from_timestamp(stats.st_ctime)
-        # TODO: because of cache, modified time is not changing...fix it
-        assert ctime == self._from_timestamp(stats.st_mtime)
+        assert mtime == self._from_timestamp(stats.st_mtime)
 
     def test_stats_with_commits(self):
         commit = self.get_commits_by_date(self.today)[0]

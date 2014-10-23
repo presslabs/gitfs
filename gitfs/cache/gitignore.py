@@ -17,14 +17,19 @@ import re
 import os
 import fnmatch
 
-from gitfs.cache.lru import lru_cache
-
 
 class CachedIgnore(object):
-    def __init__(self, ignore=False, submodules=False):
+    def __init__(self, ignore=False, submodules=False, path="."):
         self.items = []
-        self.ignore = ".gitignore" if ignore else False
-        self.submodules = ".gitmodules" if submodules else False
+
+        self.ignore = False
+        if ignore:
+            self.ignore = os.path.join(path, ".gitignore")
+
+        self.submodules = False
+        if submodules:
+            self.submodules = os.path.join(path, ".gitmodules")
+
         self.cache = {}
         self.permanent = []
 
@@ -61,7 +66,6 @@ class CachedIgnore(object):
                 return True
         return False
 
-    @lru_cache(40000)
     def _check_item_and_key(self, item, key):
         if item == key:
             return True

@@ -15,15 +15,16 @@
 
 import pytest
 
-from gitfs.cache.lru import LRUCache, lru_cache
+from gitfs.cache.lru import LRUCache
+from gitfs.cache.decorators import lru_wrapper
 
 
-@lru_cache(maxsize=2)
+@lru_wrapper(maxsize=2)
 def cached(n):
     return n
 
 
-@lru_cache(maxsize=2, typed=True)
+@lru_wrapper(maxsize=2, typed=True)
 def cached_typed(n):
     return n
 
@@ -93,9 +94,9 @@ class TestLRUCache(object):
 
     def test_typed_decorator(self):
         assert cached_typed(1) == 1
-        assert cached_typed.cache_info() == (0, 1, 2, 1)
+        assert cached_typed.cache_info() == (0, 1, 2, 2)
         assert cached_typed(1) == 1
-        assert cached_typed.cache_info() == (1, 1, 2, 1)
+        assert cached_typed.cache_info() == (1, 1, 2, 2)
         assert cached_typed(1.0) == 1.0
         assert cached_typed.cache_info() == (1, 2, 2, 2)
         assert cached_typed(1.0) == 1.0

@@ -1,4 +1,4 @@
-gitfs [![Build Status](http://drone.presslabs.net/github.com/PressLabs/gitfs/status.svg?branch=master)](http://drone.presslabs.net/github.com/PressLabs/gitfs)
+gitfs [![Build Status](http://drone.presslabs.net/github.com/PressLabs/gitfs/status.svg?branch=master)](http://drone.presslabs.net/github.com/PressLabs/gitfs)  [![Coverage Status](https://img.shields.io/coveralls/PressLabs/gitfs.svg)](https://coveralls.io/r/PressLabs/gitfs)
 ========
 
 # Welcome to GitFS
@@ -48,6 +48,8 @@ sudo apt-get install gitfs
 gitfs http://your.com/repository.git /mount/directory
 ```
 
+![usage](docs/screenshots/diff.gif)
+
 ### Directory structure
 
 `current/` - contains a snapshot of the commit that the branch's HEAD is
@@ -93,6 +95,7 @@ contains the time and SHA of that commit.
 * `ssh_key`: path for the ssh private key for SSH transport. (__NOTE__: the
   public key is constructed by appending `.pub` to this path and the file
   __MUST__ exist). Defaults to `$HOME/.ssh/id_rsa`
+* `cache_size`: maximum lru cache size for views objects. Defaults to 800 items
 
 ## Development
 

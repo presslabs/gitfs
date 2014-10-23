@@ -19,12 +19,14 @@ import socket
 import tempfile
 import grp
 import sys
+
 from logging import Formatter
 from logging.handlers import TimedRotatingFileHandler, SysLogHandler
 from collections import OrderedDict
 from urlparse import urlparse
 
 from gitfs.log import log
+from gitfs.cache import lru_cache
 
 
 class Args(object):
@@ -41,14 +43,15 @@ class Args(object):
             ("branch", ("master", "string")),
             ("allow_other", (False, "bool")),
             ("allow_root", (True, "bool")),
-            ("commiter_name", (self.get_current_user, "string")),
-            ("commiter_email", (self.get_current_email, "string")),
+            ("commiter_name", (self.get_commiter_user, "string")),
+            ("commiter_email", (self.get_commiter_email, "string")),
             ("max_size", (10, "float")),
             ("fetch_timeout", (30, "float")),
             ("merge_timeout", (5, "float")),
             ("debug", (False, "bool")),
             ("log", ("syslog", "string")),
             ("log_level", ("warning", "string")),
+            ("cache_size", (800, "int")),
         ])
         self.config = self.build_config(parser.parse_args())
 
@@ -72,6 +75,7 @@ class Args(object):
         if args.debug:
             args.log_level = 'debug'
 
+        # setup logging
         if args.log != "syslog":
             handler = TimedRotatingFileHandler(args.log, when="midnight")
             handler.setFormatter(Formatter(fmt='%(asctime)s %(threadName)s: '
@@ -82,12 +86,17 @@ class Args(object):
                 handler = SysLogHandler(address="/var/run/syslog")
             else:
                 handler = SysLogHandler(address="/dev/log")
-
             handler.setFormatter(Formatter(fmt='GitFS: %(threadName)s: '
                                            '%(message)s'))
 
         log.addHandler(handler)
         log.setLevel(args.log_level.upper())
+
+        # set cache size
+        lru_cache.maxsize = args.cache_size
+
+        # return absolute repository's path
+        args.repo_path = os.path.abspath(args.repo_path)
 
         return args
 
@@ -116,6 +125,8 @@ class Args(object):
                         value = False
                 elif value[1] == "float":
                     value = float(new_value)
+                elif value[1] == "int":
+                    value = int(new_value)
 
             setattr(args, option, value)
         return args
@@ -127,7 +138,10 @@ class Args(object):
     def get_current_user(self, args):
         return getpass.getuser()
 
-    def get_current_email(self, args):
+    def get_commiter_user(self, args):
+        return args.user
+
+    def get_commiter_email(self, args):
         return "%s@%s" % (args.user, socket.gethostname())
 
     def get_repo_path(self, args):
