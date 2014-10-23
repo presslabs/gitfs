@@ -19,6 +19,7 @@ import socket
 import tempfile
 import grp
 import sys
+
 from logging import Formatter
 from logging.handlers import TimedRotatingFileHandler, SysLogHandler
 from collections import OrderedDict
@@ -93,6 +94,9 @@ class Args(object):
 
         # set cache size
         lru_cache.maxsize = args.cache_size
+
+        # return absolute repository's path
+        args.repo_path = os.path.abspath(args.repo_path)
 
         return args
 
