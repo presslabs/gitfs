@@ -1,6 +1,15 @@
 === (ongoing) ===
 * implement behavior for .gitignore
 
+=== 0.1.2 ===
+* fix #136, #137, #140: various bugs related to directory creation/removal
+* fix #144, #145, #146: various bugs related to cache system
+* fix #142: /current is unavailable when repo_path is relative
+* fix #148: don't push empty commits
+* fix #149: commiter_name should be args.user
+* fix #150: submodules are not ignored
+
+
 === 0.1.1 ===
 * fix #129: use ssh user from clone url
 * fix #134: pushing on repos requiring authentication was not working
