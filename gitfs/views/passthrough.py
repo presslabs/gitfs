@@ -64,9 +64,11 @@ class PassthroughView(View):
         full_path = self._full_path(path)
 
         dirents = ['.', '..']
+        hidden_items = ['.git', '.keep']
         if os.path.isdir(full_path):
-            [dirents.append(entry)
-             for entry in os.listdir(full_path) if entry != '.git']
+            for entry in os.listdir(full_path):
+                if entry not in hidden_items:
+                    dirents.append(entry)
 
         for directory in dirents:
             yield directory

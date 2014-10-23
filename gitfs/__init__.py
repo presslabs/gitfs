@@ -13,8 +13,6 @@
 # limitations under the License.
 
 
-from fuse import FuseOSError, ENOTSUP
-
-FuseMethodNotImplemented = FuseOSError(ENOTSUP)
+from fuse import FuseOSError
 
 from gitfs.mounter import start_fuse as mount

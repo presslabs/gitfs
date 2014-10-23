@@ -102,12 +102,24 @@ class CurrentView(PassthroughView):
     @not_in("ignore", check=["path"])
     def mkdir(self, path, mode):
         result = super(CurrentView, self).mkdir(path, mode)
-        log.debug("CurrentView: Created directory %s with mode %s", path, mode)
 
-        path = "%s/.keep" % os.path.split(path)[1]
-        if not os.path.exists(path):
-            fh = self.create(path, 0644)
-            self.release(path, fh)
+        keep_path = "%s/.keep" % path
+        full_path = self._full_path(keep_path)
+        if not os.path.exists(keep_path):
+            global writers
+            fh = os.open(full_path, os.O_WRONLY | os.O_CREAT)
+            writers += 1
+            log.info("CurrentView: Open %s for write", full_path)
+
+            super(CurrentView, self).chmod(keep_path, 0644)
+
+            self.dirty[fh] = {
+                'message': "Create the %s directory" % path,
+            }
+
+            self.release(keep_path, fh)
+
+        log.debug("CurrentView: Created directory %s with mode %s", path, mode)
 
         return result
 
@@ -197,6 +209,23 @@ class CurrentView(PassthroughView):
 
         log.debug("CurrentView: Release %s", path)
         return os.close(fh)
+
+    @write_operation
+    @not_in("ignore", check=["path"])
+    def rmdir(self, path):
+        # Unlink the .keep file
+        keep_file = os.path.join(path, '.keep')
+        result = super(CurrentView, self).unlink(keep_file)
+
+        message = 'Delete the %s directory' % path
+        self._stage(remove=keep_file, message=message)
+
+        # Delete the actual directory
+        result = super(CurrentView, self).rmdir(path)
+
+        log.debug("CurrentView: %s", message)
+
+        return result
 
     @write_operation
     @not_in("ignore", check=["path"])
