@@ -5,6 +5,7 @@ script:
     - sudo chown ubuntu:ubuntu /tmp/pip_download_cache
     - make drone
     - make test
+    - coveralls
 cache:
     - /var/cache/apt/
     - /tmp/pip_download_cache

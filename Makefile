@@ -44,7 +44,7 @@ $(VIRTUAL_ENV)/bin/py.test: $(VIRTUAL_ENV)/bin/pip
 $(VIRTUAL_ENV)/bin/pip:
 	virtualenv --setuptools $(VIRTUAL_ENV)
 
-drone:
+drone: virtualenv
 	sudo apt-get update
 	sudo apt-get install -y software-properties-common python-software-properties
 	sudo add-apt-repository -y ppa:presslabs/testing-ppa
@@ -54,6 +54,7 @@ drone:
 	sudo chmod 660 /dev/fuse
 	echo user_allow_other | sudo tee -a /etc/fuse.conf > /dev/null
 	sudo chmod 644 /etc/fuse.conf
+	$(VIRTUAL_ENV)/bin/pip install python-coveralls
 
 virtualenv: $(VIRTUAL_ENV)/bin/pip
 
@@ -80,7 +81,7 @@ test: testenv
 	$(VIRTUAL_ENV)/bin/pip install -e .
 	$(VIRTUAL_ENV)/bin/gitfs $(BARE_REPO) $(MNT_DIR) -o repo_path=$(REPO_DIR),fetch_timeout=2,merge_timeout=2,allow_other=true,foreground=true,log=/dev/null & echo "$$!" > $(GITFS_PID)
 	sleep 2
-	MOUNT_PATH=$(MNT_DIR) REPO_PATH=$(REPO_DIR) REPO_NAME=$(REPO_NAME) REMOTE=$(REMOTE) $(VIRTUAL_ENV)/bin/py.test $(TESTS)
+	MOUNT_PATH=$(MNT_DIR) REPO_PATH=$(REPO_DIR) REPO_NAME=$(REPO_NAME) REMOTE=$(REMOTE) $(VIRTUAL_ENV)/bin/py.test --cov-report term-missing --cov gitfs $(TESTS)
 	kill -9 `cat $(GITFS_PID)`
 	sudo umount -f $(MNT_DIR)
 
