@@ -133,7 +133,9 @@ class SyncWorker(Peasant):
             message = "Update %s items" % len(updates)
 
         old_head = self.repository.head.target
-        new_commit = self.repository.commit(message, self.author, self.commiter)
+        new_commit = self.repository.commit(message, self.author,
+                                            self.commiter)
+
         if new_commit:
             log.debug("Commit %s with %s as author and %s as commiter",
                       message, self.author, self.commiter)

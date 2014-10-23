@@ -13,9 +13,6 @@
 # limitations under the License.
 
 
-import functools
-import collections
-
 try:
     from threading import RLock
 except ImportError:
@@ -115,53 +112,3 @@ class LRUCache(Cache):
                 return None
 
             return self.__getitem__(key)
-
-
-CacheInfo = collections.namedtuple('CacheInfo', 'hits misses maxsize currsize')
-
-
-def _makekey_typed(args, kwargs):
-    key = _makekey(args, kwargs)
-    key += tuple(type(v) for v in args)
-    key += tuple(type(v) for k, v in sorted(kwargs.items()))
-    return key
-
-
-def _cachedfunc(cache, makekey, lock):
-    def decorator(func):
-        stats = [0, 0]
-
-        def wrapper(*args, **kwargs):
-            key = makekey(args, kwargs)
-            with lock:
-                try:
-                    result = cache[key]
-                    stats[0] += 1
-                    return result
-                except KeyError:
-                    stats[1] += 1
-            result = func(*args, **kwargs)
-            with lock:
-                cache[key] = result
-            return result
-
-        def cache_info():
-            with lock:
-                hits, misses = stats
-                maxsize = cache.maxsize
-                currsize = cache.currsize
-            return CacheInfo(hits, misses, maxsize, currsize)
-
-        def cache_clear():
-            with lock:
-                cache.clear()
-
-        wrapper.cache_info = cache_info
-        wrapper.cache_clear = cache_clear
-        return functools.update_wrapper(wrapper, func)
-
-    return decorator
-
-
-def _makekey(args, kwargs):
-    return (args, tuple(sorted(kwargs.items())))

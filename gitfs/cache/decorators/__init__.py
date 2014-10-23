@@ -1,1 +1,1 @@
-from .lru import lru_cache
+from .lru import lru_wrapper
