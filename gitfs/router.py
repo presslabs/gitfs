@@ -60,7 +60,8 @@ class Router(object):
         log.info('Done cloning')
 
         self.repo.credentials = credentials
-        self.repo.ignore = CachedIgnore(submodules=True, ignore=True)
+        self.repo.ignore = CachedIgnore(submodules=True, ignore=True,
+                                        path=self.repo_path)
 
         self.uid = getpwnam(user).pw_uid
         self.gid = getgrnam(group).gr_gid

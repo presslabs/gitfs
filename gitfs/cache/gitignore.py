@@ -19,17 +19,24 @@ import fnmatch
 
 
 class CachedIgnore(object):
-    def __init__(self, ignore=False, submodules=False):
+    def __init__(self, ignore=False, submodules=False, path="."):
         self.items = []
-        self.ignore = ".gitignore" if ignore else False
-        self.submodules = ".gitmodules" if submodules else False
+
+        self.ignore = False
+        if ignore:
+            self.ignore = os.path.join(path, ".gitignore")
+
+        self.submodules = False
+        if submodules:
+            self.submodules = os.path.join(path, ".gitmodules")
+
         self.cache = {}
         self.permanent = []
 
         self.update()
 
     def update(self):
-        self.items = ['/.git', '.git/*', '/.git/*']
+        self.items = ['/.git', '.git/*', '/.git/*', ".keep"]
 
         if self.ignore and os.path.exists(self.ignore):
             with open(self.ignore) as gitignore:
