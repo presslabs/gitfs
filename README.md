@@ -1,4 +1,4 @@
-gitfs [![Build Status](http://drone.presslabs.net/github.com/PressLabs/gitfs/status.svg?branch=master)](http://drone.presslabs.net/github.com/PressLabs/gitfs)
+gitfs [![Build Status](http://drone.presslabs.net/github.com/PressLabs/gitfs/status.svg?branch=master)](http://drone.presslabs.net/github.com/PressLabs/gitfs)  [![Coverage Status](https://img.shields.io/coveralls/PressLabs/gitfs.svg)](https://coveralls.io/r/PressLabs/gitfs)
 ========
 
 # Welcome to GitFS
