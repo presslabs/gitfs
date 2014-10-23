@@ -19,6 +19,8 @@ import pytest
 import string
 import shutil
 
+import pytest
+
 from tests.integrations.base import BaseTest, pull
 
 
@@ -63,6 +65,13 @@ class TestWriteCurrentView(BaseTest):
 
             self.assert_new_commit()
             self.assert_commit_message("Create the /new_directory directory")
+
+    def test_write_in_keep_file(self):
+        directory = "%s/new_directory" % self.current_path
+
+        with pytest.raises(IOError):
+            with open("%s/.keep" % directory, 'w') as f:
+                f.write("some content")
 
     def test_create_embedded_directory(self):
         directory = "%s/directory/embedded-directory" % self.current_path
