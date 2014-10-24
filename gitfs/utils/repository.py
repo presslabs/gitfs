@@ -64,6 +64,9 @@ class Repository(object):
         remote_branch = self.lookup_branch(reference, GIT_BRANCH_REMOTE)
         local_branch = self.lookup_branch(branch, GIT_BRANCH_LOCAL)
 
+        if remote_branch.target == local_branch.target:
+            return False, False
+
         diverge_commits = self.find_diverge_commits(local_branch,
                                                     remote_branch)
         behind = len(diverge_commits.second_commits) > 0
@@ -128,6 +131,7 @@ class Repository(object):
         """
 
         status = self._repo.status()
+        print status
         if not status:
             return None
 
