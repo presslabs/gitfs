@@ -86,8 +86,9 @@ class Args(object):
                 handler = SysLogHandler(address="/var/run/syslog")
             else:
                 handler = SysLogHandler(address="/dev/log")
-            handler.setFormatter(Formatter(fmt='GitFS: %(threadName)s: '
-                                           '%(message)s'))
+            logger_fmt = 'GitFS on {mount_point} [%(process)d]: %(threadName)s: '\
+                         '%(message)s'.format(mount_point=args.mount_point)
+            handler.setFormatter(Formatter(fmt=logger_fmt))
 
         log.addHandler(handler)
         log.setLevel(args.log_level.upper())
