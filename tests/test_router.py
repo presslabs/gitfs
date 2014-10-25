@@ -203,3 +203,18 @@ class TestRouter(object):
             }
             mocked_view.assert_called_once_with(**asserted_call)
             mocked_cache.get_if_exists.assert_called_once_with("/current")
+
+    def test_get_view_from_cache(self):
+        mocked_index = MagicMock()
+
+        router, mocks = self.get_new_router()
+
+        router.register([
+            ("/", MagicMock(return_value=mocked_index)),
+        ])
+        with patch('gitfs.router.lru_cache') as mocked_cache:
+            mocked_cache.get_if_exists.return_value = mocked_index
+
+            view, path = router.get_view("/")
+            assert view == mocked_index
+            assert path == "/"
