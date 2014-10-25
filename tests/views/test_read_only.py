@@ -13,6 +13,8 @@
 # limitations under the License.
 
 
+import os
+
 import pytest
 
 from fuse import FuseOSError
@@ -42,3 +44,13 @@ class TestReadOnly(object):
             assert getattr(view, method)("path", 1) == 0
 
         assert view.opendir("path") == 0
+
+    def test_open_for_read(self):
+        view = ReadOnlyView()
+        assert view.open("path", os.O_RDONLY) == 0
+
+    def test_open_for_write(self):
+        view = ReadOnlyView()
+
+        with pytest.raises(FuseOSError):
+            view.open("path", os.O_WRONLY)
