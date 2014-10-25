@@ -31,6 +31,8 @@ class TestRouter(object):
         mocked_grnam = MagicMock()
         mocked_time = MagicMock()
         mocked_queue = MagicMock()
+        mocked_shutil = MagicMock()
+        mocked_shutting = MagicMock()
 
         mocked_time.time.return_value = 0
         mocked_repository.clone.return_value = mocked_repo
@@ -67,7 +69,9 @@ class TestRouter(object):
         with patch.multiple('gitfs.router', Repository=mocked_repository,
                             log=mocked_log, CachedIgnore=mocked_ignore,
                             lru_cache=mocked_lru, getpwnam=mocked_pwnam,
-                            getgrnam=mocked_grnam, time=mocked_time):
+                            getgrnam=mocked_grnam, time=mocked_time,
+                            shutil=mocked_shutil,
+                            shutting_down=mocked_shutting):
             router = Router(**init_kwargs)
 
         mocks.update(init_kwargs)
@@ -92,3 +96,15 @@ class TestRouter(object):
         assert router.commit_queue == mocks['queue']
         assert router.max_size == 10
         assert router.max_offset == 10
+
+    def test_init(self):
+        mocked_fetch = MagicMock()
+        mocked_sync = MagicMock()
+
+        router, mocks = self.get_new_router()
+        router.workers = [mocked_fetch, mocked_sync]
+
+        router.init("path")
+
+        assert mocked_fetch.start.call_count == 1
+        assert mocked_sync.start.call_count == 1
