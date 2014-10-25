@@ -45,12 +45,16 @@ class TestReadOnly(object):
 
         assert view.opendir("path") == 0
 
-    def test_open_for_read(self):
-        view = ReadOnlyView()
-        assert view.open("path", os.O_RDONLY) == 0
-
-    def test_open_for_write(self):
+    def test_open(self):
         view = ReadOnlyView()
 
         with pytest.raises(FuseOSError):
             view.open("path", os.O_WRONLY)
+        assert view.open("path", os.O_RDONLY) == 0
+
+    def test_access(self):
+        view = ReadOnlyView()
+
+        with pytest.raises(FuseOSError):
+            view.access("path", os.W_OK)
+        assert view.access("path", os.R_OK) == 0
