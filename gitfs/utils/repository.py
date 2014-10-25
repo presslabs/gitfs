@@ -131,8 +131,7 @@ class Repository(object):
         """
 
         status = self._repo.status()
-        print status
-        if not status:
+        if status == {}:
             return None
 
         # sign the author

@@ -35,14 +35,18 @@ def parse_args(parser):
     return Args(parser)
 
 
+def get_credentials(args):
+    if args.password:
+        return UserPass(args.username, args.password)
+    else:
+        return Keypair(args.ssh_user, args.ssh_key + ".pub",
+                       args.ssh_key, "")
+
+
 def prepare_components(args):
     commit_queue = CommitQueue()
 
-    if args.password:
-        credentials = UserPass(args.username, args.password)
-    else:
-        credentials = Keypair(args.ssh_user, args.ssh_key + ".pub",
-                              args.ssh_key, "")
+    credentials = get_credentials(args)
 
     # setting router
     router = Router(remote_url=args.remote_url,

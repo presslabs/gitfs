@@ -55,6 +55,9 @@ class TestLRUCache(object):
         assert lru[5] == 5
         assert 2 not in lru
 
+        assert lru.get_if_exists(5) == 5
+        assert lru.get_if_exists(10) is None
+
     def test_lru_getsizeof(self):
         lru = LRUCache(3, lambda x: x)
 

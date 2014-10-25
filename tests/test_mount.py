@@ -15,7 +15,8 @@
 import sys
 from mock import MagicMock, patch, call
 
-from gitfs.mounter import prepare_components, parse_args, start_fuse
+from gitfs.mounter import (prepare_components, parse_args, start_fuse,
+                           get_credentials)
 
 
 class EmptyObject(object):
@@ -154,3 +155,23 @@ class TestMount(object):
             mocked_fuse.assert_called_once_with(mocked_router,
                                                 mocked_args.mount_point,
                                                 **excepted_call)
+
+    def test_get_https_credentials(self):
+        mocked_args = MagicMock(password="password", username="username")
+
+        with patch('gitfs.mounter.UserPass') as mocked_credentials:
+            mocked_credentials.return_value = "credentials_obj"
+
+            assert get_credentials(mocked_args) == "credentials_obj"
+            mocked_credentials.assert_called_once_with("username", "password")
+
+    def test_get_ssh_credentials(self):
+        mocked_args = MagicMock(ssh_user="user", ssh_key="key", password=None)
+
+        with patch('gitfs.mounter.Keypair') as mocked_credentials:
+            mocked_credentials.return_value = "credentials_obj"
+
+            assert get_credentials(mocked_args) == "credentials_obj"
+
+            asserted_call = ("user", "key.pub", "key", "")
+            mocked_credentials.assert_called_once_with(*asserted_call)

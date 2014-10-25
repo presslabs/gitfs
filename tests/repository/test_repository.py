@@ -93,7 +93,7 @@ class TestRepository(RepositoryBaseTest):
 
     def test_commit_with_nothing_to_commit(self):
         mocked_repo = MagicMock()
-        mocked_repo.status.return_value = False
+        mocked_repo.status.return_value = {}
 
         author = ("author_1", "author_2")
         commiter = ("commiter_1", "commiter_2")
