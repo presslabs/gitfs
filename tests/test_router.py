@@ -12,8 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import pytest
 from mock import MagicMock, patch
 
+from fuse import FuseOSError
+
+from gitfs.views import CurrentView
 from gitfs.router import Router
 
 
@@ -130,3 +134,12 @@ class TestRouter(object):
         assert mocks['fetch'].set.call_count == 1
         assert mocks['shutting'].set.call_count == 1
         mocks['shutil'].rmtree.assert_called_once_with(mocks['repo_path'])
+
+    def test_call_with_invalid_operation(self):
+        router, mocks = self.get_new_router()
+
+        router.register([("/", CurrentView)])
+        with patch('gitfs.router.lru_cache') as mocked_cache:
+            mocked_cache.get_if_exists.return_value = None
+            with pytest.raises(FuseOSError):
+                router("random_operation", "/")
