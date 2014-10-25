@@ -143,3 +143,14 @@ class TestRouter(object):
             mocked_cache.get_if_exists.return_value = None
             with pytest.raises(FuseOSError):
                 router("random_operation", "/")
+
+    def test_call_with_valid_operation(self):
+        mocked_view = MagicMock()
+
+        router, mocks = self.get_new_router()
+
+        router.register([("/", MagicMock(return_value=mocked_view))])
+        with patch('gitfs.router.lru_cache') as mocked_cache:
+            mocked_cache.get_if_exists.return_value = None
+            result = router("random_operation", "/")
+            assert result == mocked_view.random_operation("/")

@@ -123,7 +123,7 @@ class Router(object):
 
         if not hasattr(view, operation):
             log.debug('No attribute %s on %s' % (operation,
-                      view.__name__, args))
+                      view.__class__.__name__))
             raise FuseOSError(ENOSYS)
 
         return getattr(view, operation)(*args)
