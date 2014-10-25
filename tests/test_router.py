@@ -218,3 +218,8 @@ class TestRouter(object):
             view, path = router.get_view("/")
             assert view == mocked_index
             assert path == "/"
+
+    def test_getattr_special_method(self):
+        router, mocks = self.get_new_router()
+        assert router.bmap is False
+        assert router.read is not False
