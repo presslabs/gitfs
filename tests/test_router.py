@@ -33,6 +33,7 @@ class TestRouter(object):
         mocked_queue = MagicMock()
         mocked_shutil = MagicMock()
         mocked_shutting = MagicMock()
+        mocked_fetch = MagicMock()
 
         mocked_time.time.return_value = 0
         mocked_repository.clone.return_value = mocked_repo
@@ -51,6 +52,9 @@ class TestRouter(object):
             'getgrnam': mocked_grnam,
             'time': mocked_time,
             'queue': mocked_queue,
+            'shutil': mocked_shutil,
+            'shutting': mocked_shutting,
+            'fetch': mocked_fetch,
         }
 
         init_kwargs = {
@@ -70,7 +74,7 @@ class TestRouter(object):
                             log=mocked_log, CachedIgnore=mocked_ignore,
                             lru_cache=mocked_lru, getpwnam=mocked_pwnam,
                             getgrnam=mocked_grnam, time=mocked_time,
-                            shutil=mocked_shutil,
+                            shutil=mocked_shutil, fetch=mocked_fetch,
                             shutting_down=mocked_shutting):
             router = Router(**init_kwargs)
 
@@ -108,3 +112,21 @@ class TestRouter(object):
 
         assert mocked_fetch.start.call_count == 1
         assert mocked_sync.start.call_count == 1
+
+    def test_destroy(self):
+        mocked_fetch = MagicMock()
+        mocked_sync = MagicMock()
+
+        router, mocks = self.get_new_router()
+        router.workers = [mocked_fetch, mocked_sync]
+
+        with patch.multiple('gitfs.router', shutil=mocks['shutil'],
+                            fetch=mocks['fetch'],
+                            shutting_down=mocks['shutting']):
+            router.destroy("path")
+
+        assert mocked_fetch.join.call_count == 1
+        assert mocked_sync.join.call_count == 1
+        assert mocks['fetch'].set.call_count == 1
+        assert mocks['shutting'].set.call_count == 1
+        mocks['shutil'].rmtree.assert_called_once_with(mocks['repo_path'])
