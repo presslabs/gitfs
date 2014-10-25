@@ -161,3 +161,9 @@ class TestRouter(object):
         router, mocks = self.get_new_router()
         router.init = mocked_init
         assert router('init', "/") == mocked_init("/")
+
+    def test_get_missing_view(self):
+        router, mocks = self.get_new_router()
+
+        with pytest.raises(ValueError):
+            router.get_view("/")
