@@ -44,7 +44,6 @@ class Router(object):
             clone. The default is to use the remote's default branch.
 
         """
-        # hp.setrelheap()
 
         self.remote_url = remote_url
         self.repo_path = repo_path
@@ -75,8 +74,6 @@ class Router(object):
         self.repo.commits.update()
 
         self.workers = []
-
-        log.debug('Done init')
 
     def init(self, path):
         for worker in self.workers:
