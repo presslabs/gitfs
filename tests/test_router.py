@@ -167,3 +167,39 @@ class TestRouter(object):
 
         with pytest.raises(ValueError):
             router.get_view("/")
+
+    def test_get_view(self):
+        mocked_index = MagicMock()
+        mocked_current = MagicMock()
+        mocked_view = MagicMock(return_value=mocked_current)
+
+        router, mocks = self.get_new_router()
+
+        router.register([
+            ("/history", mocked_view),
+            ("/current", mocked_view),
+            ("/", MagicMock(return_value=mocked_index)),
+        ])
+        with patch('gitfs.router.lru_cache') as mocked_cache:
+            mocked_cache.get_if_exists.return_value = None
+
+            view, path = router.get_view("/current")
+            assert view == mocked_current
+            assert path == "/"
+            asserted_call = {
+                'repo': mocks['repo'],
+                'ignore': mocks['repo'].ignore,
+                'repo_path': mocks['repo_path'],
+                'mount_path': mocks['mount_path'],
+                'regex': "/current",
+                'relative_path': "/",
+                'uid': 1,
+                'gid': 1,
+                'branch': mocks['branch'],
+                'mount_time': 0,
+                'queue': mocks['queue'],
+                'max_size': mocks['max_size'],
+                'max_offset': mocks['max_offset'],
+            }
+            mocked_view.assert_called_once_with(**asserted_call)
+            mocked_cache.get_if_exists.assert_called_once_with("/current")
