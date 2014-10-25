@@ -154,3 +154,10 @@ class TestRouter(object):
             mocked_cache.get_if_exists.return_value = None
             result = router("random_operation", "/")
             assert result == mocked_view.random_operation("/")
+
+    def test_call_with_init(self):
+        mocked_init = MagicMock()
+
+        router, mocks = self.get_new_router()
+        router.init = mocked_init
+        assert router('init', "/") == mocked_init("/")
