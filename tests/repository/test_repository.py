@@ -18,7 +18,8 @@ from collections import namedtuple
 
 import pytest
 from mock import MagicMock, patch, call
-from pygit2 import GIT_BRANCH_REMOTE, GIT_SORT_TIME, GIT_FILEMODE_TREE
+from pygit2 import (GIT_BRANCH_REMOTE, GIT_SORT_TIME, GIT_FILEMODE_TREE,
+                    GIT_STATUS_CURRENT)
 
 from gitfs.utils import Repository
 from .base import RepositoryBaseTest
@@ -377,3 +378,88 @@ class TestRepository(RepositoryBaseTest):
 
         result = repo.find_diverge_commits("first_branch", "second_branch")
         assert result.common_parent == Commit(2)
+
+    def test_proxy_methods(self):
+        mocked_repo = MagicMock()
+
+        repo = Repository(mocked_repo)
+
+        assert repo.one_attr == mocked_repo.one_attr
+        assert repo['one_attr'] == mocked_repo['one_attr']
+        assert repo.behind is False
+
+    def test_ahead(self):
+        mocked_repo = MagicMock()
+        mocked_diverge = MagicMock(return_value=(False, False))
+
+        repo = Repository(mocked_repo)
+        repo.diverge = mocked_diverge
+
+        assert repo.ahead("origin", "master") is False
+        mocked_diverge.assert_called_once_with("origin", "master")
+
+    def test_diverge(self):
+        mocked_repo = MagicMock()
+        mocked_lookup = MagicMock()
+        mocked_find = MagicMock()
+        mocked_commits = MagicMock()
+        mocked_branch_remote = MagicMock(target=1)
+        mocked_branch_local = MagicMock(target=2)
+
+        def lookup(reference, opt):
+            if "origin/master" == reference:
+                return mocked_branch_remote
+            return mocked_branch_local
+
+        mocked_commits.second_commits = []
+        mocked_commits.first_commits = []
+        mocked_find.return_value = mocked_commits
+        mocked_lookup = lookup
+
+        repo = Repository(mocked_repo)
+        repo.lookup_branch = mocked_lookup
+        repo.find_diverge_commits = mocked_find
+
+        assert repo.diverge("origin", "master") == (False, False)
+        mocked_find.assert_called_once_with(mocked_branch_local,
+                                            mocked_branch_remote)
+
+    def test_checkout(self):
+        mocked_checkout = MagicMock(return_value="done")
+        mocked_repo = MagicMock()
+        mocked_full_path = MagicMock()
+        mocked_index = MagicMock()
+        mocked_stats = MagicMock()
+        mocked_status = {
+            '/': GIT_STATUS_CURRENT,
+            '/current/some_path': "another_git_status",
+            '/current/another_path': "another_git_status",
+        }
+
+        mocked_full_path.return_value = "full_path"
+        mocked_repo.checkout = mocked_checkout
+        mocked_repo.status.return_value = mocked_status
+        mocked_stats.st_mode = "another_mode"
+
+        def contains(self, path):
+            if path == '/current/another_path':
+                return True
+            return False
+        mocked_index.__contains__ = contains
+        mocked_repo.index = mocked_index
+
+        with patch('gitfs.utils.repository.os') as mocked_os:
+            mocked_os.lstat.return_value = mocked_stats
+
+            repo = Repository(mocked_repo)
+            repo._full_path = mocked_full_path
+            repo.get_git_object_stat = lambda x: {'st_mode': 'a_stat'}
+
+            assert repo.checkout("ref", "args") == "done"
+            assert mocked_repo.status.call_count == 1
+            mocked_checkout.assert_called_once_with("ref", "args")
+            mocked_os.unlink.assert_called_once_with("full_path")
+            mocked_os.lstat.assert_called_once_with("full_path")
+            mocked_os.chmod.assert_called_once_with("full_path",
+                                                    "another_mode")
+            mocked_index.add.assert_called_once_with("current/another_path")

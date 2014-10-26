@@ -79,7 +79,7 @@ class Repository(object):
 
         status = self._repo.status()
         for path, status in status.iteritems():
-            # path is current status, move on
+            # path is in current status, move on
             if status == GIT_STATUS_CURRENT:
                 continue
 
