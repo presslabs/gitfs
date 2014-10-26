@@ -15,11 +15,12 @@
 
 import time
 from collections import namedtuple
+from stat import S_IFDIR, S_IFREG
 
 import pytest
 from mock import MagicMock, patch, call
 from pygit2 import (GIT_BRANCH_REMOTE, GIT_SORT_TIME, GIT_FILEMODE_TREE,
-                    GIT_STATUS_CURRENT)
+                    GIT_FILEMODE_BLOB, GIT_STATUS_CURRENT)
 
 from gitfs.utils import Repository
 from .base import RepositoryBaseTest
@@ -463,3 +464,36 @@ class TestRepository(RepositoryBaseTest):
             mocked_os.chmod.assert_called_once_with("full_path",
                                                     "another_mode")
             mocked_index.add.assert_called_once_with("current/another_path")
+
+    def test_git_obj_default_stats_with_invalid_obj(self):
+        mocked_repo = MagicMock()
+        mocked_git_obj = MagicMock()
+        mocked_git_obj.return_value = None
+
+        repo = Repository(mocked_repo)
+        repo.get_git_object_type = mocked_git_obj
+
+        assert repo.get_git_object_default_stats("ref", "/") == {
+            'st_mode': S_IFDIR | 0555,
+            'st_nlink': 2
+        }
+        assert repo.get_git_object_default_stats("ref", "/ups") is None
+
+    def test_git_obj_default_stats_with_valid_obj(self):
+        mocked_repo = MagicMock()
+        mocked_git_obj = MagicMock()
+        mocked_size = MagicMock()
+
+        mocked_git_obj.return_value = GIT_FILEMODE_BLOB
+        mocked_size.return_value = 10
+
+        repo = Repository(mocked_repo)
+        repo.get_git_object_type = mocked_git_obj
+        repo.get_blob_size = mocked_size
+
+        assert repo.get_git_object_default_stats("ref", "/ups") == {
+            'st_mode': S_IFREG | 0444,
+            'st_size': 10
+        }
+        mocked_size.assert_called_once_with("ref", "/ups")
+        mocked_git_obj.assert_called_once_with("ref", "/ups")
