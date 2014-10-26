@@ -497,3 +497,10 @@ class TestRepository(RepositoryBaseTest):
         }
         mocked_size.assert_called_once_with("ref", "/ups")
         mocked_git_obj.assert_called_once_with("ref", "/ups")
+
+    def test_full_path(self):
+        mocked_repo = MagicMock()
+        mocked_repo.workdir = "workdir"
+
+        repo = Repository(mocked_repo)
+        assert repo._full_path("/partial") == "workdir/partial"
