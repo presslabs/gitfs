@@ -37,26 +37,29 @@ class TestSyncWorker(object):
             worker.run()
 
         mocked_queue.get.assert_called_once_with(timeout=1, block=True)
-        mocked_idle.assert_called_once_with([])
+        assert mocked_idle.call_count == 1
 
     def test_on_idle_with_commits_and_merges(self):
         mocked_sync = MagicMock()
         mocked_syncing = MagicMock()
         mocked_commit = MagicMock()
 
+        mocked_syncing.is_set.return_value = False
+
         with patch.multiple("gitfs.worker.sync", syncing=mocked_syncing,
                             writers=0):
             worker = SyncWorker("name", "email", "name", "email",
                                 strategy="strategy")
+            worker.commits = "commits"
             worker.commit = mocked_commit
             worker.sync = mocked_sync
 
-            commits = worker.on_idle("commits")
+            commits = worker.on_idle()
 
             mocked_commit.assert_called_once_with("commits")
             assert mocked_syncing.set.call_count == 1
             assert mocked_sync.call_count == 1
-            assert commits == []
+            assert commits == None
 
     def test_merge(self):
         mocked_strategy = MagicMock()

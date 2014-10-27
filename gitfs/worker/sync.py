@@ -38,10 +38,9 @@ class SyncWorker(Peasant):
                                           commiter=self.commiter,
                                           repo_path=self.repo_path)
         self.strategy = strategy
+        self.commits = []
 
     def run(self):
-        commits = []
-
         while True:
             if shutting_down.is_set():
                 log.info("Stop sync worker")
@@ -50,13 +49,13 @@ class SyncWorker(Peasant):
             try:
                 job = self.commit_queue.get(timeout=self.timeout, block=True)
                 if job['type'] == 'commit':
-                    commits.append(job)
+                    self.commits.append(job)
                 log.debug("Got a commit job")
             except Empty:
                 log.debug("Nothing to do right now, going idle")
-                commits = self.on_idle(commits)
+                self.on_idle()
 
-    def on_idle(self, commits):
+    def on_idle(self):
         """
         On idle, we have 4 cases:
         1. We have to commit and also need to merge some commits from remote.
@@ -67,18 +66,20 @@ class SyncWorker(Peasant):
         In this case we are safe to merge and push.
         """
 
-        if commits:
-            log.info("Get some commits")
-            self.commit(commits)
-            commits = []
-            log.debug("Set syncing event")
+        if not syncing.is_set():
+            log.debug("Set syncing event (%d pending writes)", writers)
             syncing.set()
+        else:
+            log.debug("Idling (%d pending writes)", writers)
 
         if writers == 0:
+            if self.commits:
+                log.info("Get some commits")
+                self.commit(self.commits)
+                self.commits = []
             log.debug("Start syncing")
+            print self.sync
             self.sync()
-
-        return commits
 
     def merge(self):
         log.debug("Start merging")
