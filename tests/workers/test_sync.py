@@ -59,7 +59,7 @@ class TestSyncWorker(object):
             mocked_commit.assert_called_once_with("commits")
             assert mocked_syncing.set.call_count == 1
             assert mocked_sync.call_count == 1
-            assert commits == None
+            assert commits is None
 
     def test_merge(self):
         mocked_strategy = MagicMock()

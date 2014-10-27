@@ -78,7 +78,6 @@ class SyncWorker(Peasant):
                 self.commit(self.commits)
                 self.commits = []
             log.debug("Start syncing")
-            print self.sync
             self.sync()
 
     def merge(self):
