@@ -19,10 +19,10 @@ from stat import S_IFDIR, S_IFREG
 
 import pytest
 from mock import MagicMock, patch, call
-from pygit2 import (GIT_BRANCH_REMOTE, GIT_SORT_TIME, GIT_FILEMODE_TREE,
+from pygit2 import (GIT_BRANCH_REMOTE, GIT_SORT_TIME,
                     GIT_FILEMODE_BLOB, GIT_STATUS_CURRENT)
 
-from gitfs.utils import Repository
+from gitfs.repository import Repository
 from .base import RepositoryBaseTest
 
 Commit = namedtuple("Commit", "hex")
@@ -74,7 +74,7 @@ class TestRepository(RepositoryBaseTest):
         author = ("author_1", "author_2")
         commiter = ("commiter_1", "commiter_2")
 
-        with patch('gitfs.utils.repository.Signature') as mocked_signature:
+        with patch('gitfs.repository.Signature') as mocked_signature:
             mocked_signature.return_value = "signature"
 
             repo = Repository(mocked_repo)
@@ -111,7 +111,7 @@ class TestRepository(RepositoryBaseTest):
         remote_url = "git@github.com:test/test.git"
         path = "/path/to/repo"
 
-        with patch('gitfs.utils.repository.clone_repository') as mocked_clone:
+        with patch('gitfs.repository.clone_repository') as mocked_clone:
             mocked_clone.return_value = mocked_repo
 
             Repository.clone(remote_url, path)
@@ -247,7 +247,7 @@ class TestRepository(RepositoryBaseTest):
         mocked_repo = MagicMock()
         repo = Repository(mocked_repo)
 
-        mock_path = 'gitfs.utils.repository.split_path_into_components'
+        mock_path = 'gitfs.repository.split_path_into_components'
         with patch(mock_path) as mocked_split_path:
             mocked_split_path.return_value = ['entry']
 
@@ -265,7 +265,7 @@ class TestRepository(RepositoryBaseTest):
         mocked_repo.__getitem__.return_value = "succed"
         repo = Repository(mocked_repo)
 
-        mock_path = 'gitfs.utils.repository.split_path_into_components'
+        mock_path = 'gitfs.repository.split_path_into_components'
         with patch(mock_path) as mocked_split_path:
             mocked_split_path.return_value = ['entry']
 
@@ -413,7 +413,7 @@ class TestRepository(RepositoryBaseTest):
         mocked_index.__contains__ = contains
         mocked_repo.index = mocked_index
 
-        with patch('gitfs.utils.repository.os') as mocked_os:
+        with patch('gitfs.repository.os') as mocked_os:
             mocked_os.lstat.return_value = mocked_stats
 
             repo = Repository(mocked_repo)

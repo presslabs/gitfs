@@ -25,10 +25,10 @@ from errno import ENOSYS
 
 from fuse import FUSE, FuseOSError
 
-from gitfs.utils import Repository
+from gitfs.repository import Repository
 from gitfs.cache import CachedIgnore, lru_cache
-from gitfs.log import log
 from gitfs.events import shutting_down, fetch
+from gitfs.log import log
 
 
 class Router(object):
