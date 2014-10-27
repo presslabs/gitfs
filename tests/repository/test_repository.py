@@ -244,24 +244,6 @@ class TestRepository(RepositoryBaseTest):
         mocked_entry.name = 'entry'
         mocked_entry.filemode = 'git_file'
 
-        mocked_tree = MagicMock()
-        mocked_tree.name = 'tree'
-        mocked_tree.filemode = GIT_FILEMODE_TREE
-        mocked_tree.id = 1
-
-        mocked_repo = MagicMock()
-        mocked_repo.__getitem__.return_value = [mocked_entry]
-        repo = Repository(mocked_repo)
-
-        result = repo._get_git_object_type([mocked_tree], "entry",
-                                           ['tree', 'entry'])
-        assert result == "git_file"
-
-    def test_get_git_object_type_proxy(self):
-        mocked_entry = MagicMock()
-        mocked_entry.name = 'entry'
-        mocked_entry.filemode = 'git_file'
-
         mocked_repo = MagicMock()
         repo = Repository(mocked_repo)
 
@@ -275,24 +257,6 @@ class TestRepository(RepositoryBaseTest):
             mocked_split_path.assert_called_once_with("path")
 
     def test_get_git_object(self):
-        mocked_entry = MagicMock()
-        mocked_entry.name = 'entry'
-        mocked_entry.filemode = 'git_file'
-
-        mocked_tree = MagicMock()
-        mocked_tree.name = 'tree'
-        mocked_tree.filemode = GIT_FILEMODE_TREE
-        mocked_tree.id = 1
-
-        mocked_repo = MagicMock()
-        mocked_repo.__getitem__.return_value = [mocked_entry]
-        repo = Repository(mocked_repo)
-
-        result = repo._get_git_object([mocked_tree], "entry",
-                                      ['tree', 'entry'])
-        assert result == [mocked_entry]
-
-    def test_get_git_object_proxy(self):
         mocked_entry = MagicMock()
         mocked_entry.name = 'entry'
         mocked_entry.filemode = 'git_file'
