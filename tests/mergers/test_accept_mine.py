@@ -94,15 +94,12 @@ class TestAcceptMine(object):
         mocked_repo.index.add.assert_called_once_with("simple_path")
 
     def test_solve_conflicts_both_update_a_file(self):
-        mocked_repo = MagicMock()
         mocked_theirs = MagicMock()
-        mocked_ours = MagicMock()
-        mocked_full = MagicMock()
+        mocked_ours = MagicMock(id="id", path="path")
+        mocked_full = MagicMock(return_value="full_path")
+        mocked_repo = MagicMock(_full_path=mocked_full)
 
-        mocked_ours.id = "id"
-        mocked_ours.path = "path"
         mocked_repo.get().data = "data"
-        mocked_full.return_value = "full_path"
 
         def conflicts():
             yield None, mocked_theirs, mocked_ours
@@ -113,7 +110,6 @@ class TestAcceptMine(object):
             mocked_open.return_value = mocked_file
 
             mine = AcceptMine(mocked_repo)
-            mine._full_path = mocked_full
 
             mine.solve_conflicts(conflicts())
 
@@ -122,18 +118,6 @@ class TestAcceptMine(object):
             mocked_repo.get.has_calls([call("id")])
             mocked_open().__enter__().write.assert_called_once_with("data")
             mocked_repo.index.add.assert_called_once_with("path")
-
-    def test_full_path(self):
-        mocked_repo = MagicMock()
-
-        with patch('gitfs.merges.accept_mine.os') as mocked_os:
-            mocked_os.path.join.return_value = "full_path"
-
-            mine = AcceptMine(mocked_repo)
-            mine.repo_path = "repo_path"
-
-            assert mine._full_path("/partial") == "full_path"
-            mocked_os.path.join.assert_called_once_with("repo_path", "partial")
 
     def test_merging_strategy(self):
         mocked_repo = MagicMock()

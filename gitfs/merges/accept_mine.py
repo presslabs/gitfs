@@ -13,8 +13,6 @@
 # limitations under the License.
 
 
-import os
-
 import pygit2
 
 from gitfs.log import log
@@ -112,13 +110,8 @@ class AcceptMine(Merger):
                 else:
                     log.debug("AcceptMine: overwrite all file with our "
                               "content")
-                    with open(self._full_path(ours.path), "w") as f:
+                    with open(self.repository._full_path(ours.path), "w") as f:
                         f.write(self.repository.get(ours.id).data)
                     self.repository.index.add(ours.path)
         else:
             log.info("AcceptMine: No conflicts to solve")
-
-    def _full_path(self, partial):
-        if partial.startswith("/"):
-            partial = partial[1:]
-        return os.path.join(self.repo_path, partial)
