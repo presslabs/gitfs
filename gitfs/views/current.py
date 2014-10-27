@@ -53,7 +53,7 @@ class CurrentView(PassthroughView):
     @write_operation
     @not_in("ignore", check=["target"])
     def symlink(self, name, target):
-        result = os.symlink(target, self._full_path(name))
+        result = os.symlink(target, self.repo._full_path(name))
 
         message = "Create symlink to %s for %s" % (target, name)
         self._stage(add=name, message=message)
@@ -63,10 +63,10 @@ class CurrentView(PassthroughView):
 
     def readlink(self, path):
         log.debug("CurrentView: Read link %s", path)
-        return os.readlink(self._full_path(path))
+        return os.readlink(self.repo._full_path(path))
 
     def getattr(self, path, fh=None):
-        full_path = self._full_path(path)
+        full_path = self.repo._full_path(path)
         status = os.lstat(full_path)
 
         attrs = dict((key, getattr(status, key)) for key in STATS)
@@ -104,7 +104,7 @@ class CurrentView(PassthroughView):
         result = super(CurrentView, self).mkdir(path, mode)
 
         keep_path = "%s/.keep" % path
-        full_path = self._full_path(keep_path)
+        full_path = self.repo._full_path(keep_path)
         if not os.path.exists(keep_path):
             global writers
             fh = os.open(full_path, os.O_WRONLY | os.O_CREAT)
@@ -146,7 +146,7 @@ class CurrentView(PassthroughView):
 
         result = super(CurrentView, self).chmod(path, mode)
 
-        if os.path.isdir(self._full_path(path)):
+        if os.path.isdir(self.repo._full_path(path)):
             return result
 
         message = 'Chmod to %s on %s' % (str_mode, path)
@@ -182,7 +182,7 @@ class CurrentView(PassthroughView):
         return fh
 
     def open_for_read(self, path, flags):
-        full_path = self._full_path(path)
+        full_path = self.repo._full_path(path)
         log.info("CurrentView: Open %s for read", path)
         return os.open(full_path, flags)
 

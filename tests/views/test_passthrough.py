@@ -34,7 +34,16 @@ class TestPassthrough(object):
         __builtin__.original_super = super
         __builtin__.super = mock_super
 
-        self.repo_path = '/the/root/path'
+        root = '/the/root/path'
+
+        def _full_path(partial):
+            if partial.startswith("/"):
+                partial = partial[1:]
+            return os.path.join(root, partial)
+
+        mocked_repo = MagicMock(_full_path=_full_path)
+        self.repo = mocked_repo
+        self.repo_path = root
 
     def teardown(self):
         __builtin__.super = __builtin__.original_super
@@ -45,7 +54,7 @@ class TestPassthrough(object):
         mocked_access.side_effect = [True, True, False]
 
         with patch('gitfs.views.passthrough.os.access', mocked_access):
-            view = PassthroughView(repo_path=self.repo_path)
+            view = PassthroughView(repo=self.repo, repo_path=self.repo_path)
 
             # normal, easy test
             view.access('good/relative/path', 777)
@@ -65,7 +74,7 @@ class TestPassthrough(object):
         mocked_chmod = MagicMock()
 
         with patch('gitfs.views.passthrough.os.chmod', mocked_chmod):
-            view = PassthroughView(repo_path=self.repo_path)
+            view = PassthroughView(repo=self.repo, repo_path=self.repo_path)
 
             view.chmod('/magic/path', 0777)
 
@@ -76,7 +85,7 @@ class TestPassthrough(object):
         mocked_chown = MagicMock()
 
         with patch('gitfs.views.passthrough.os.chown', mocked_chown):
-            view = PassthroughView(repo_path=self.repo_path)
+            view = PassthroughView(repo=self.repo, repo_path=self.repo_path)
 
             view.chown('/magic/path', 1000, 1000)
 
@@ -95,7 +104,7 @@ class TestPassthrough(object):
         mocked_lstat.return_value = mock_result
 
         with patch('gitfs.views.passthrough.os.lstat', mocked_lstat):
-            view = PassthroughView(repo_path=self.repo_path)
+            view = PassthroughView(repo=self.repo, repo_path=self.repo_path)
             result = view.getattr('/magic/path', 0)
 
             mocked_lstat.assert_called_once_with("/the/root/path/magic/path")
@@ -115,7 +124,7 @@ class TestPassthrough(object):
         mocked_statvfs.return_value = mock_result
 
         with patch('gitfs.views.passthrough.os.statvfs', mocked_statvfs):
-            view = PassthroughView(repo_path=self.repo_path)
+            view = PassthroughView(repo=self.repo, repo_path=self.repo_path)
             result = view.statfs('/magic/path')
 
             mocked_statvfs.assert_called_once_with("/the/root/path/magic/path")
@@ -130,7 +139,7 @@ class TestPassthrough(object):
         mocked_os.listdir.return_value = ['one_dir', 'one_file', '.git']
 
         with patch.multiple('gitfs.views.passthrough', os=mocked_os):
-            view = PassthroughView(repo_path=self.repo_path)
+            view = PassthroughView(repo=self.repo, repo_path=self.repo_path)
             result = view.readdir("/magic/path", 0)
             dirents = [directory for directory in result]
 
@@ -147,7 +156,7 @@ class TestPassthrough(object):
         mocked_os.path.relpath.return_value = "with_slash"
 
         with patch('gitfs.views.passthrough.os', mocked_os):
-            view = PassthroughView(repo_path=self.repo_path)
+            view = PassthroughView(repo=self.repo, repo_path=self.repo_path)
             result = view.readlink("/magic/path")
 
             assert result == "with_slash"
@@ -163,7 +172,7 @@ class TestPassthrough(object):
         mocked_os.readlink.return_value = "my_link"
 
         with patch('gitfs.views.passthrough.os', mocked_os):
-            view = PassthroughView(repo_path=self.repo_path)
+            view = PassthroughView(repo=self.repo, repo_path=self.repo_path)
             result = view.readlink("/magic/path")
 
             assert result == "my_link"
@@ -175,7 +184,7 @@ class TestPassthrough(object):
         mocked_mknod.return_value = "new_node"
 
         with patch('gitfs.views.passthrough.os.mknod', mocked_mknod):
-            view = PassthroughView(repo_path=self.repo_path)
+            view = PassthroughView(repo=self.repo, repo_path=self.repo_path)
             result = view.mknod("/magic/path", "mode", "dev")
 
             assert result == "new_node"
@@ -187,7 +196,7 @@ class TestPassthrough(object):
         mocked_rmdir.return_value = "rm_dir"
 
         with patch('gitfs.views.passthrough.os.rmdir', mocked_rmdir):
-            view = PassthroughView(repo_path=self.repo_path)
+            view = PassthroughView(repo=self.repo, repo_path=self.repo_path)
             result = view.rmdir("/magic/path")
 
             assert result == "rm_dir"
@@ -199,7 +208,7 @@ class TestPassthrough(object):
         mocked_mkdir.return_value = "mk_dir"
 
         with patch('gitfs.views.passthrough.os.mkdir', mocked_mkdir):
-            view = PassthroughView(repo_path=self.repo_path)
+            view = PassthroughView(repo=self.repo, repo_path=self.repo_path)
             result = view.mkdir("/magic/path", "mode")
 
             assert result == "mk_dir"
@@ -211,7 +220,7 @@ class TestPassthrough(object):
         mocked_unlink.return_value = "magic"
 
         with patch('gitfs.views.passthrough.os.unlink', mocked_unlink):
-            view = PassthroughView(repo_path=self.repo_path)
+            view = PassthroughView(repo=self.repo, repo_path=self.repo_path)
             result = view.unlink("/magic/path")
 
             assert result == "magic"
@@ -223,7 +232,7 @@ class TestPassthrough(object):
         mocked_symlink.return_value = "magic"
 
         with patch('gitfs.views.passthrough.os.symlink', mocked_symlink):
-            view = PassthroughView(repo_path=self.repo_path)
+            view = PassthroughView(repo=self.repo, repo_path=self.repo_path)
             result = view.symlink("/magic/path", "/magic/link")
 
             assert result == "magic"
@@ -236,7 +245,7 @@ class TestPassthrough(object):
         mocked_rename.return_value = "magic"
 
         with patch('gitfs.views.passthrough.os.rename', mocked_rename):
-            view = PassthroughView(repo_path=self.repo_path)
+            view = PassthroughView(repo=self.repo, repo_path=self.repo_path)
             result = view.rename("/magic/path", "/magic/new")
 
             assert result == "magic"
@@ -249,7 +258,7 @@ class TestPassthrough(object):
         mocked_link.return_value = "magic"
 
         with patch('gitfs.views.passthrough.os.link', mocked_link):
-            view = PassthroughView(repo_path=self.repo_path)
+            view = PassthroughView(repo=self.repo, repo_path=self.repo_path)
             result = view.link("/magic/path", "/magic/link")
 
             assert result == "magic"
@@ -262,7 +271,7 @@ class TestPassthrough(object):
         mocked_utimes.return_value = "magic"
 
         with patch('gitfs.views.passthrough.os.utime', mocked_utimes):
-            view = PassthroughView(repo_path=self.repo_path)
+            view = PassthroughView(repo=self.repo, repo_path=self.repo_path)
             result = view.utimens("/magic/path", "times")
 
             assert result == "magic"
@@ -274,7 +283,7 @@ class TestPassthrough(object):
         mocked_open.return_value = "magic"
 
         with patch('gitfs.views.passthrough.os.open', mocked_open):
-            view = PassthroughView(repo_path=self.repo_path)
+            view = PassthroughView(repo=self.repo, repo_path=self.repo_path)
             result = view.open("/magic/path", "flags")
 
             assert result == "magic"
@@ -286,7 +295,7 @@ class TestPassthrough(object):
         mocked_create.return_value = "magic"
 
         with patch('gitfs.views.passthrough.os.open', mocked_create):
-            view = PassthroughView(repo_path=self.repo_path)
+            view = PassthroughView(repo=self.repo, repo_path=self.repo_path)
             result = view.create("/magic/path", "flags")
 
             assert result == "magic"
@@ -302,7 +311,7 @@ class TestPassthrough(object):
 
         with patch('gitfs.views.passthrough.os.read', mocked_read):
             with patch('gitfs.views.passthrough.os.lseek', mocked_lseek):
-                view = PassthroughView(repo_path=self.repo_path)
+                view = PassthroughView(repo=self.repo, repo_path=self.repo_path)
                 result = view.read("/magic/path", 10, 10, 0)
 
                 assert result == "magic"
@@ -316,7 +325,7 @@ class TestPassthrough(object):
 
         with patch('gitfs.views.passthrough.os.write', mocked_write):
             with patch('gitfs.views.passthrough.os.lseek', mocked_lseek):
-                view = PassthroughView(repo_path=self.repo_path)
+                view = PassthroughView(repo=self.repo, repo_path=self.repo_path)
                 result = view.write("/magic/path", 10, 10, 0)
 
                 assert result == "magic"
@@ -328,7 +337,7 @@ class TestPassthrough(object):
         mocked_fsync.return_value = "magic"
 
         with patch('gitfs.views.passthrough.os.fsync', mocked_fsync):
-            view = PassthroughView(repo_path=self.repo_path)
+            view = PassthroughView(repo=self.repo, repo_path=self.repo_path)
             result = view.flush("/magic/path", 0)
 
             assert result == "magic"
@@ -339,7 +348,7 @@ class TestPassthrough(object):
         mocked_close.return_value = "magic"
 
         with patch('gitfs.views.passthrough.os.close', mocked_close):
-            view = PassthroughView(repo_path=self.repo_path)
+            view = PassthroughView(repo=self.repo, repo_path=self.repo_path)
             result = view.release("/magic/path", 0)
 
             assert result == "magic"
@@ -350,7 +359,7 @@ class TestPassthrough(object):
         mocked_fsync.return_value = "magic"
 
         with patch('gitfs.views.passthrough.os.fsync', mocked_fsync):
-            view = PassthroughView(repo_path=self.repo_path)
+            view = PassthroughView(repo=self.repo, repo_path=self.repo_path)
             result = view.fsync("/magic/path", "data", 0)
 
             assert result == "magic"
@@ -362,7 +371,7 @@ class TestPassthrough(object):
 
         with patch('gitfs.views.passthrough.open', create=True) as mocked_open:
             mocked_open().__enter__.return_value = mocked_file
-            view = PassthroughView(repo_path=self.repo_path)
+            view = PassthroughView(repo=self.repo, repo_path=self.repo_path)
             view.truncate("/magic/path", 0, 0)
 
             mocked_open.has_calls([call("/the/root/path/magic/path", "r+")])

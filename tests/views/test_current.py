@@ -41,7 +41,8 @@ class TestCurrentView(object):
             old_rename = current_view.PassthroughView.rename
             current_view.PassthroughView.rename = lambda self, old, new: True
 
-            current = CurrentView(regex="regex", repo_path="repo_path",
+            current = CurrentView(regex="regex", repo="repo",
+                                  repo_path="repo_path",
                                   ignore=CachedIgnore("f"))
             current._stage = mocked_index
 
@@ -56,24 +57,25 @@ class TestCurrentView(object):
             current_view.PassthroughView.rename = old_rename
 
     def test_rename_in_git_dir(self):
-        current = CurrentView(repo_path="repo",
+        current = CurrentView(repo="repo", repo_path="repo_path",
                               ignore=CachedIgnore("f"))
         with pytest.raises(FuseOSError):
             current.rename(".git/", ".git/")
 
     def test_symlink(self):
         mocked_index = MagicMock()
+        mocked_repo = MagicMock()
         mocked_full_path = MagicMock()
 
         mocked_full_path.return_value = "full_path"
+        mocked_repo._full_path = mocked_full_path
 
         with patch('gitfs.views.current.os') as mocked_os:
             mocked_os.symlink.return_value = "done"
 
-            current = CurrentView(repo_path="repo",
+            current = CurrentView(repo=mocked_repo, repo_path="repo_path",
                                   ignore=CachedIgnore("f"))
             current._stage = mocked_index
-            current._full_path = mocked_full_path
 
             assert current.symlink("name", "target") == "done"
             mocked_os.symlink.assert_called_once_with("target", "full_path")
@@ -82,13 +84,16 @@ class TestCurrentView(object):
             mocked_index.assert_called_once_with(add="name", message=message)
 
     def test_readlink(self):
+        mocked_repo = MagicMock()
         mocked_full_path = MagicMock()
+
         mocked_full_path.return_value = "full path"
+        mocked_repo._full_path = mocked_full_path
 
         with patch('gitfs.views.current.os') as mocked_os:
             mocked_os.readlink.return_value = "done"
 
-            current = CurrentView(repo_path="repo",
+            current = CurrentView(repo=mocked_repo, repo_path="repo_path",
                                   ignore=CachedIgnore("f"))
             current._full_path = mocked_full_path
 
@@ -98,14 +103,17 @@ class TestCurrentView(object):
         mocked_full = MagicMock()
         mocked_os = MagicMock()
         mocked_stat = MagicMock()
+        mocked_repo = MagicMock()
 
         mocked_stat.simple = "stat"
         mocked_os.lstat.return_value = mocked_stat
         mocked_full.return_value = "full_path"
+        mocked_repo._full_path = mocked_full
 
         with patch.multiple('gitfs.views.current', os=mocked_os,
                             STATS=['simple']):
-            current = CurrentView(repo_path="repo", uid=1, gid=1,
+            current = CurrentView(repo=mocked_repo, uid=1, gid=1,
+                                  repo_path="repo_path",
                                   ignore=CachedIgnore("f"))
             current._full_path = mocked_full
 
@@ -122,13 +130,15 @@ class TestCurrentView(object):
 
     def test_write_in_git_dir(self):
         with pytest.raises(FuseOSError):
-            current = CurrentView(repo_path="repo", uid=1, gid=1,
+            current = CurrentView(repo="repo", uid=1, gid=1,
+                                  repo_path="repo_path",
                                   read_only=Event(),
                                   ignore=CachedIgnore("f"))
             current.write(".git/index", "buf", "offset", 1)
 
     def test_write_to_large_file(self):
-        current = CurrentView(repo_path="repo", uid=1, gid=1,
+        current = CurrentView(repo="repo", uid=1, gid=1,
+                              repo_path="repo_path",
                               read_only=Event(), ignore=CachedIgnore("f"))
         current.max_size = 10
         current.dirty = {
@@ -146,7 +156,8 @@ class TestCurrentView(object):
         old_write = current_view.PassthroughView.write
         current_view.PassthroughView.write = mocked_write
 
-        current = CurrentView(repo_path="repo", uid=1, gid=1,
+        current = CurrentView(repo="repo", uid=1, gid=1,
+                              repo_path="repo_path",
                               read_only=Event(), ignore=CachedIgnore("f"))
         current.max_offset = 20
         current.max_size = 20
@@ -167,14 +178,19 @@ class TestCurrentView(object):
         old_mkdir = current_view.PassthroughView.mkdir
         old_chmod = current_view.PassthroughView.chmod
         mocked_mkdir = lambda self, path, mode: "done"
+
         mocked_chmod = MagicMock()
         mocked_chmod.return_value = None
+
         current_view.PassthroughView.mkdir = mocked_mkdir
         current_view.PassthroughView.chmod = mocked_chmod
 
         mocked_release = MagicMock()
         mocked_full_path = MagicMock()
+        mocked_repo = MagicMock()
+
         mocked_full_path.return_value = "full_path"
+        mocked_repo._full_path = mocked_full_path
 
         keep_path = '/path/.keep'
         mode = (os.O_WRONLY | os.O_CREAT)
@@ -185,10 +201,10 @@ class TestCurrentView(object):
             mocked_os.O_WRONLY = os.O_WRONLY
             mocked_os.O_CREAT = os.O_CREAT
 
-            current = CurrentView(repo_path="repo", uid=1, gid=1,
+            current = CurrentView(repo=mocked_repo, uid=1, gid=1,
+                                  repo_path="repo_path",
                                   ignore=CachedIgnore("f"))
             current.release = mocked_release
-            current._full_path = mocked_full_path
 
             assert current.mkdir("/path", "mode") == "done"
             mocked_full_path.assert_called_once_with(keep_path)
@@ -206,13 +222,15 @@ class TestCurrentView(object):
         current_view.PassthroughView.chmod = old_chmod
 
     def test_mkdir_in_git_dir(self):
-        current = CurrentView(repo_path="repo", uid=1, gid=1,
+        current = CurrentView(repo="repo", uid=1, gid=1,
+                              repo_path="repo_path",
                               ignore=CachedIgnore("f"))
         with pytest.raises(FuseOSError):
             current.mkdir(".git/", "mode")
 
     def test_create_in_git_dir(self):
-        current = CurrentView(repo_path="repo", uid=1, gid=1,
+        current = CurrentView(repo="repo", uid=1, gid=1,
+                              repo_path="repo_path",
                               ignore=CachedIgnore("f"))
 
         with pytest.raises(FuseOSError):
@@ -226,7 +244,8 @@ class TestCurrentView(object):
 
         mocked_open = MagicMock()
         mocked_open.return_value = "done"
-        current = CurrentView(repo_path="repo", uid=1, gid=1,
+        current = CurrentView(repo="repo", uid=1, gid=1,
+                              repo_path="repo_path",
                               ignore=CachedIgnore("f"))
         current.dirty = {
             '/path': {
@@ -239,7 +258,8 @@ class TestCurrentView(object):
         current_view.PassthroughView.chmod = old_chmod
 
     def test_chmod_in_git_dir(self):
-        current = CurrentView(repo_path="repo", uid=1, gid=1,
+        current = CurrentView(repo="repo", uid=1, gid=1,
+                              repo_path="repo_path",
                               ignore=CachedIgnore("f"))
         with pytest.raises(FuseOSError):
             current.chmod(".git/", "mode")
@@ -250,8 +270,11 @@ class TestCurrentView(object):
         current_view.PassthroughView.chmod = lambda self, path, mode: "done"
 
         mocked_index = MagicMock()
+        mocked_full = MagicMock(return_value="/path")
+        mocked_repo = MagicMock(_full_path=mocked_full)
 
-        current = CurrentView(repo_path="repo", uid=1, gid=1,
+        current = CurrentView(repo=mocked_repo, uid=1, gid=1,
+                              repo_path="repo_path",
                               ignore=CachedIgnore("f"))
 
         current._stage = mocked_index
@@ -267,10 +290,14 @@ class TestCurrentView(object):
         old_chmod = current_view.PassthroughView.chmod
         current_view.PassthroughView.chmod = lambda self, path, mode: "done"
 
+        mocked_full = MagicMock(return_value="repo/path/to/dir")
+        mocked_repo = MagicMock(_full_path=mocked_full)
+
         with patch('gitfs.views.current.os') as mocked_os:
             mocked_os.path.isdir.return_value = True
 
-            current = CurrentView(repo_path="repo", uid=1, gid=1,
+            current = CurrentView(repo=mocked_repo, uid=1, gid=1,
+                                  repo_path="repo_path",
                                   ignore=CachedIgnore("f"))
             assert current.chmod("/path/to/dir", 0040755) == "done"
 
@@ -279,7 +306,8 @@ class TestCurrentView(object):
         current_view.PassthroughView.chmod = old_chmod
 
     def test_fsync_a_file_from_git_dir(self):
-        current = CurrentView(repo_path="repo", uid=1, gid=1,
+        current = CurrentView(repo="repo", uid=1, gid=1,
+                              repo_path="repo_path",
                               ignore=CachedIgnore("f"))
 
         with pytest.raises(FuseOSError):
@@ -292,7 +320,8 @@ class TestCurrentView(object):
 
         mocked_index = MagicMock()
 
-        current = CurrentView(repo_path="repo", uid=1, gid=1,
+        current = CurrentView(repo="repo", uid=1, gid=1,
+                              repo_path="repo_path",
                               ignore=CachedIgnore("f"))
         current._stage = mocked_index
 
@@ -303,7 +332,8 @@ class TestCurrentView(object):
         current_view.PassthroughView.fsync = old_fsync
 
     def test_unlink_from_git_dir(self):
-        current = CurrentView(repo_path="repo", ignore=CachedIgnore("f"))
+        current = CurrentView(repo="repo", repo_path="repo_path",
+                              ignore=CachedIgnore("f"))
 
         with pytest.raises(FuseOSError):
             current.unlink(".git/")
@@ -315,7 +345,8 @@ class TestCurrentView(object):
 
         mocked_index = MagicMock()
 
-        current = CurrentView(repo_path="repo", uid=1, gid=1,
+        current = CurrentView(repo="repo", uid=1, gid=1,
+                              repo_path="repo_path",
                               ignore=CachedIgnore("f"))
         current._stage = mocked_index
 
@@ -332,7 +363,8 @@ class TestCurrentView(object):
 
         mocked_sanitize.return_value = ["to-stage"]
 
-        current = CurrentView(repo_path="repo", repo=mocked_repo,
+        current = CurrentView(repo=mocked_repo,
+                              repo_path="repo_path",
                               queue=mocked_queue, ignore=CachedIgnore("f"))
         current._sanitize = mocked_sanitize
         current._stage("message", ["add"], ["remove"])
@@ -346,18 +378,19 @@ class TestCurrentView(object):
         mocked_sanitize.has_calls([call(['add']), call(['remove'])])
 
     def test_sanitize(self):
-        current = CurrentView(repo_path="repo")
+        current = CurrentView(repo="repo", repo_path="repo_path")
         assert current._sanitize("/path") == "path"
 
     def test_open(self):
-        mocked_full = MagicMock()
+        mocked_full = MagicMock(return_value="full_path")
+        mocked_repo = MagicMock(_full_path=mocked_full)
         mocked_os = MagicMock()
 
         mocked_os.open.return_value = 1
-        mocked_full.return_value = "full_path"
 
         with patch.multiple('gitfs.views.current', os=mocked_os):
-            current = CurrentView(repo_path="repo",
+            current = CurrentView(repo=mocked_repo,
+                                  repo_path="repo_path",
                                   ignore=CachedIgnore("f"))
 
             current._full_path = mocked_full
@@ -374,7 +407,8 @@ class TestCurrentView(object):
         mocked_os.close.return_value = 0
 
         with patch.multiple('gitfs.views.current', os=mocked_os):
-            current = CurrentView(repo_path="repo",
+            current = CurrentView(repo="repo",
+                                  repo_path="repo_path",
                                   ignore=CachedIgnore("f"))
             current._stage = mocked_stage
             current.dirty = {
