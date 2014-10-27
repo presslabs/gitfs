@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+__version__ = "0.2"
 
-from fuse import FuseOSError
 
 from gitfs.mounter import start_fuse as mount

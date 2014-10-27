@@ -1,9 +1,10 @@
+from gitfs import __version__
 from setuptools import setup, find_packages
 
 REQUIREMENTS = [line.strip() for line in open("requirements.txt").readlines()]
 
 setup(name='gitfs',
-      version='0.1.2',
+      version=__version__,
       platforms='any',
       description='Mount git repositories as local folders.',
       author='Presslabs',

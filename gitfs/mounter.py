@@ -19,6 +19,7 @@ import sys
 from fuse import FUSE
 from pygit2 import Keypair, UserPass
 
+from gitfs import __version__
 from gitfs.utils import Args
 from gitfs.routes import routes
 from gitfs.router import Router
@@ -28,6 +29,8 @@ from gitfs.worker import CommitQueue, SyncWorker, FetchWorker
 def parse_args(parser):
     parser.add_argument('remote_url', help='repo to be cloned')
     parser.add_argument('mount_point', help='where the repo should be mount')
+    parser.add_argument('-v', '--version', action='version',
+                        version='%(prog)s ' + __version__)
     parser.add_argument('-o', help='other options: repo_path, user, '
                                    'group, branch, max_size, max_offset, '
                                    'fetch_timeout, merge_timeout, ssh_user')
@@ -91,6 +94,8 @@ def start_fuse():
     args = parse_args(parser)
 
     merge_worker, fetch_worker, router = prepare_components(args)
+
+    print args.v
 
     # ready to mount it
     if sys.platform == 'darwin':
