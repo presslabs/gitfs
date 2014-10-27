@@ -1,6 +1,13 @@
 === (ongoing) ===
 * implement behavior for .gitignore
 
+=== 0.2 ===
+* fix #152: logger should include `remote_url`
+* fix #153: make sure that no empty commits are ever created
+* fix #154: add __version__
+* fix #123: remove duplicate code
+* fix #79: duplicate code in Repository._get_git_object and Repository._get_git_object_type
+
 === 0.1.2 ===
 * fix #136, #137, #140: various bugs related to directory creation/removal
 * fix #144, #145, #146: various bugs related to cache system
