@@ -6,6 +6,10 @@ script:
     - make drone
     - make test
     - coveralls
+publish:
+    pypi:
+        username: presslabs
+        password: {{ pypi_password }}
 cache:
     - /var/cache/apt/
     - /tmp/pip_download_cache
