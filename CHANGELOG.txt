@@ -1,6 +1,10 @@
 === (ongoing) ===
 * implement behavior for .gitignore
 
+=== 0.2.1 ===
+* fix __version__ import error
+* added support for publishing on pypi from drone.io
+
 === 0.2 ===
 * fix #152: logger should include `remote_url`
 * fix #153: make sure that no empty commits are ever created
