@@ -15,4 +15,6 @@
 __version__ = "0.2"
 
 
-from gitfs.mounter import start_fuse as mount
+def mount():
+    from gitfs.mounter import start_fuse
+    start_fuse()
