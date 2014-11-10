@@ -3,6 +3,7 @@
 
 === 0.2.2 ===
 * upgrade to pygit2 0.21.4
+* fix #157: use `log.exception` to log exception when push/fetch fails
 
 === 0.2.1 ===
 * fix __version__ import error
