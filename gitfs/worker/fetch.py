@@ -41,6 +41,7 @@ class FetchWorker(Peasant):
                 self.repository.fetch(self.upstream, self.branch)
                 fetch_successful.set()
                 log.debug("Fetch done")
-            except:
-                log.warn("Fetch failed")
+            except Exception as e:
                 fetch_successful.clear()
+                log.warn("Fetch failed")
+                log.exception(e)

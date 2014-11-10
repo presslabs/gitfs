@@ -113,10 +113,11 @@ class SyncWorker(Peasant):
                 sync_done.set()
                 log.debug("Set push_successful")
                 push_successful.set()
-            except:
-                log.warn("Push failed")
+            except Exception as e:
                 push_successful.clear()
                 fetch.set()
+                log.warn("Push failed")
+                log.exception(e)
         else:
             sync_done.set()
             syncing.clear()
