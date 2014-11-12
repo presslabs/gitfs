@@ -131,8 +131,9 @@ class Router(object):
             return getattr(view, operation)(*args)
         except FuseOSError as e:
             raise e
-        except Exception:
+        except Exception as exception:
             log.exception("[%s] A system call failed" % socket.gethostname())
+            raise exception
 
     def register(self, routes):
         for regex, view in routes:

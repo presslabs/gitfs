@@ -35,6 +35,7 @@ class TestArgs(object):
         mocked_file.mkdtemp.return_value = "/tmp"
         mocked_pass.getuser.return_value = "test_user"
         mocked_os.getgid.return_value = 1
+        mocked_os.environ = {}
         mocked_os.path.abspath.return_value = "abs/tmp"
         mocked_grp.getgrgid().gr_name = "test_group"
         mocked_parser.parse_args.return_value = mocked_args
@@ -48,6 +49,7 @@ class TestArgs(object):
         mocked_args.user = None
         mocked_args.branch = None
         mocked_args.ssh_user = None
+        mocked_args.sentry_dsn = ''
 
         with patch.multiple('gitfs.utils.args', os=mocked_os, grp=mocked_grp,
                             getpass=mocked_pass, tempfile=mocked_file,

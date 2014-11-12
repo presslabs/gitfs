@@ -91,7 +91,7 @@ class Args(object):
                          '%(message)s'.format(mount_point=args.mount_point)
             handler.setFormatter(Formatter(fmt=logger_fmt))
 
-        if args.sentry_dsn:
+        if args.sentry_dsn != '':
             from raven.conf import setup_logging
             from raven.handlers.logging import SentryHandler
 

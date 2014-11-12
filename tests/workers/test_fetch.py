@@ -20,7 +20,7 @@ from gitfs.worker.fetch import FetchWorker
 
 
 class TestFetchWorker(object):
-    def test_run(self):
+    def test_work(self):
         mocked_peasant = MagicMock()
         mocked_fetch = MagicMock(side_effect=ValueError)
         mocked_fetch_event = MagicMock()
@@ -32,7 +32,7 @@ class TestFetchWorker(object):
             worker.timeout = 5
 
             with pytest.raises(ValueError):
-                worker.run()
+                worker.work()
 
             assert mocked_fetch.call_count == 1
             mocked_fetch_event.wait.assert_called_once_with(5)

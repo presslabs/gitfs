@@ -72,7 +72,7 @@ class SyncWorker(Peasant):
         else:
             log.debug("Idling (%d pending writes)", writers.value)
 
-        if writers == 0:
+        if writers.value == 0:
             if self.commits:
                 log.info("Get some commits")
                 self.commit(self.commits)
