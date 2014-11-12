@@ -17,7 +17,6 @@ import re
 import inspect
 import shutil
 import time
-import socket
 
 from pwd import getpwnam
 from grp import getgrnam
@@ -132,7 +131,7 @@ class Router(object):
         except FuseOSError as e:
             raise e
         except Exception as exception:
-            log.exception("[%s] A system call failed" % socket.gethostname())
+            log.exception("A system call failed")
             raise exception
 
     def register(self, routes):

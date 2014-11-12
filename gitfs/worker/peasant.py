@@ -13,7 +13,6 @@
 # limitations under the License.
 
 
-import socket
 from threading import Thread
 
 from gitfs.log import log
@@ -30,5 +29,4 @@ class Peasant(Thread):
         try:
             self.work()
         except:
-            log.exception("[%s] A worker is not feeling well" %
-                          socket.gethostname())
+            log.exception("A worker is not feeling well")
