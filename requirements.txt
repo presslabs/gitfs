@@ -1,3 +1,4 @@
 fusepy==2.0.2
 pygit2==0.21.4
 atomiclong
+raven==5.1.1
