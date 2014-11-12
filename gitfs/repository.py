@@ -77,6 +77,9 @@ class Repository(object):
     def checkout(self, ref, *args, **kwargs):
         result = self._repo.checkout(ref, *args, **kwargs)
 
+        # update ignore cache after a checkout
+        self.ignore.update()
+
         status = self._repo.status()
         for path, status in status.iteritems():
             # path is in current status, move on
@@ -85,11 +88,12 @@ class Repository(object):
 
             # check if file exists or not
             if path not in self._repo.index:
-                os.unlink(self._full_path(path))
+                if path not in self.ignore:
+                    os.unlink(self._full_path(path))
                 continue
 
             # check files stats
-            stats = self.get_git_object_stat(path)
+            stats = self.get_git_object_default_stats(ref, path)
             current_stat = os.lstat(self._full_path(path))
 
             if stats['st_mode'] != current_stat.st_mode:
