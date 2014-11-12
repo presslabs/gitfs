@@ -13,7 +13,10 @@
 # limitations under the License.
 
 
+import socket
 from threading import Thread
+
+from gitfs.log import log
 
 
 class Peasant(Thread):
@@ -22,3 +25,10 @@ class Peasant(Thread):
 
         for name, value in kwargs.iteritems():
             setattr(self, name, value)
+
+    def run(self):
+        try:
+            self.work()
+        except:
+            log.exception("[%s] A worker is not feeling well" %
+                          socket.gethostname())

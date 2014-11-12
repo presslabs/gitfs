@@ -17,6 +17,7 @@ import re
 import inspect
 import shutil
 import time
+import socket
 
 from pwd import getpwnam
 from grp import getgrnam
@@ -126,7 +127,12 @@ class Router(object):
                       view.__class__.__name__))
             raise FuseOSError(ENOSYS)
 
-        return getattr(view, operation)(*args)
+        try:
+            return getattr(view, operation)(*args)
+        except FuseOSError as e:
+            raise e
+        except Exception:
+            log.exception("[%s] A system call failed" % socket.gethostname())
 
     def register(self, routes):
         for regex, view in routes:

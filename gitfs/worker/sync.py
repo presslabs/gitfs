@@ -40,7 +40,7 @@ class SyncWorker(Peasant):
         self.strategy = strategy
         self.commits = []
 
-    def run(self):
+    def work(self):
         while True:
             if shutting_down.is_set():
                 log.info("Stop sync worker")
@@ -66,6 +66,7 @@ class SyncWorker(Peasant):
         In this case we are safe to merge and push.
         """
 
+        raise ValueError("ameno")
         if not syncing.is_set():
             log.debug("Set syncing event (%d pending writes)", writers.value)
             syncing.set()
