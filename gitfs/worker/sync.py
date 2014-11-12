@@ -102,6 +102,7 @@ class SyncWorker(Peasant):
                 need_to_push = True
             except:
                 log.exception("Merge failed")
+                return
 
         if need_to_push:
             try:
