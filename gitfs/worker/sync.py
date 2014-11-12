@@ -67,10 +67,10 @@ class SyncWorker(Peasant):
         """
 
         if not syncing.is_set():
-            log.debug("Set syncing event (%d pending writes)", writers)
+            log.debug("Set syncing event (%d pending writes)", writers.value)
             syncing.set()
         else:
-            log.debug("Idling (%d pending writes)", writers)
+            log.debug("Idling (%d pending writes)", writers.value)
 
         if writers == 0:
             if self.commits:
@@ -97,8 +97,11 @@ class SyncWorker(Peasant):
 
         if self.repository.behind:
             log.debug("I'm behind so I start merging")
-            self.merge()
-            need_to_push = True
+            try:
+                self.merge()
+                need_to_push = True
+            except:
+                log.exception("Merge failed")
 
         if need_to_push:
             try:
