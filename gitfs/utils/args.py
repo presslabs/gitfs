@@ -25,9 +25,6 @@ from logging.handlers import TimedRotatingFileHandler, SysLogHandler
 from collections import OrderedDict
 from urlparse import urlparse
 
-from raven.conf import setup_logging
-from raven.handlers.logging import SentryHandler
-
 from gitfs.log import log
 from gitfs.cache import lru_cache
 
@@ -95,6 +92,9 @@ class Args(object):
             handler.setFormatter(Formatter(fmt=logger_fmt))
 
         if args.sentry_dsn:
+            from raven.conf import setup_logging
+            from raven.handlers.logging import SentryHandler
+
             sentry_handler = SentryHandler(args.sentry_dsn)
             sentry_handler.setLevel("ERROR")
             setup_logging(sentry_handler)
