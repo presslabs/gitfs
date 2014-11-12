@@ -67,6 +67,9 @@ class CachedIgnore(object):
         return False
 
     def _check_item_and_key(self, item, key):
+        if key.startswith("/"):
+            key = key[1:]
+
         if item == key:
             return True
 
