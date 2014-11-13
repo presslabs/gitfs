@@ -52,6 +52,7 @@ class Args(object):
             ("log", ("syslog", "string")),
             ("log_level", ("warning", "string")),
             ("cache_size", (800, "int")),
+            ("sentry_dsn", (self.get_sentry_dsn, "string")),
         ])
         self.config = self.build_config(parser.parse_args())
 
@@ -90,8 +91,17 @@ class Args(object):
                          '%(message)s'.format(mount_point=args.mount_point)
             handler.setFormatter(Formatter(fmt=logger_fmt))
 
+        if args.sentry_dsn != '':
+            from raven.conf import setup_logging
+            from raven.handlers.logging import SentryHandler
+
+            sentry_handler = SentryHandler(args.sentry_dsn)
+            sentry_handler.setLevel("ERROR")
+            setup_logging(sentry_handler)
+            log.addHandler(sentry_handler)
+
+        handler.setLevel(args.log_level.upper())
         log.addHandler(handler)
-        log.setLevel(args.log_level.upper())
 
         # set cache size
         lru_cache.maxsize = args.cache_size
@@ -150,6 +160,9 @@ class Args(object):
 
     def get_ssh_key(self, args):
         return os.environ["HOME"] + "/.ssh/id_rsa"
+
+    def get_sentry_dsn(self, args):
+        return os.environ["SENTRY_DSN"] if "SENTRY_DSN" in os.environ else ""
 
     def get_ssh_user(self, args):
         url = args.remote_url

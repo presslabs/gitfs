@@ -15,6 +15,8 @@
 
 from threading import Thread
 
+from gitfs.log import log
+
 
 class Peasant(Thread):
     def __init__(self, *args, **kwargs):
@@ -22,3 +24,9 @@ class Peasant(Thread):
 
         for name, value in kwargs.iteritems():
             setattr(self, name, value)
+
+    def run(self):
+        try:
+            self.work()
+        except:
+            log.exception("A worker is not feeling well")

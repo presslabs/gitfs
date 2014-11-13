@@ -36,14 +36,14 @@ class CachedIgnore(object):
         self.update()
 
     def update(self):
-        self.items = ['/.git', '.git/*', '/.git/*', '*.keep']
+        self.items = ['.git', '.git/*', '/.git/*', '*.keep']
 
         if self.ignore and os.path.exists(self.ignore):
             with open(self.ignore) as gitignore:
-                new_items = filter(lambda line: line != "",
-                                   gitignore.read().split("\n"))
-
-                self.items += new_items
+                for item in gitignore.readlines():
+                    item = item.strip()
+                    if item and not item.startswith('#'):
+                        self.items += item
 
         if self.submodules and os.path.exists(self.submodules):
             with open(self.submodules) as submodules:
@@ -67,7 +67,13 @@ class CachedIgnore(object):
         return False
 
     def _check_item_and_key(self, item, key):
+        if key.startswith("/"):
+            key = key[1:]
+
         if item == key:
+            return True
+
+        if item.endswith("/") and key.startswith(item):
             return True
 
         return fnmatch.fnmatch(key, item)

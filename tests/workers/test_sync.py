@@ -22,7 +22,7 @@ from gitfs.worker.sync import SyncWorker
 
 
 class TestSyncWorker(object):
-    def test_run(self):
+    def test_work(self):
         mocked_queue = MagicMock()
         mocked_idle = MagicMock(side_effect=ValueError)
 
@@ -34,7 +34,7 @@ class TestSyncWorker(object):
         worker.timeout = 1
 
         with pytest.raises(ValueError):
-            worker.run()
+            worker.work()
 
         mocked_queue.get.assert_called_once_with(timeout=1, block=True)
         assert mocked_idle.call_count == 1
@@ -47,7 +47,7 @@ class TestSyncWorker(object):
         mocked_syncing.is_set.return_value = False
 
         with patch.multiple("gitfs.worker.sync", syncing=mocked_syncing,
-                            writers=0):
+                            writers=MagicMock(value=0)):
             worker = SyncWorker("name", "email", "name", "email",
                                 strategy="strategy")
             worker.commits = "commits"

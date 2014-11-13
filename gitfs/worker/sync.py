@@ -40,7 +40,7 @@ class SyncWorker(Peasant):
         self.strategy = strategy
         self.commits = []
 
-    def run(self):
+    def work(self):
         while True:
             if shutting_down.is_set():
                 log.info("Stop sync worker")
@@ -67,12 +67,12 @@ class SyncWorker(Peasant):
         """
 
         if not syncing.is_set():
-            log.debug("Set syncing event (%d pending writes)", writers)
+            log.debug("Set syncing event (%d pending writes)", writers.value)
             syncing.set()
         else:
-            log.debug("Idling (%d pending writes)", writers)
+            log.debug("Idling (%d pending writes)", writers.value)
 
-        if writers == 0:
+        if writers.value == 0:
             if self.commits:
                 log.info("Get some commits")
                 self.commit(self.commits)
@@ -97,8 +97,12 @@ class SyncWorker(Peasant):
 
         if self.repository.behind:
             log.debug("I'm behind so I start merging")
-            self.merge()
-            need_to_push = True
+            try:
+                self.merge()
+                need_to_push = True
+            except:
+                log.exception("Merge failed")
+                return
 
         if need_to_push:
             try:

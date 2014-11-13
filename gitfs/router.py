@@ -126,7 +126,13 @@ class Router(object):
                       view.__class__.__name__))
             raise FuseOSError(ENOSYS)
 
-        return getattr(view, operation)(*args)
+        try:
+            return getattr(view, operation)(*args)
+        except FuseOSError as e:
+            raise e
+        except Exception as exception:
+            log.exception("A system call failed")
+            raise exception
 
     def register(self, routes):
         for regex, view in routes:
