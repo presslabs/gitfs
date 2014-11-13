@@ -73,7 +73,7 @@ class CachedIgnore(object):
         if item == key:
             return True
 
-        if item.endswith("/"):
-            return key.startswith(item)
+        if item.endswith("/") and key.startswith(item):
+            return True
 
         return fnmatch.fnmatch(key, item)
