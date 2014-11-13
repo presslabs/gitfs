@@ -43,7 +43,7 @@ class TestCurrentView(object):
 
             current = CurrentView(regex="regex", repo="repo",
                                   repo_path="repo_path",
-                                  ignore=CachedIgnore("f"))
+                                  ignore=CachedIgnore())
             current._stage = mocked_index
 
             result = current.rename("old", "new")
@@ -58,7 +58,7 @@ class TestCurrentView(object):
 
     def test_rename_in_git_dir(self):
         current = CurrentView(repo="repo", repo_path="repo_path",
-                              ignore=CachedIgnore("f"))
+                              ignore=CachedIgnore())
         with pytest.raises(FuseOSError):
             current.rename(".git/", ".git/")
 
@@ -74,7 +74,7 @@ class TestCurrentView(object):
             mocked_os.symlink.return_value = "done"
 
             current = CurrentView(repo=mocked_repo, repo_path="repo_path",
-                                  ignore=CachedIgnore("f"))
+                                  ignore=CachedIgnore())
             current._stage = mocked_index
 
             assert current.symlink("name", "target") == "done"
@@ -94,7 +94,7 @@ class TestCurrentView(object):
             mocked_os.readlink.return_value = "done"
 
             current = CurrentView(repo=mocked_repo, repo_path="repo_path",
-                                  ignore=CachedIgnore("f"))
+                                  ignore=CachedIgnore())
             current._full_path = mocked_full_path
 
             assert current.readlink("path") == "done"
@@ -114,7 +114,7 @@ class TestCurrentView(object):
                             STATS=['simple']):
             current = CurrentView(repo=mocked_repo, uid=1, gid=1,
                                   repo_path="repo_path",
-                                  ignore=CachedIgnore("f"))
+                                  ignore=CachedIgnore())
             current._full_path = mocked_full
 
             result = current.getattr("path")
@@ -133,13 +133,13 @@ class TestCurrentView(object):
             current = CurrentView(repo="repo", uid=1, gid=1,
                                   repo_path="repo_path",
                                   read_only=Event(),
-                                  ignore=CachedIgnore("f"))
+                                  ignore=CachedIgnore())
             current.write(".git/index", "buf", "offset", 1)
 
     def test_write_to_large_file(self):
         current = CurrentView(repo="repo", uid=1, gid=1,
                               repo_path="repo_path",
-                              read_only=Event(), ignore=CachedIgnore("f"))
+                              read_only=Event(), ignore=CachedIgnore())
         current.max_size = 10
         current.dirty = {
             '/path': {
@@ -158,7 +158,7 @@ class TestCurrentView(object):
 
         current = CurrentView(repo="repo", uid=1, gid=1,
                               repo_path="repo_path",
-                              read_only=Event(), ignore=CachedIgnore("f"))
+                              read_only=Event(), ignore=CachedIgnore())
         current.max_offset = 20
         current.max_size = 20
         current.dirty = {
@@ -203,7 +203,7 @@ class TestCurrentView(object):
 
             current = CurrentView(repo=mocked_repo, uid=1, gid=1,
                                   repo_path="repo_path",
-                                  ignore=CachedIgnore("f"))
+                                  ignore=CachedIgnore())
             current.release = mocked_release
 
             assert current.mkdir("/path", "mode") == "done"
@@ -224,14 +224,14 @@ class TestCurrentView(object):
     def test_mkdir_in_git_dir(self):
         current = CurrentView(repo="repo", uid=1, gid=1,
                               repo_path="repo_path",
-                              ignore=CachedIgnore("f"))
+                              ignore=CachedIgnore())
         with pytest.raises(FuseOSError):
             current.mkdir(".git/", "mode")
 
     def test_create_in_git_dir(self):
         current = CurrentView(repo="repo", uid=1, gid=1,
                               repo_path="repo_path",
-                              ignore=CachedIgnore("f"))
+                              ignore=CachedIgnore())
 
         with pytest.raises(FuseOSError):
             current.create(".git/", "mode")
@@ -246,7 +246,7 @@ class TestCurrentView(object):
         mocked_open.return_value = "done"
         current = CurrentView(repo="repo", uid=1, gid=1,
                               repo_path="repo_path",
-                              ignore=CachedIgnore("f"))
+                              ignore=CachedIgnore())
         current.dirty = {
             '/path': {
                 'content': "here"
@@ -260,7 +260,7 @@ class TestCurrentView(object):
     def test_chmod_in_git_dir(self):
         current = CurrentView(repo="repo", uid=1, gid=1,
                               repo_path="repo_path",
-                              ignore=CachedIgnore("f"))
+                              ignore=CachedIgnore())
         with pytest.raises(FuseOSError):
             current.chmod(".git/", "mode")
 
@@ -275,7 +275,7 @@ class TestCurrentView(object):
 
         current = CurrentView(repo=mocked_repo, uid=1, gid=1,
                               repo_path="repo_path",
-                              ignore=CachedIgnore("f"))
+                              ignore=CachedIgnore())
 
         current._stage = mocked_index
 
@@ -298,7 +298,7 @@ class TestCurrentView(object):
 
             current = CurrentView(repo=mocked_repo, uid=1, gid=1,
                                   repo_path="repo_path",
-                                  ignore=CachedIgnore("f"))
+                                  ignore=CachedIgnore())
             assert current.chmod("/path/to/dir", 0040755) == "done"
 
             mocked_os.path.isdir.assert_called_once_with('repo/path/to/dir')
@@ -308,7 +308,7 @@ class TestCurrentView(object):
     def test_fsync_a_file_from_git_dir(self):
         current = CurrentView(repo="repo", uid=1, gid=1,
                               repo_path="repo_path",
-                              ignore=CachedIgnore("f"))
+                              ignore=CachedIgnore())
 
         with pytest.raises(FuseOSError):
             current.fsync(".git/", "data", 0)
@@ -322,7 +322,7 @@ class TestCurrentView(object):
 
         current = CurrentView(repo="repo", uid=1, gid=1,
                               repo_path="repo_path",
-                              ignore=CachedIgnore("f"))
+                              ignore=CachedIgnore())
         current._stage = mocked_index
 
         assert current.fsync("/path", "data", 1) == "done"
@@ -333,7 +333,7 @@ class TestCurrentView(object):
 
     def test_unlink_from_git_dir(self):
         current = CurrentView(repo="repo", repo_path="repo_path",
-                              ignore=CachedIgnore("f"))
+                              ignore=CachedIgnore())
 
         with pytest.raises(FuseOSError):
             current.unlink(".git/")
@@ -347,7 +347,7 @@ class TestCurrentView(object):
 
         current = CurrentView(repo="repo", uid=1, gid=1,
                               repo_path="repo_path",
-                              ignore=CachedIgnore("f"))
+                              ignore=CachedIgnore())
         current._stage = mocked_index
 
         assert current.unlink("/path") == "done"
@@ -365,7 +365,7 @@ class TestCurrentView(object):
 
         current = CurrentView(repo=mocked_repo,
                               repo_path="repo_path",
-                              queue=mocked_queue, ignore=CachedIgnore("f"))
+                              queue=mocked_queue, ignore=CachedIgnore())
         current._sanitize = mocked_sanitize
         current._stage("message", ["add"], ["remove"])
 
@@ -391,7 +391,7 @@ class TestCurrentView(object):
         with patch.multiple('gitfs.views.current', os=mocked_os):
             current = CurrentView(repo=mocked_repo,
                                   repo_path="repo_path",
-                                  ignore=CachedIgnore("f"))
+                                  ignore=CachedIgnore())
 
             current._full_path = mocked_full
             current.writing = set([])
@@ -409,7 +409,7 @@ class TestCurrentView(object):
         with patch.multiple('gitfs.views.current', os=mocked_os):
             current = CurrentView(repo="repo",
                                   repo_path="repo_path",
-                                  ignore=CachedIgnore("f"))
+                                  ignore=CachedIgnore())
             current._stage = mocked_stage
             current.dirty = {
                 4: {

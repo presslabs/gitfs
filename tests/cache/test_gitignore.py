@@ -33,7 +33,7 @@ class TestCachedIgnore(object):
                 gitignore = CachedIgnore("some_file", "some_file")
 
                 assert gitignore.items == ['.git', '.git/*', '/.git/*',
-                                           '*.keep', 'file', '/found/*',
+                                           '*.keep', '/found/*',
                                            '/found', 'found']
 
     def test_update(self):
