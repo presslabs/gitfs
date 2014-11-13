@@ -1,6 +1,11 @@
 === (ongoing) ===
 * implement behavior for .gitignore
 
+=== 0.2.3 ===
+* feature: send erros to sentry. Can be configured by environment variable SENTRY_DSN or sentry_dsn mount option
+* fixed the way .gitignore entries are checked
+* improved logging
+
 === 0.2.2 ===
 * upgrade to pygit2 0.21.4
 * fix #157: use `log.exception` to log exception when push/fetch fails
