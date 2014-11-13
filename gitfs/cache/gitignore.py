@@ -40,10 +40,10 @@ class CachedIgnore(object):
 
         if self.ignore and os.path.exists(self.ignore):
             with open(self.ignore) as gitignore:
-                new_items = filter(lambda line: line != "",
-                                   gitignore.read().split("\n"))
-
-                self.items += new_items
+                for item in gitignore.readlines():
+                    item = item.strip()
+                    if item and not item.startswith('#'):
+                        self.items += item
 
         if self.submodules and os.path.exists(self.submodules):
             with open(self.submodules) as submodules:
