@@ -43,7 +43,7 @@ class CachedIgnore(object):
                 for item in gitignore.readlines():
                     item = item.strip()
                     if item and not item.startswith('#'):
-                        self.items += item
+                        self.items.append(item)
 
         if self.submodules and os.path.exists(self.submodules):
             with open(self.submodules) as submodules:
