@@ -255,21 +255,52 @@ class CurrentView(PassthroughView):
     def _stage(self, message, add=None, remove=None):
         non_empty = False
 
-        add = self._sanitize(add)
-        remove = self._sanitize(remove)
-
         if remove is not None:
-            self.repo.index.remove(self._sanitize(remove))
+            remove = self._sanitize(remove)
+            if add is not None:
+                add = self._sanitize(add)
+                paths = self._get_files_from_path(add)
+                if paths:
+                    for path in paths:
+                        path = path.replace("%s/" % add, "%s/" % remove)
+                        self.repo.index.remove(path)
+                else:
+                    self.repo.index.remove(remove)
+            else:
+                self.repo.index.remove(remove)
             non_empty = True
 
         if add is not None:
-            self.repo.index.add(self._sanitize(add))
+            add = self._sanitize(add)
+            paths = self._get_files_from_path(add)
+            if paths:
+                for path in paths:
+                    self.repo.index.add(path)
+            else:
+                self.repo.index.add(add)
             non_empty = True
 
         if non_empty:
             self.queue.commit(add=add, remove=remove, message=message)
 
+    def _get_files_from_path(self, path):
+        paths = []
+
+        full_path = self.repo._full_path(self._sanitize(path))
+        workdir = self.repo._repo.workdir
+
+        if os.path.isdir(full_path):
+            for (dirpath, dirs, files) in os.walk(full_path):
+                for filename in files:
+                    paths.append("%s/%s" % (dirpath.replace(workdir, ''),
+                                 filename))
+        return paths
+
     def _sanitize(self, path):
-        if path is not None and path.startswith("/"):
-            path = path[1:]
+        if path is None:
+            return path
+
+        if path.startswith("/"):
+            return path[1:]
+
         return path
