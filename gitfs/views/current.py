@@ -61,6 +61,20 @@ class CurrentView(PassthroughView):
         log.debug("CurrentView: Created symlink to %s from %s", name, target)
         return result
 
+    @write_operation
+    @not_in("ignore", check=["target"])
+    def link(self, name, target):
+        if target.startswith('/current/'):
+            target = target.replace('/current/', '/')
+
+        result = super(CurrentView, self).link(target, name)
+
+        message = "Create link to %s for %s" % (target, name)
+        self._stage(add=name, message=message)
+
+        log.debug("CurrentView: Created link to %s from %s", name, target)
+        return result
+
     def readlink(self, path):
         log.debug("CurrentView: Read link %s", path)
         return os.readlink(self.repo._full_path(path))
