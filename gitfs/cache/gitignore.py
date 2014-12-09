@@ -36,7 +36,8 @@ class CachedIgnore(object):
         self.update()
 
     def update(self):
-        self.items = ['.git', '.git/*', '/.git/*', '*.keep']
+        self.items = ['.git', '.git/*', '/.git/*', '*.keep',
+                      '*.gitignore', '*.gitmodules']
 
         if self.ignore and os.path.exists(self.ignore):
             with open(self.ignore) as gitignore:
