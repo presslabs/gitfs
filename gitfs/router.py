@@ -14,9 +14,10 @@
 
 
 import re
-import inspect
-import shutil
+import os
 import time
+import shutil
+import inspect
 
 from pwd import getpwnam
 from grp import getgrnam
@@ -59,8 +60,12 @@ class Router(object):
         log.info('Done cloning')
 
         self.repo.credentials = credentials
-        self.repo.ignore = CachedIgnore(submodules=kwargs['module_file'],
-                                        ignore=kwargs['ignore_file'],
+
+        submodules = os.path.join(self.repo_path, '.gitmodules')
+        ignore = os.path.join(self.repo_path, '.gitignore')
+        self.repo.ignore = CachedIgnore(submodules=submodules,
+                                        ignore=ignore,
+                                        exclude=kwargs['ignore_file'] or None,
                                         hard_ignore=kwargs['hard_ignore'])
 
         self.uid = getpwnam(user).pw_uid

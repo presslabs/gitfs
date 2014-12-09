@@ -19,11 +19,13 @@ import fnmatch
 
 
 class CachedIgnore(object):
-    def __init__(self, ignore=False, submodules=False, hard_ignore=None):
+    def __init__(self, ignore=False, submodules=False, exclude=False,
+                 hard_ignore=None):
         self.items = []
 
         self.ignore = ignore
         self.submodules = submodules
+        self.exclude = exclude
 
         self.cache = {}
         self.permanent = []
@@ -32,15 +34,10 @@ class CachedIgnore(object):
         self.update()
 
     def update(self):
-        self.items = ['.git', '.git/*', '/.git/*', '*.keep',
-                      '*.gitignore', '*.gitmodules']
+        self.items = ['.git', '.git/*', '/.git/*', '*.keep', '*.gitmodules']
 
-        if self.ignore and os.path.exists(self.ignore):
-            with open(self.ignore) as gitignore:
-                for item in gitignore.readlines():
-                    item = item.strip()
-                    if item and not item.startswith('#'):
-                        self.items.append(item)
+        self.items += self._parse_ignore_file(self.ignore)
+        self.items += self._parse_ignore_file(self.exclude)
 
         if self.submodules and os.path.exists(self.submodules):
             with open(self.submodules) as submodules:
@@ -54,6 +51,17 @@ class CachedIgnore(object):
 
         self.cache = {}
         self.items += self.hard_ignore
+
+    def _parse_ignore_file(self, ignore_file):
+        items = []
+
+        if ignore_file and os.path.exists(ignore_file):
+            with open(ignore_file) as gitignore:
+                for item in gitignore.readlines():
+                    item = item.strip()
+                    if item and not item.startswith('#'):
+                        items.append(item)
+        return items
 
     def _parse_hard_ignore(self, hard_ignore):
         if isinstance(hard_ignore, basestring):
