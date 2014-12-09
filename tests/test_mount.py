@@ -60,7 +60,10 @@ class TestMount(object):
             'merge_timeout': 10,
             'commiter_name': 'commit',
             'commiter_email': 'commiter@commiting.org',
-            'log': 'syslog'
+            'log': 'syslog',
+            'ignore_file': '',
+            'module_file': '',
+            'hard_ignore': None,
         })
 
         mocked_argparse.Argumentparser.return_value = mocked_parser
@@ -91,7 +94,7 @@ class TestMount(object):
                 'branch': 'branch',
                 'timeout': 10,
                 'repo_path': 'repo_path',
-                'commit_queue': mocked_queue
+                'commit_queue': mocked_queue,
             }
             mocked_merger.assert_called_once_with('commit',
                                                   'commiter@commiting.org',
