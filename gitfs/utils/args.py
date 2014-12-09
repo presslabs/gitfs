@@ -53,6 +53,10 @@ class Args(object):
             ("log_level", ("warning", "string")),
             ("cache_size", (800, "int")),
             ("sentry_dsn", (self.get_sentry_dsn, "string")),
+            ("ignore", ("", "string")),
+            ("ignore_file", (self.get_dot_file('.gitignore'), "string")),
+            ("module_file", (self.get_dot_file('.gitmodules'), "string")),
+            ("hard_ignore", ("", "string")),
         ])
         self.config = self.build_config(parser.parse_args())
 
@@ -160,6 +164,9 @@ class Args(object):
 
     def get_ssh_key(self, args):
         return os.environ["HOME"] + "/.ssh/id_rsa"
+
+    def get_dot_file(self, default_file):
+        return lambda args: os.path.join(args.repo_path, default_file)
 
     def get_sentry_dsn(self, args):
         return os.environ["SENTRY_DSN"] if "SENTRY_DSN" in os.environ else ""

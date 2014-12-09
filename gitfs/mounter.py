@@ -61,7 +61,10 @@ def prepare_components(args):
                     max_size=args.max_size * 1024 * 1024,
                     max_offset=args.max_size * 1024 * 1024,
                     commit_queue=commit_queue,
-                    credentials=credentials)
+                    credentials=credentials,
+                    module_file=args.module_file,
+                    ignore_file=args.ignore_file,
+                    hard_ignore=args.hard_ignore)
 
     # register all the routes
     router.register(routes)
