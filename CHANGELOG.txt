@@ -1,6 +1,11 @@
 === (ongoing) ===
 * implement behavior for .gitignore
 
+=== 0.2.4 ==
+* feature: added `hard_ignore` and `ignore_file` mount options
+* fixed: `link` syscall
+* change: `.gitmodules` file is read-only
+
 === 0.2.3 ===
 * feature: send erros to sentry. Can be configured by environment variable SENTRY_DSN or sentry_dsn mount option
 * fixed the way .gitignore entries are checked
