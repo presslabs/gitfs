@@ -136,14 +136,6 @@ class TestCurrentView(object):
                                   ignore=CachedIgnore())
             current.write(".git/index", "buf", "offset", 1)
 
-    def test_write_in_gitignore_dir(self):
-        with pytest.raises(FuseOSError):
-            current = CurrentView(repo="repo", uid=1, gid=1,
-                                  repo_path="repo_path",
-                                  read_only=Event(),
-                                  ignore=CachedIgnore())
-            current.write(".gitignore", "buf", "offset", 1)
-
     def test_write_in_modules_dir(self):
         with pytest.raises(FuseOSError):
             current = CurrentView(repo="repo", uid=1, gid=1,

@@ -95,9 +95,10 @@ class TestRouter(object):
                          mocks['branch'], mocks['credentials'])
         mocks['repository'].clone.assert_called_once_with(*asserted_call)
         mocks['ignore'].assert_called_once_with(**{
-            'ignore': '',
+            'ignore': 'repository_path/.gitignore',
+            'exclude': None,
             'hard_ignore': None,
-            'submodules': '',
+            'submodules': 'repository_path/.gitmodules'
         })
         mocks['getpwnam'].assert_called_once_with(mocks['user'])
         mocks['getgrnam'].assert_called_once_with(mocks['group'])
