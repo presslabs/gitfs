@@ -136,6 +136,14 @@ class TestCurrentView(object):
                                   ignore=CachedIgnore())
             current.write(".git/index", "buf", "offset", 1)
 
+    def test_write_in_modules_dir(self):
+        with pytest.raises(FuseOSError):
+            current = CurrentView(repo="repo", uid=1, gid=1,
+                                  repo_path="repo_path",
+                                  read_only=Event(),
+                                  ignore=CachedIgnore())
+            current.write(".gitmodules", "buf", "offset", 1)
+
     def test_write_to_large_file(self):
         current = CurrentView(repo="repo", uid=1, gid=1,
                               repo_path="repo_path",
@@ -360,6 +368,7 @@ class TestCurrentView(object):
         mocked_repo = MagicMock()
         mocked_sanitize = MagicMock()
         mocked_queue = MagicMock()
+        mocked_files = MagicMock(return_value=None)
 
         mocked_sanitize.return_value = ["to-stage"]
 
@@ -367,6 +376,7 @@ class TestCurrentView(object):
                               repo_path="repo_path",
                               queue=mocked_queue, ignore=CachedIgnore())
         current._sanitize = mocked_sanitize
+        current._get_files_from_path = mocked_files
         current._stage("message", ["add"], ["remove"])
 
         mocked_queue.commit.assert_called_once_with(add=['to-stage'],
@@ -375,6 +385,7 @@ class TestCurrentView(object):
         mocked_repo.index.add.assert_called_once_with(["to-stage"])
         mocked_repo.index.remove.assert_called_once_with(["to-stage"])
 
+        mocked_files.has_calls([call(['add'])])
         mocked_sanitize.has_calls([call(['add']), call(['remove'])])
 
     def test_sanitize(self):

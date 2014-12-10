@@ -72,6 +72,9 @@ class TestRouter(object):
             'commit_queue': mocked_queue,
             'max_size': 10,
             'max_offset': 10,
+            'ignore_file': '',
+            'module_file': '',
+            'hard_ignore': None,
         }
 
         with patch.multiple('gitfs.router', Repository=mocked_repository,
@@ -92,9 +95,10 @@ class TestRouter(object):
                          mocks['branch'], mocks['credentials'])
         mocks['repository'].clone.assert_called_once_with(*asserted_call)
         mocks['ignore'].assert_called_once_with(**{
-            'submodules': True,
-            'ignore': True,
-            'path': mocks['repo_path'],
+            'ignore': 'repository_path/.gitignore',
+            'exclude': None,
+            'hard_ignore': None,
+            'submodules': 'repository_path/.gitmodules'
         })
         mocks['getpwnam'].assert_called_once_with(mocks['user'])
         mocks['getgrnam'].assert_called_once_with(mocks['group'])

@@ -19,12 +19,44 @@ import pytest
 import string
 import shutil
 
-import pytest
-
 from tests.integrations.base import BaseTest, pull
 
 
 class TestWriteCurrentView(BaseTest):
+    def test_rename_directory(self):
+        old_dir = "%s/a_directory/" % self.current_path
+        new_dir = "%s/some_directory/" % self.current_path
+        os.makedirs(old_dir)
+
+        time.sleep(5)
+        with pull(self.sh):
+            self.assert_new_commit()
+
+        os.rename(old_dir, new_dir)
+
+        time.sleep(5)
+        with pull(self.sh):
+            self.assert_new_commit()
+
+        assert os.path.isdir(new_dir) is not False
+        assert os.path.exists(old_dir) is False
+
+    def test_link_a_file(self):
+        filename = "%s/link_file" % self.current_path
+        link_name = "%s/new_link" % self.current_path
+
+        with open(filename, "w") as f:
+            f.write("some content")
+
+        os.link(filename, link_name)
+
+        time.sleep(5)
+        with pull(self.sh):
+            self.assert_commit_message("Update 2 items")
+
+        is_link = os.path.isfile(link_name)
+        assert is_link is not False
+
     def test_write_a_file(self):
         content = "Just a small file"
         filename = "%s/new_file" % self.current_path

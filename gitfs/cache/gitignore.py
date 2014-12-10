@@ -19,31 +19,25 @@ import fnmatch
 
 
 class CachedIgnore(object):
-    def __init__(self, ignore=False, submodules=False, path="."):
+    def __init__(self, ignore=False, submodules=False, exclude=False,
+                 hard_ignore=None):
         self.items = []
 
-        self.ignore = False
-        if ignore:
-            self.ignore = os.path.join(path, ".gitignore")
-
-        self.submodules = False
-        if submodules:
-            self.submodules = os.path.join(path, ".gitmodules")
+        self.ignore = ignore
+        self.submodules = submodules
+        self.exclude = exclude
 
         self.cache = {}
         self.permanent = []
+        self.hard_ignore = self._parse_hard_ignore(hard_ignore)
 
         self.update()
 
     def update(self):
-        self.items = ['.git', '.git/*', '/.git/*', '*.keep']
+        self.items = ['.git', '.git/*', '/.git/*', '*.keep', '*.gitmodules']
 
-        if self.ignore and os.path.exists(self.ignore):
-            with open(self.ignore) as gitignore:
-                for item in gitignore.readlines():
-                    item = item.strip()
-                    if item and not item.startswith('#'):
-                        self.items += item
+        self.items += self._parse_ignore_file(self.ignore)
+        self.items += self._parse_ignore_file(self.exclude)
 
         if self.submodules and os.path.exists(self.submodules):
             with open(self.submodules) as submodules:
@@ -56,6 +50,24 @@ class CachedIgnore(object):
                     self.items.append("%s" % result[2])
 
         self.cache = {}
+        self.items += self.hard_ignore
+
+    def _parse_ignore_file(self, ignore_file):
+        items = []
+
+        if ignore_file and os.path.exists(ignore_file):
+            with open(ignore_file) as gitignore:
+                for item in gitignore.readlines():
+                    item = item.strip()
+                    if item and not item.startswith('#'):
+                        items.append(item)
+        return items
+
+    def _parse_hard_ignore(self, hard_ignore):
+        if isinstance(hard_ignore, basestring):
+            return hard_ignore.split("|")
+        else:
+            return []
 
     def __contains__(self, path):
         return self.check_key(path)

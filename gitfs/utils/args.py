@@ -53,6 +53,8 @@ class Args(object):
             ("log_level", ("warning", "string")),
             ("cache_size", (800, "int")),
             ("sentry_dsn", (self.get_sentry_dsn, "string")),
+            ("ignore_file", ("", "string")),
+            ("hard_ignore", ("", "string")),
         ])
         self.config = self.build_config(parser.parse_args())
 
