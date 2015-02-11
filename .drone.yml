@@ -1,6 +1,4 @@
 image: python2.7
-env:
-    - PIP_DOWNLOAD_CACHE=/tmp/pip_download_cache
 script:
     - sudo chown ubuntu:ubuntu /tmp/pip_download_cache
     - make drone
@@ -10,6 +8,3 @@ publish:
     pypi:
         username: presslabs
         password: {{ pypi_password }}
-cache:
-    - /var/cache/apt/
-    - /tmp/pip_download_cache
