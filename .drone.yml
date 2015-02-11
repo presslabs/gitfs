@@ -1,6 +1,5 @@
 image: python2.7
 script:
-    - sudo chown ubuntu:ubuntu /tmp/pip_download_cache
     - make drone
     - make test
     - coveralls
