@@ -42,6 +42,7 @@ class TestLRUCache(object):
         assert lru[3] == 3
         assert 1 not in lru
 
+        lru[2]
         lru[4] = 4
         assert len(lru) == 2
         assert lru[2] == 2
