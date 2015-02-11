@@ -116,7 +116,7 @@ class Repository(object):
         """
 
         remote = self.get_remote(upstream)
-        remote.push("refs/heads/%s" % (branch))
+        remote.push(["refs/heads/%s" % (branch)])
 
     def fetch(self, upstream, branch_name):
         """
