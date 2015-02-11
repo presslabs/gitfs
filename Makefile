@@ -47,7 +47,7 @@ $(VIRTUAL_ENV)/bin/pip:
 drone: virtualenv
 	sudo apt-get update
 	sudo apt-get install -y software-properties-common python-software-properties
-	sudo add-apt-repository -y ppa:presslabs/testing-ppa
+	sudo add-apt-repository -y ppa:presslabs/gitfs-dev
 	sudo apt-get update
 	sudo apt-get install -y libgit2 libgit2-dev git git-core
 	sudo chown ubuntu:admin /dev/fuse
