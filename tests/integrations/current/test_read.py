@@ -25,7 +25,8 @@ class TestReadCurrentView(BaseTest):
 
     def test_read_from_a_file(self):
         with open("%s/testing" % self.current_path) as f:
-            assert f.read() == "just testing around here\n"
+            content = f.read()
+            assert content == "just testing around here\n"
 
     def test_get_correct_stats(self):
         filename = "%s/testing" % self.current_path

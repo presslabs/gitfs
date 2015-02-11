@@ -49,7 +49,7 @@ drone: virtualenv
 	sudo apt-get install -y software-properties-common python-software-properties
 	sudo add-apt-repository -y ppa:presslabs/testing-ppa
 	sudo apt-get update
-	sudo apt-get install -y libgit2-0 libgit2-dev git git-core
+	sudo apt-get install -y libgit2 libgit2-dev git git-core
 	sudo chown ubuntu:admin /dev/fuse
 	sudo chmod 660 /dev/fuse
 	echo user_allow_other | sudo tee -a /etc/fuse.conf > /dev/null
