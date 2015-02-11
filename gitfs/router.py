@@ -28,7 +28,7 @@ from fuse import FUSE, FuseOSError
 
 from gitfs.repository import Repository
 from gitfs.cache import CachedIgnore, lru_cache
-from gitfs.events import shutting_down, fetch
+from gitfs.events import shutting_down, fetch, idle
 from gitfs.log import log
 
 
@@ -133,12 +133,10 @@ class Router(object):
             raise FuseOSError(ENOSYS)
 
         try:
+            idle.clear()
             return getattr(view, operation)(*args)
         except FuseOSError as e:
             raise e
-        #except Exception as exception:
-        #    log.exception("A system call failed")
-        #    raise exception
 
     def register(self, routes):
         for regex, view in routes:

@@ -14,7 +14,7 @@
 
 
 from gitfs.worker.peasant import Peasant
-from gitfs.events import (fetch, fetch_successful, shutting_down,
+from gitfs.events import (fetch, fetch_successful, shutting_down, idle,
                           remote_operation)
 from gitfs.log import log
 
@@ -24,7 +24,11 @@ class FetchWorker(Peasant):
 
     def work(self):
         while True:
-            fetch.wait(self.timeout)
+            timeout = self.timeout
+            if idle.is_set():
+                timeout = self.idle_timeout
+
+            fetch.wait(timeout)
 
             if shutting_down.is_set():
                 log.info("Stop fetch worker")
