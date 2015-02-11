@@ -32,6 +32,7 @@ class TestSyncWorker(object):
                             strategy="strategy", commit_queue=mocked_queue)
         worker.on_idle = mocked_idle
         worker.timeout = 1
+        worker.min_idle_times = 1
 
         with pytest.raises(ValueError):
             worker.work()

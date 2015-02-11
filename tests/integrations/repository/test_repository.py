@@ -1,9 +1,38 @@
-import time
 import os
+import time
+
 from tests.integrations.base import BaseTest
 
 
 class TestRepository(BaseTest):
+
+    def test_chmod(self):
+        file_name = "new_file"
+
+        self.sh.touch(file_name)
+
+        self.sh.git.add(file_name)
+        self.sh.git.commit("-m", '"Just a message."')
+        self.sh.git.push("origin", "master")
+
+        time.sleep(7)
+
+        self.sh.chmod("755", file_name)
+
+        self.sh.git.add(file_name)
+        self.sh.git.commit("-m", '"Just a message."')
+        self.sh.git.push("origin", "master")
+
+        time.sleep(10)
+
+        assert os.path.exists("%s/history/%s/%s" % (
+            self.mount_path,
+            self.get_commit_dates()[0],
+            self.get_commits_by_date()[0]
+        ))
+        assert oct(os.stat(self.current_path + "/" + file_name).st_mode & 0777) ==\
+            "0755"
+
     def test_new_file(self):
         file_name = "new_file"
 
@@ -94,33 +123,6 @@ class TestRepository(BaseTest):
         time.sleep(5)
 
         assert not os.path.exists(self.current_path + "/" + file_name)
-        assert os.path.exists("%s/history/%s/%s" % (
-            self.mount_path,
-            self.get_commit_dates()[0],
-            self.get_commits_by_date()[0]
-        ))
-
-    def test_chmod(self):
-        file_name = "new_file"
-
-        self.sh.touch(file_name)
-
-        self.sh.git.add(file_name)
-        self.sh.git.commit("-m", '"Just a message."')
-        self.sh.git.push("origin", "master")
-
-        time.sleep(5)
-
-        self.sh.chmod("755", file_name)
-
-        self.sh.git.add(file_name)
-        self.sh.git.commit("-m", '"Just a message."')
-        self.sh.git.push("origin", "master")
-
-        time.sleep(5)
-
-        assert oct(os.stat(self.current_path + "/" + file_name).st_mode & 0777) ==\
-            "0755"
         assert os.path.exists("%s/history/%s/%s" % (
             self.mount_path,
             self.get_commit_dates()[0],
