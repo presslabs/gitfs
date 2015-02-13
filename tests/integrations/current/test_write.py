@@ -23,6 +23,23 @@ from tests.integrations.base import BaseTest, pull
 
 
 class TestWriteCurrentView(BaseTest):
+    def test_delete_a_directory(self):
+        path = "%s/a_directory/another_dir/" % self.current_path
+        os.makedirs(path)
+
+        time.sleep(5)
+        with pull(self.sh):
+            self.assert_new_commit()
+
+        shutil.rmtree("%s/a_directory/" % self.current_path)
+        time.sleep(5)
+
+        with pull(self.sh):
+            self.assert_commit_message("Update 2 items")
+            self.assert_new_commit()
+
+        assert os.path.exists(path) is False
+
     def test_rename_directory(self):
         old_dir = "%s/a_directory/" % self.current_path
         new_dir = "%s/some_directory/" % self.current_path
@@ -366,22 +383,3 @@ class TestWriteCurrentView(BaseTest):
 
         with pull(self.sh):
             self.assert_commit_message("Deleted /deletable_file")
-
-    def test_delete_a_directory(self):
-        path = "%s/a_directory/another_dir/" % self.current_path
-        os.makedirs(path)
-
-        time.sleep(5)
-
-        with pull(self.sh):
-            self.assert_new_commit()
-
-        shutil.rmtree("%s/a_directory/" % self.current_path)
-
-        time.sleep(5)
-
-        with pull(self.sh):
-            self.assert_commit_message("Update 2 items")
-            self.assert_new_commit()
-
-        assert os.path.exists(path) is False
