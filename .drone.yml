@@ -1,4 +1,4 @@
-image: python2.7
+image: bradrydzewski / python
 env:
     - PIP_DOWNLOAD_CACHE=/tmp/pip_download_cache
 script:
