@@ -50,7 +50,7 @@ drone: virtualenv
 	sudo add-apt-repository -y ppa:presslabs/gitfs-dev
 	sudo apt-get update
 	sudo apt-get install -y libgit2 libgit2-dev git git-core
-	sudo chown ubuntu:admin /dev/fuse
+	sudo chown ubuntu:ubuntu /dev/fuse
 	sudo chmod 660 /dev/fuse
 	echo user_allow_other | sudo tee -a /etc/fuse.conf > /dev/null
 	sudo chmod 644 /etc/fuse.conf
