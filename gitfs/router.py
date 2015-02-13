@@ -132,11 +132,8 @@ class Router(object):
                       view.__class__.__name__))
             raise FuseOSError(ENOSYS)
 
-        try:
-            idle.clear()
-            return getattr(view, operation)(*args)
-        except FuseOSError as e:
-            raise e
+        idle.clear()
+        return getattr(view, operation)(*args)
 
     def register(self, routes):
         for regex, view in routes:

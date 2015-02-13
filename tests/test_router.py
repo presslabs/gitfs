@@ -150,14 +150,19 @@ class TestRouter(object):
 
     def test_call_with_valid_operation(self):
         mocked_view = MagicMock()
+        mocked_cache = MagicMock()
+        mocked_idle_event = MagicMock()
 
         router, mocks = self.get_new_router()
 
         router.register([("/", MagicMock(return_value=mocked_view))])
-        with patch('gitfs.router.lru_cache') as mocked_cache:
+        with patch.multiple('gitfs.router',
+                            idle=mocked_idle_event, lru_cache=mocked_cache):
             mocked_cache.get_if_exists.return_value = None
             result = router("random_operation", "/")
+
             assert result == mocked_view.random_operation("/")
+            assert mocked_idle_event.clear.call_count == 1
 
     def test_call_with_init(self):
         mocked_init = MagicMock()
