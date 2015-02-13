@@ -1,6 +1,12 @@
 === (ongoing) ===
 * implement behavior for .gitignore
 
+=== 0.3 ==
+* upgrade pygit to 0.22.0
+* fix deleting a directory bug #180
+* introduce idle mode #156
+* close minor issues: #97, #177
+
 === 0.2.4 ==
 * feature: added `hard_ignore` and `ignore_file` mount options
 * fixed: `link` syscall
