@@ -39,7 +39,7 @@ class TestRepository(RepositoryBaseTest):
         repo = Repository(mocked_repo)
         repo.push("origin", "master")
 
-        mocked_remote.push.assert_called_once_with("refs/heads/master")
+        mocked_remote.push.assert_called_once_with(["refs/heads/master"])
 
     def test_fetch(self):
         class MockedCommit(object):

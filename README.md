@@ -3,6 +3,7 @@ gitfs [![Build Status](http://drone.presslabs.net/github.com/PressLabs/gitfs/sta
 
 # Welcome to GitFS
 
+
 gitfs is a [FUSE](http://fuse.sourceforge.net/) file system that fully
 integrates with git. You can mount a remote repository's branch locally, and any
 subsequent changes made to the files will be automatically committed to the

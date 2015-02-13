@@ -20,7 +20,7 @@ from gitfs.worker.peasant import Peasant
 from gitfs.merges import AcceptMine
 
 from gitfs.events import (fetch, syncing, sync_done, writers, shutting_down,
-                          remote_operation, push_successful)
+                          remote_operation, push_successful, idle)
 from gitfs.log import log
 
 
@@ -41,6 +41,7 @@ class SyncWorker(Peasant):
         self.commits = []
 
     def work(self):
+        idle_times = 0
         while True:
             if shutting_down.is_set():
                 log.info("Stop sync worker")
@@ -51,8 +52,16 @@ class SyncWorker(Peasant):
                 if job['type'] == 'commit':
                     self.commits.append(job)
                 log.debug("Got a commit job")
+
+                idle_times = 0
+                idle.clear()
             except Empty:
                 log.debug("Nothing to do right now, going idle")
+
+                if idle_times > self.min_idle_times:
+                    idle.set()
+
+                idle_times += 1
                 self.on_idle()
 
     def on_idle(self):

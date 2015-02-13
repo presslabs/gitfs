@@ -27,6 +27,9 @@ push_successful.set()
 fetch_successful = threading.Event()
 fetch_successful.set()
 
+idle = threading.Event()
+idle.clear()
+
 read_only = threading.Event()
 fetch = threading.Event()
 shutting_down = threading.Event()

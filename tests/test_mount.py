@@ -64,6 +64,8 @@ class TestMount(object):
             'ignore_file': '',
             'module_file': '',
             'hard_ignore': None,
+            'min_idle_times': 1,
+            'idle_fetch_timeout': 10,
         })
 
         mocked_argparse.Argumentparser.return_value = mocked_parser
@@ -86,7 +88,8 @@ class TestMount(object):
             mocked_fetcher.assert_called_once_with(upstream='origin',
                                                    branch='branch',
                                                    repository='repo',
-                                                   timeout=10)
+                                                   timeout=10,
+                                                   idle_timeout=10)
 
             asserted_call = {
                 'repository': 'repo',
@@ -95,6 +98,7 @@ class TestMount(object):
                 'timeout': 10,
                 'repo_path': 'repo_path',
                 'commit_queue': mocked_queue,
+                'min_idle_times': 1,
             }
             mocked_merger.assert_called_once_with('commit',
                                                   'commiter@commiting.org',

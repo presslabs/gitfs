@@ -76,12 +76,14 @@ def prepare_components(args):
                               upstream="origin",
                               branch=args.branch,
                               repo_path=router.repo_path,
-                              timeout=args.merge_timeout)
+                              timeout=args.merge_timeout,
+                              min_idle_times=args.min_idle_times)
 
     fetch_worker = FetchWorker(upstream="origin",
                                branch=args.branch,
                                repository=router.repo,
-                               timeout=args.fetch_timeout)
+                               timeout=args.fetch_timeout,
+                               idle_timeout=args.idle_fetch_timeout)
 
     merge_worker.daemon = True
     fetch_worker.daemon = True

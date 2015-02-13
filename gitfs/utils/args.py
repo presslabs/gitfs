@@ -47,6 +47,7 @@ class Args(object):
             ("commiter_email", (self.get_commiter_email, "string")),
             ("max_size", (10, "float")),
             ("fetch_timeout", (30, "float")),
+            ("idle_fetch_timeout", (30 * 60, "float")),  # 30 min
             ("merge_timeout", (5, "float")),
             ("debug", (False, "bool")),
             ("log", ("syslog", "string")),
@@ -55,6 +56,7 @@ class Args(object):
             ("sentry_dsn", (self.get_sentry_dsn, "string")),
             ("ignore_file", ("", "string")),
             ("hard_ignore", ("", "string")),
+            ("min_idle_times", (10, "float")),
         ])
         self.config = self.build_config(parser.parse_args())
 
