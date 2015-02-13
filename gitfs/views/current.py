@@ -227,12 +227,13 @@ class CurrentView(PassthroughView):
     @write_operation
     @not_in("ignore", check=["path"])
     def rmdir(self, path):
+        message = 'Delete the %s directory' % path
+
         # Unlink the .keep file
         keep_file = os.path.join(path, '.keep')
-        result = super(CurrentView, self).unlink(keep_file)
-
-        message = 'Delete the %s directory' % path
-        self._stage(remove=keep_file, message=message)
+        if os.path.exists(keep_file):
+            result = super(CurrentView, self).unlink(keep_file)
+            self._stage(remove=keep_file, message=message)
 
         # Delete the actual directory
         result = super(CurrentView, self).rmdir(path)
