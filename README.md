@@ -1,3 +1,4 @@
+[![Stories in Ready](https://badge.waffle.io/PressLabs/gitfs.png?label=ready&title=Ready)](https://waffle.io/PressLabs/gitfs)
 gitfs [![Build Status](http://drone.presslabs.net/github.com/PressLabs/gitfs/status.svg?branch=master)](http://drone.presslabs.net/github.com/PressLabs/gitfs) [![Coverage Status](https://coveralls.io/repos/PressLabs/gitfs/badge.png?branch=HEAD)](https://coveralls.io/r/PressLabs/gitfs?branch=HEAD)
 ========
 
