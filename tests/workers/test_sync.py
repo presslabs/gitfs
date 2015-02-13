@@ -152,3 +152,24 @@ class TestSyncWorker(object):
 
         strategy = pygit2.GIT_CHECKOUT_FORCE
         mocked_repo.checkout_head.assert_called_once_with(strategy=strategy)
+
+    def test_switch_to_idle_mode(self):
+        mocked_queue = MagicMock()
+        mocked_idle = MagicMock(side_effect=ValueError)
+        mocked_idle_event = MagicMock()
+
+        mocked_queue.get.side_effect = Empty()
+
+        with patch.multiple('gitfs.worker.sync', idle=mocked_idle_event):
+            worker = SyncWorker("name", "email", "name", "email",
+                                strategy="strategy", commit_queue=mocked_queue)
+            worker.on_idle = mocked_idle
+            worker.timeout = 1
+            worker.min_idle_times = -1
+
+            with pytest.raises(ValueError):
+                worker.work()
+
+            mocked_queue.get.assert_called_once_with(timeout=1, block=True)
+            assert mocked_idle_event.set.call_count == 1
+            assert mocked_idle.call_count == 1
