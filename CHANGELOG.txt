@@ -1,6 +1,9 @@
 === (ongoing) ===
 * implement behavior for .gitignore
 
+=== 0.3.1 ==
+* fix Makefile
+
 === 0.3 ==
 * upgrade pygit to 0.22.0
 * fix deleting a directory bug #180
