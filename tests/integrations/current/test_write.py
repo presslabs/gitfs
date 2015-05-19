@@ -23,32 +23,6 @@ from tests.integrations.base import BaseTest, pull
 
 
 class TestWriteCurrentView(BaseTest):
-    def test_delete_directory_with_space_within_name(self):
-        directory = "%s/new directory" % self.current_path
-
-        os.makedirs(directory)
-
-        time.sleep(5)
-        with pull(self.sh):
-            # check if directory exists or not
-            directory_path = "%s/new directory" % self.repo_path
-            assert os.path.exists(directory_path)
-
-            # check for .keep file
-            keep_path = "%s/new directory/.keep" % self.repo_path
-            assert os.path.exists(keep_path)
-
-            self.assert_new_commit()
-            self.assert_commit_message("Create the /new directory directory")
-
-        shutil.rmtree("%s/new directory/" % self.current_path)
-        time.sleep(5)
-
-        with pull(self.sh):
-            self.assert_new_commit()
-
-        assert os.path.exists(directory) is False
-
     def test_delete_a_directory(self):
         path = "%s/a_directory/another_dir/" % self.current_path
         os.makedirs(path)
