@@ -105,6 +105,7 @@ class Args(object):
             log.addHandler(sentry_handler)
 
         handler.setLevel(args.log_level.upper())
+        log.setLevel(args.log_level.upper())
         log.addHandler(handler)
 
         # set cache size
