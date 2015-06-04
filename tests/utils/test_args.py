@@ -20,16 +20,17 @@ from gitfs.utils.args import Args
 
 class TestArgs(object):
     def test_args(self):
-        mocked_parser = MagicMock()
-        mocked_args = MagicMock()
         mocked_os = MagicMock()
+        mocked_log = MagicMock()
         mocked_grp = MagicMock()
         mocked_pass = MagicMock()
         mocked_file = MagicMock()
-        mocked_log_handler = MagicMock()
+        mocked_args = MagicMock()
+        mocked_parser = MagicMock()
         mocked_urlparse = MagicMock()
         mocked_parse_res1 = MagicMock()
         mocked_parse_res2 = MagicMock()
+        mocked_log_handler = MagicMock()
         url = 'user@domain.com:owner/test.git'
 
         mocked_file.mkdtemp.return_value = "/tmp"
@@ -54,7 +55,7 @@ class TestArgs(object):
         with patch.multiple('gitfs.utils.args', os=mocked_os, grp=mocked_grp,
                             getpass=mocked_pass, tempfile=mocked_file,
                             TimedRotatingFileHandler=mocked_log_handler,
-                            urlparse=mocked_urlparse):
+                            urlparse=mocked_urlparse, log=mocked_log):
 
             args = Args(mocked_parser)
             asserted_results = {
@@ -71,5 +72,6 @@ class TestArgs(object):
             assert args.config == mocked_args
             assert mocked_pass.getuser.call_count == 1
             assert mocked_file.mkdtemp.call_count == 1
+            mocked_log.setlevel.assert_called_once_with('WARNING')
             mocked_urlparse.assert_has_calls([call(url), call('ssh://' + url)])
             mocked_grp.getgrgid.has_calls([call(1)])
