@@ -1,6 +1,11 @@
 === (ongoing) ===
 * implement behavior for .gitignore
 
+=== 0.3.2 ==
+* solve logging bug #190
+* fix merging conflict bugs #176
+* add more tests for directoy deletion #184
+
 === 0.3.1 ==
 * fix Makefile
 
