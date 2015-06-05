@@ -102,7 +102,8 @@ class AcceptMine(Merger):
                 if not ours and theirs:
                     log.debug("AcceptMine: if we deleted the file and they "
                               "didn't, remove the file")
-                    self.repository.index.remove(theirs.path)
+                    self.repository.index.remove(theirs.path, 2)
+                    self.repository.index.remove(theirs.path, 1)
                 elif ours and not theirs:
                     log.debug("AcceptMine: if they deleted the file and we "
                               "didn't, add the file")

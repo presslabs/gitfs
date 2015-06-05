@@ -77,7 +77,8 @@ class TestAcceptMine(object):
         mine = AcceptMine(mocked_repo)
         mine.solve_conflicts(conflicts())
 
-        mocked_repo.index.remove.assert_called_once_with("simple_path")
+        mocked_repo.index.remove.has_calls([call("simple_path", 1),
+                                            call("simple_path", 2)])
 
     def test_solve_conflicts_they_deleted_the_file(self):
         mocked_repo = MagicMock()
