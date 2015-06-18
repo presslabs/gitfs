@@ -100,9 +100,6 @@ class SyncWorker(Peasant):
         self.repository.ignore.update()
 
     def sync(self):
-        log.debug("Start fetching")
-        self.repository.fetch(self.upstream, self.branch)
-
         log.debug("Check if I'm ahead")
         need_to_push = self.repository.ahead(self.upstream, self.branch)
         sync_done.clear()
@@ -110,6 +107,8 @@ class SyncWorker(Peasant):
         if self.repository.behind:
             log.debug("I'm behind so I start merging")
             try:
+                log.debug("Start fetching")
+                self.repository.fetch(self.upstream, self.branch)
                 self.merge()
                 need_to_push = True
             except:
