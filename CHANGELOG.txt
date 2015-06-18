@@ -1,6 +1,9 @@
 === (ongoing) ===
 * implement behavior for .gitignore
 
+=== 0.3.3 ==
+* fetch before you merge #194
+
 === 0.3.2 ==
 * solve logging bug #190
 * fix merging conflict bugs #176
