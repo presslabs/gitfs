@@ -14,6 +14,7 @@
 
 
 from datetime import datetime
+from time import sleep
 import os
 import subprocess
 
@@ -104,3 +105,19 @@ class BaseTest(object):
     def assert_file_content(self, file_path, content):
         with open(self.repo_path + "/" + file_path) as f:
             assert f.read() == content
+
+    @staticmethod
+    def wait(callback, args=None, kwargs=None, timeout=5, poll_freq=0.2):
+        args = args or []
+        kwargs = kwargs or {}
+        time_spent = 0
+        while True:
+            print time_spent
+            try:
+                callback(*args, **kwargs)
+                return
+            except AssertionError:
+                if time_spent >= timeout:
+                    raise
+                sleep(poll_freq)
+                time_spent += poll_freq
