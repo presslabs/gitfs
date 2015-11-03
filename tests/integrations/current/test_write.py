@@ -13,22 +13,86 @@
 # limitations under the License.
 
 
+import collections
+import contextlib
 import os
-import time
 import pytest
-import string
+import re
 import shutil
+import string
+import time
 
 from tests.integrations.base import BaseTest, pull
 
 
+class GitFSLog(object):
+    def __init__(self, file_descriptor):
+        self._partial_line = None
+        self.line_buffer = collections.deque()
+        self.file_descriptor = file_descriptor
+
+    def get_line(self):
+        if not self.line_buffer:
+            self._read_data()
+        if self.line_buffer:
+            return self.line_buffer.popleft()
+
+    def _read_data(self):
+        data = os.read(self.file_descriptor, 2048).splitlines(True)
+        if not data:
+            return
+        if self._partial_line:
+            data[0] = self._partial_line + data[0]
+        if not data[-1].endswith("\n"):
+            self._partial_line = data[-1]
+            data = data[:-1]  # discard the partial line
+        else:
+            self._partial_line = None
+        self.line_buffer.extend(data)
+
+    def clear(self):
+        while os.read(self.file_descriptor, 2048):
+            pass
+        self._partial_line = None
+        self.line_buffer = collections.deque()
+
+    def __call__(self, expected):
+        @contextlib.contextmanager
+        def log_context(gitfs_log):
+            gitfs_log.clear()
+            yield
+            gitfs_log.expect(expected)
+        return log_context(self)
+
+    def expect(self, expected, timeout=5, pollfreq=0.1):
+        expected = re.compile(".*"+expected)
+        return self.expect_re(expected, timeout, pollfreq)
+
+    def expect_re(self, expected, timeout=5, pollfreq=0.2):
+        elapsed = 0
+        while elapsed < timeout:
+            line = self.get_line()
+            while line is None:
+                time.sleep(pollfreq)
+                elapsed += pollfreq
+                line = self.get_line()
+            if expected.match(line):
+                return line
+        raise AssertionError("expected '{}' not found in stream".format(expected))
+
+
+@pytest.fixture(scope='session')
+def gitfs_log():
+    return GitFSLog(os.open("log.txt", 0))
+
+
+
 class TestWriteCurrentView(BaseTest):
-    def test_delete_directory_with_space_within_name(self):
+    def test_delete_directory_with_space_within_name(self, gitfs_log):
         directory = "%s/new directory" % self.current_path
 
-        os.makedirs(directory)
-
-        time.sleep(5)
+        with gitfs_log("SyncWorker: Set push_successful"):
+            os.makedirs(directory)
         with pull(self.sh):
             # check if directory exists or not
             directory_path = "%s/new directory" % self.repo_path
@@ -38,27 +102,28 @@ class TestWriteCurrentView(BaseTest):
             keep_path = "%s/new directory/.keep" % self.repo_path
             assert os.path.exists(keep_path)
 
+            # self.wait(self.assert_new_commit)
             self.assert_new_commit()
             self.assert_commit_message("Create the /new directory directory")
 
-        shutil.rmtree("%s/new directory/" % self.current_path)
-        time.sleep(5)
+        with gitfs_log("SyncWorker: Set push_successful"):
+            shutil.rmtree("%s/new directory/" % self.current_path)
 
         with pull(self.sh):
             self.assert_new_commit()
 
         assert os.path.exists(directory) is False
 
-    def test_delete_a_directory(self):
+    def test_delete_a_directory(self, gitfs_log):
         path = "%s/a_directory/another_dir/" % self.current_path
-        os.makedirs(path)
+        with gitfs_log("SyncWorker: Set push_successful"):
+            os.makedirs(path)
 
-        time.sleep(5)
         with pull(self.sh):
             self.assert_new_commit()
 
-        shutil.rmtree("%s/a_directory/" % self.current_path)
-        time.sleep(5)
+        with gitfs_log("SyncWorker: Set push_successful"):
+            shutil.rmtree("%s/a_directory/" % self.current_path)
 
         with pull(self.sh):
             self.assert_commit_message("Update 2 items")
@@ -66,48 +131,47 @@ class TestWriteCurrentView(BaseTest):
 
         assert os.path.exists(path) is False
 
-    def test_rename_directory(self):
+    def test_rename_directory(self, gitfs_log):
         old_dir = "%s/a_directory/" % self.current_path
         new_dir = "%s/some_directory/" % self.current_path
-        os.makedirs(old_dir)
+        with gitfs_log("SyncWorker: Set push_successful"):
+            os.makedirs(old_dir)
 
-        time.sleep(5)
         with pull(self.sh):
             self.assert_new_commit()
 
-        os.rename(old_dir, new_dir)
+        with gitfs_log("SyncWorker: Set push_successful"):
+            os.rename(old_dir, new_dir)
 
-        time.sleep(5)
         with pull(self.sh):
             self.assert_new_commit()
 
         assert os.path.isdir(new_dir) is not False
         assert os.path.exists(old_dir) is False
 
-    def test_link_a_file(self):
+    def test_link_a_file(self, gitfs_log):
         filename = "%s/link_file" % self.current_path
         link_name = "%s/new_link" % self.current_path
 
         with open(filename, "w") as f:
             f.write("some content")
 
-        os.link(filename, link_name)
+        with gitfs_log("SyncWorker: Set push_successful"):
+            os.link(filename, link_name)
 
-        time.sleep(5)
         with pull(self.sh):
             self.assert_commit_message("Update 2 items")
 
         is_link = os.path.isfile(link_name)
         assert is_link is not False
 
-    def test_write_a_file(self):
+    def test_write_a_file(self, gitfs_log):
         content = "Just a small file"
         filename = "%s/new_file" % self.current_path
 
-        with open(filename, "w") as f:
-            f.write(content)
-
-        time.sleep(5)
+        with gitfs_log("SyncWorker: Set push_successful"):
+            with open(filename, "w") as f:
+                f.write(content)
 
         # check if the write was done correctly
         with open(filename) as f:
@@ -116,18 +180,12 @@ class TestWriteCurrentView(BaseTest):
         # check if a commit was made
         with pull(self.sh):
             self.assert_new_commit()
-
-        time.sleep(1)
-
-        with pull(self.sh):
             self.assert_commit_message("Update /new_file")
 
-    def test_create_a_directory(self):
+    def test_create_a_directory(self, gitfs_log):
         directory = "%s/new_directory" % self.current_path
-
-        os.makedirs(directory)
-
-        time.sleep(5)
+        with gitfs_log("SyncWorker: Set push_successful"):
+            os.makedirs(directory)
 
         with pull(self.sh):
             # check if directory exists or not
@@ -148,12 +206,10 @@ class TestWriteCurrentView(BaseTest):
             with open("%s/.keep" % directory, 'w') as f:
                 f.write("some content")
 
-    def test_create_embedded_directory(self):
+    def test_create_embedded_directory(self, gitfs_log):
         directory = "%s/directory/embedded-directory" % self.current_path
-
-        os.makedirs(directory)
-
-        time.sleep(5)
+        with gitfs_log("SyncWorker: Set push_successful"):
+            os.makedirs(directory)
 
         with pull(self.sh):
             # check if directory exists or not
@@ -172,12 +228,11 @@ class TestWriteCurrentView(BaseTest):
             commit_msg = "Update 2 items"
             self.assert_commit_message(commit_msg)
 
-    def test_create_directory_inside_an_already_existing_directory(self):
+    def test_create_directory_inside_an_already_existing_directory(self, gitfs_log):
         directory = "%s/directory/new-embedded-directory" % self.current_path
 
-        os.makedirs(directory)
-
-        time.sleep(5)
+        with gitfs_log("SyncWorker: Set push_successful"):
+            os.makedirs(directory)
 
         with pull(self.sh):
             # check if directory exists or not
@@ -196,12 +251,11 @@ class TestWriteCurrentView(BaseTest):
             commit_msg = "Create the /directory/new-embedded-directory directory"
             self.assert_commit_message(commit_msg)
 
-    def test_create_embedded_directory_on_multiple_levels(self):
+    def test_create_embedded_directory_on_multiple_levels(self, gitfs_log):
         directory = "%s/a/b/c" % self.current_path
 
-        os.makedirs(directory)
-
-        time.sleep(5)
+        with gitfs_log("SyncWorker: Set push_successful"):
+            os.makedirs(directory)
 
         with pull(self.sh):
             # check if directory exists or not
@@ -221,14 +275,13 @@ class TestWriteCurrentView(BaseTest):
             commit_msg = "Update %s items" % len(keep_files)
             self.assert_commit_message(commit_msg)
 
-    def test_create_embedded_directory_big_depth(self):
+    def test_create_embedded_directory_big_depth(self, gitfs_log):
         path = ""
         for letter in string.letters:
             path = os.path.join(path, letter)
 
-        os.makedirs(os.path.join(self.current_path, path))
-
-        time.sleep(5)
+        with gitfs_log("SyncWorker: Set push_successful"):
+            os.makedirs(os.path.join(self.current_path, path))
 
         with pull(self.sh):
             # check if directory exists or not
@@ -247,11 +300,10 @@ class TestWriteCurrentView(BaseTest):
             for keep_file in keep_files:
                 assert os.path.exists(keep_file)
 
-    def test_chmod_valid_mode(self):
+    def test_chmod_valid_mode(self, gitfs_log):
         filename = "%s/testing" % self.current_path
-        os.chmod(filename, 0755)
-
-        time.sleep(5)
+        with gitfs_log("SyncWorker: Set push_successful"):
+            os.chmod(filename, 0755)
 
         with pull(self.sh):
             # check if the right mode was set
@@ -267,14 +319,12 @@ class TestWriteCurrentView(BaseTest):
         with pytest.raises(OSError):
             os.chmod(filename, 0777)
 
-
-    def test_rename(self):
+    def test_rename(self, gitfs_log):
         old_filename = "%s/testing" % self.current_path
         new_filename = "%s/new_testing" % self.current_path
 
-        os.rename(old_filename, new_filename)
-
-        time.sleep(5)
+        with gitfs_log("SyncWorker: Set push_successful"):
+            os.rename(old_filename, new_filename)
 
         with pull(self.sh):
             # check for new file
@@ -283,36 +333,33 @@ class TestWriteCurrentView(BaseTest):
             self.assert_new_commit()
             self.assert_commit_message("Rename /testing to /new_testing")
 
-    def test_fsync(self):
+    def test_fsync(self, gitfs_log):
         filename = "%s/me" % self.current_path
         content = "test fsync"
 
-        with open(filename, "w") as f:
-            f.write(content)
-            os.fsync(f.fileno())
-
-        time.sleep(5)
+        with gitfs_log("SyncWorker: Set push_successful"):
+            with open(filename, "w") as f:
+                f.write(content)
+                os.fsync(f.fileno())
 
         with pull(self.sh):
             self.assert_new_commit()
             self.assert_commit_message("Update 1 items")
 
-    def test_create(self):
+    def test_create(self, gitfs_log):
         filename = "%s/new_empty_file" % self.current_path
-        open(filename, "a").close()
-
-        time.sleep(5)
+        with gitfs_log("SyncWorker: Set push_successful"):
+            open(filename, "a").close()
 
         with pull(self.sh):
             self.assert_new_commit()
             self.assert_commit_message("Created /new_empty_file")
 
-    def test_symbolic_link(self):
+    def test_symbolic_link(self, gitfs_log):
         target = "me"
         name = "%s/links" % self.current_path
-        os.symlink(target, name)
-
-        time.sleep(5)
+        with gitfs_log("SyncWorker: Set push_successful"):
+            os.symlink(target, name)
 
         with pull(self.sh):
             # check if link exists
@@ -322,15 +369,14 @@ class TestWriteCurrentView(BaseTest):
             self.assert_commit_message("Create symlink to %s for "
                                        "/links" % (target))
 
-    def test_edit_file(self):
+    def test_edit_file(self, gitfs_log):
         content = "first part"
         continuation = "second part"
         filename = "%s/some_file" % self.current_path
 
-        with open(filename, "w") as f:
-            f.write(content)
-
-        time.sleep(5)
+        with gitfs_log("SyncWorker: Set push_successful"):
+            with open(filename, "w") as f:
+                f.write(content)
 
         with pull(self.sh):
             with open(filename) as f:
@@ -338,15 +384,12 @@ class TestWriteCurrentView(BaseTest):
 
             self.assert_new_commit()
 
-        time.sleep(1)
-
         with pull(self.sh):
             self.assert_commit_message("Update /some_file")
 
-            with open(filename, "w") as f:
-                f.write(continuation)
-
-        time.sleep(5)
+            with gitfs_log("SyncWorker: Set push_successful"):
+                with open(filename, "w") as f:
+                    f.write(continuation)
 
         with pull(self.sh):
             with open(filename) as f:
@@ -354,21 +397,18 @@ class TestWriteCurrentView(BaseTest):
 
             self.assert_new_commit()
 
-        time.sleep(1)
-
         with pull(self.sh):
             self.assert_commit_message("Update /some_file")
 
-    def test_create_multiple_files(self):
+    def test_create_multiple_files(self, gitfs_log):
         content = "Just a small file"
         no_of_files = 10
         filename = "%s/new_file" % self.current_path
 
-        for i in range(no_of_files):
-            with open(filename + str(i), "w") as f:
-                f.write(content)
-
-        time.sleep(5)
+        with gitfs_log("SyncWorker: Set push_successful"):
+            for i in range(no_of_files):
+                with open(filename + str(i), "w") as f:
+                    f.write(content)
 
         with pull(self.sh):
             for i in range(no_of_files):
@@ -377,35 +417,23 @@ class TestWriteCurrentView(BaseTest):
 
             self.assert_new_commit()
 
-        time.sleep(1)
-
         with pull(self.sh):
             self.assert_commit_message("Update %d items" % no_of_files)
 
-    def test_delete_file(self):
+    def test_delete_file(self, gitfs_log):
         filename = "%s/deletable_file" % self.current_path
 
-        with open(filename, "w") as f:
-            f.write("some content")
-
-        time.sleep(5)
+        with gitfs_log("SyncWorker: Set push_successful"):
+            with open(filename, "w") as f:
+                f.write("some content")
 
         with pull(self.sh):
             self.assert_new_commit()
-
-        time.sleep(1)
-
-        with pull(self.sh):
             self.assert_commit_message("Update /deletable_file")
 
-        os.remove(filename)
-
-        time.sleep(10)
+        with gitfs_log("SyncWorker: Set push_successful"):
+            os.remove(filename)
 
         with pull(self.sh):
             assert not os.path.exists(filename)
-
-        time.sleep(1)
-
-        with pull(self.sh):
             self.assert_commit_message("Deleted /deletable_file")
