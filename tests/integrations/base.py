@@ -13,10 +13,14 @@
 # limitations under the License.
 
 
+from contextlib import contextmanager
 from datetime import datetime
-from time import sleep
+import collections
 import os
 import subprocess
+import time
+
+import pytest
 
 
 class Sh:
@@ -57,7 +61,8 @@ class BaseTest(object):
 
         self.current_path = "%s/current" % self.mount_path
 
-        self.sh = Sh(os.environ["REMOTE"])
+        self.remote_repo_path = os.environ["REMOTE"]
+        self.sh = Sh(self.remote_repo_path)
 
         self.last_commit_hash = self.commit_hash()
 
@@ -105,3 +110,68 @@ class BaseTest(object):
     def assert_file_content(self, file_path, content):
         with open(self.repo_path + "/" + file_path) as f:
             assert f.read() == content
+
+
+class GitFSLog(object):
+    def __init__(self, file_descriptor):
+        self._partial_line = None
+        self.line_buffer = collections.deque()
+        self.file_descriptor = file_descriptor
+
+    def get_line(self):
+        if not self.line_buffer:
+            self._read_data()
+        if self.line_buffer:
+            return self.line_buffer.popleft()
+
+    def _read_data(self):
+        data = os.read(self.file_descriptor, 2048).splitlines(True)
+        if not data:
+            return
+        if self._partial_line:
+            data[0] = self._partial_line + data[0]
+        if not data[-1].endswith("\n"):
+            self._partial_line = data[-1]
+            data = data[:-1]  # discard the partial line
+        else:
+            self._partial_line = None
+        self.line_buffer.extend(data)
+
+    def clear(self):
+        while os.read(self.file_descriptor, 2048):
+            pass
+        self._partial_line = None
+        self.line_buffer = collections.deque()
+
+    def __call__(self, expected, **kwargs):
+        @contextmanager
+        def log_context(gitfs_log):
+            gitfs_log.clear()
+            yield
+            if isinstance(expected, basestring):
+                gitfs_log.expect(expected, **kwargs)
+            else:
+                gitfs_log.expect_multiple(expected, **kwargs)
+        return log_context(self)
+
+    def expect(self, expected, timeout=10, pollfreq=0.1):
+        elapsed = 0
+        while elapsed < timeout:
+            line = self.get_line()
+            # if we didn'g get anything re-try to read the line
+            while line is None and elapsed < timeout:
+                time.sleep(pollfreq)
+                elapsed += pollfreq
+                line = self.get_line()
+            if line is not None and expected in line:
+                return line
+        raise AssertionError("expected '{}' not found in stream".format(expected))
+
+    def expect_multiple(self, expected, *args, **kwargs):
+        for exp in expected:
+            self.expect(exp, *args, **kwargs)
+
+
+@pytest.fixture(scope='session')
+def gitfs_log():
+    return GitFSLog(os.open("log.txt", os.O_NONBLOCK))
