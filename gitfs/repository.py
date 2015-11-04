@@ -128,6 +128,7 @@ class Repository(object):
 
         _, behind = self.diverge(upstream, branch_name)
         self.behind = behind
+        return behind
 
     def commit(self, message, author, commiter, parents=None, ref="HEAD"):
         """ Wrapper for create_commit. It creates a commit from a given ref
