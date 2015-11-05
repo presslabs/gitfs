@@ -82,7 +82,7 @@ class Args(object):
 
         # setup logging
         if args.log != "syslog":
-            if args.log == '-':
+            if args.log in ('-', '/dev/stdout'):
                 handler = StreamHandler(sys.stdout)
             else:
                 handler = TimedRotatingFileHandler(args.log, when="midnight")
