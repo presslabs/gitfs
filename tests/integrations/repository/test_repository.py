@@ -41,7 +41,6 @@ class TestRepository(BaseTest):
         self.sh.git.commit("-m", '"Just a message."')
         with gitfs_log(["FetchWorker: Fetch done", "SyncWorker: Set push_successful"]):
             self.sh.git.push("origin", "master")
-            print "spam"
 
         assert os.path.exists(self.current_path + "/" + file_name)
         assert os.path.exists("%s/history/%s/%s" % (

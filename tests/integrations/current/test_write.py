@@ -16,7 +16,6 @@
 import collections
 import os
 import pytest
-import re
 import shutil
 import string
 import time
@@ -39,7 +38,6 @@ class TestWriteCurrentView(BaseTest):
             keep_path = "%s/new directory/.keep" % self.repo_path
             assert os.path.exists(keep_path)
 
-            # self.wait(self.assert_new_commit)
             self.assert_new_commit()
             self.assert_commit_message("Create the /new directory directory")
 

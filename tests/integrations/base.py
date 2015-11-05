@@ -118,16 +118,12 @@ class GitFSLog(object):
         self.line_buffer = collections.deque()
         self.file_descriptor = file_descriptor
 
-    def get_line(self):
-        if not self.line_buffer:
-            self._read_data()
-        if self.line_buffer:
-            return self.line_buffer.popleft()
-
     def _read_data(self):
+        # file should be opened in non-blocking mode, so this will
+        # return None if it can't read any data
         data = os.read(self.file_descriptor, 2048).splitlines(True)
         if not data:
-            return
+            return False
         if self._partial_line:
             data[0] = self._partial_line + data[0]
         if not data[-1].endswith("\n"):
@@ -136,14 +132,23 @@ class GitFSLog(object):
         else:
             self._partial_line = None
         self.line_buffer.extend(data)
+        return True
 
     def clear(self):
-        while os.read(self.file_descriptor, 2048):
-            pass
+        """Discards any logs produced so far."""
+        # seek to the end of the file, since we want to discard old messages
+        os.lseek(self.file_descriptor, 0, os.SEEK_END)
         self._partial_line = None
         self.line_buffer = collections.deque()
 
     def __call__(self, expected, **kwargs):
+        """Returns a context manager so you can wrap operations with expected
+        log output.
+
+        Example usage:
+        with gitfs_log("Expected log output"):
+            do_operation_that_produces_expected_log_output()
+        """
         @contextmanager
         def log_context(gitfs_log):
             gitfs_log.clear()
@@ -154,20 +159,40 @@ class GitFSLog(object):
                 gitfs_log.expect_multiple(expected, **kwargs)
         return log_context(self)
 
-    def expect(self, expected, timeout=10, pollfreq=0.1):
+    def _get_line(self, timeout, pollfreq=0.01):
+        """Blocks until it can return a line. Returns None if it timedout."""
+        if self.line_buffer:
+            # got buffered lines, consume from these first
+            return self.line_buffer.popleft()
         elapsed = 0
         while elapsed < timeout:
-            line = self.get_line()
-            # if we didn'g get anything re-try to read the line
-            while line is None and elapsed < timeout:
-                time.sleep(pollfreq)
-                elapsed += pollfreq
-                line = self.get_line()
-            if line is not None and expected in line:
-                return line
-        raise AssertionError("expected '{}' not found in stream".format(expected))
+            if self._read_data():
+                return self.line_buffer.popleft()
+            time.sleep(pollfreq)
+            elapsed += pollfreq
+        return None
+
+    def expect(self, expected, timeout=10):
+        """Blocks untill `expected` is found in a line of the stream,
+        or until timeout is reached.
+        """
+        started = time.time()
+        elapsed = 0
+        while elapsed < timeout:
+            line = self._get_line(
+                timeout=(timeout - elapsed))
+            if line is None:
+                break  # timed out waiting for line
+            elif expected in line:
+                return
+            elapsed = time.time() - started
+        raise AssertionError(
+            "Timed out waiting for '{}' in the stream".format(expected))
 
     def expect_multiple(self, expected, *args, **kwargs):
+        """Blocks untill all `expected` strings are found in the stream, in the
+        order they were passed.
+        """
         for exp in expected:
             self.expect(exp, *args, **kwargs)
 
