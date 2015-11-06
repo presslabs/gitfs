@@ -42,9 +42,12 @@ class FetchWorker(Peasant):
 
             try:
                 log.debug("Start fetching")
-                self.repository.fetch(self.upstream, self.branch)
+                was_behind = self.repository.fetch(self.upstream, self.branch)
                 fetch_successful.set()
-                log.debug("Fetch done")
+                if was_behind:
+                    log.info("Fetch done")
+                else:
+                    log.debug("Nothing to fetch")
             except:
                 fetch_successful.clear()
                 log.exception("Fetch failed")

@@ -20,7 +20,7 @@ import tempfile
 import grp
 import sys
 
-from logging import Formatter
+from logging import Formatter, StreamHandler
 from logging.handlers import TimedRotatingFileHandler, SysLogHandler
 from collections import OrderedDict
 from urlparse import urlparse
@@ -82,7 +82,10 @@ class Args(object):
 
         # setup logging
         if args.log != "syslog":
-            handler = TimedRotatingFileHandler(args.log, when="midnight")
+            if args.log in ('-', '/dev/stdout'):
+                handler = StreamHandler(sys.stdout)
+            else:
+                handler = TimedRotatingFileHandler(args.log, when="midnight")
             handler.setFormatter(Formatter(fmt='%(asctime)s %(threadName)s: '
                                            '%(message)s',
                                            datefmt='%B-%d-%Y %H:%M:%S'))

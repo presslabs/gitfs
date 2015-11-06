@@ -1,29 +1,28 @@
 import os
 import time
+import uuid
 
-from tests.integrations.base import BaseTest
+from tests.integrations.base import BaseTest, gitfs_log
 
 
 class TestRepository(BaseTest):
 
-    def test_chmod(self):
-        file_name = "new_file"
+    def test_chmod(self, gitfs_log):
+        file_name = "new_file" + str(uuid.uuid4())
 
         self.sh.touch(file_name)
 
         self.sh.git.add(file_name)
         self.sh.git.commit("-m", '"Just a message."')
-        self.sh.git.push("origin", "master")
-
-        time.sleep(7)
+        with gitfs_log(["FetchWorker: Fetch done", "SyncWorker: Set push_successful"]):
+            self.sh.git.push("origin", "master")
 
         self.sh.chmod("755", file_name)
 
         self.sh.git.add(file_name)
         self.sh.git.commit("-m", '"Just a message."')
-        self.sh.git.push("origin", "master")
-
-        time.sleep(10)
+        with gitfs_log(["FetchWorker: Fetch done", "SyncWorker: Set push_successful"]):
+            self.sh.git.push("origin", "master")
 
         assert os.path.exists("%s/history/%s/%s" % (
             self.mount_path,
@@ -33,16 +32,15 @@ class TestRepository(BaseTest):
         assert oct(os.stat(self.current_path + "/" + file_name).st_mode & 0777) ==\
             "0755"
 
-    def test_new_file(self):
-        file_name = "new_file"
+    def test_new_file(self, gitfs_log):
+        file_name = "new_file" + str(uuid.uuid4())
 
         self.sh.touch(file_name)
 
         self.sh.git.add(file_name)
         self.sh.git.commit("-m", '"Just a message."')
-        self.sh.git.push("origin", "master")
-
-        time.sleep(5)
+        with gitfs_log(["FetchWorker: Fetch done", "SyncWorker: Set push_successful"]):
+            self.sh.git.push("origin", "master")
 
         assert os.path.exists(self.current_path + "/" + file_name)
         assert os.path.exists("%s/history/%s/%s" % (
@@ -51,8 +49,8 @@ class TestRepository(BaseTest):
             self.get_commits_by_date()[0]
         ))
 
-    def test_edit_file(self):
-        file_name = "new_file"
+    def test_edit_file(self, gitfs_log):
+        file_name = "new_file" + str(uuid.uuid4())
         content = "some content"
 
         self.sh.touch(file_name)
@@ -61,14 +59,13 @@ class TestRepository(BaseTest):
         self.sh.git.commit("-m", '"Just a message."')
         self.sh.git.push("origin", "master")
 
-        with open(self.repo_path + "/" + file_name, "w") as f:
+        with open(os.path.join(self.remote_repo_path, file_name), "w") as f:
             f.write(content)
 
         self.sh.git.add(file_name)
         self.sh.git.commit("-m", '"Just a message."')
-        self.sh.git.push("origin", "master")
-
-        time.sleep(5)
+        with gitfs_log(["FetchWorker: Fetch done", "SyncWorker: Set push_successful"]):
+            self.sh.git.push("origin", "master")
 
         with open(self.repo_path + "/" + file_name) as f:
             assert f.read() == content
@@ -81,7 +78,7 @@ class TestRepository(BaseTest):
         ))
 
     def test_delete_content(self):
-        file_name = "new_file"
+        file_name = "new_file" + str(uuid.uuid4())
 
         with open(self.repo_path + "/" + file_name, "w") as f:
             f.write("some content")
@@ -103,24 +100,22 @@ class TestRepository(BaseTest):
             self.get_commits_by_date()[0]
         ))
 
-    def test_delete_file(self):
-        file_name = "new_file"
+    def test_delete_file(self, gitfs_log):
+        file_name = "new_file" + str(uuid.uuid4())
 
         self.sh.touch(file_name)
 
         self.sh.git.add(file_name)
         self.sh.git.commit("-m", '"Just a message."')
-        self.sh.git.push("origin", "master")
-
-        time.sleep(5)
+        with gitfs_log(["FetchWorker: Fetch done", "SyncWorker: Set push_successful"]):
+            self.sh.git.push("origin", "master")
 
         self.sh.rm(file_name)
 
         self.sh.git.rm(file_name)
         self.sh.git.commit("-m", '"Just a message."')
-        self.sh.git.push("origin", "master")
-
-        time.sleep(5)
+        with gitfs_log(["FetchWorker: Fetch done", "SyncWorker: Set push_successful"]):
+            self.sh.git.push("origin", "master")
 
         assert not os.path.exists(self.current_path + "/" + file_name)
         assert os.path.exists("%s/history/%s/%s" % (
