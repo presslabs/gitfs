@@ -12,6 +12,8 @@ build:
     - sudo chmod 660 /dev/fuse
     - echo user_allow_other | sudo tee -a /etc/fuse.conf > /dev/null
     - sudo chmod 644 /etc/fuse.conf
+    - git config --global user.email "drone@example.com"
+    - git config --global user.name "Drone CI"
     - make test
 cache:
   mount:
