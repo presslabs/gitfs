@@ -1,15 +1,19 @@
-image: python2.7
-env:
+build:
+  image: ubuntu:trusty
+  privileged: true
+  environment:
     - PIP_DOWNLOAD_CACHE=/tmp/pip_download_cache
-script:
-    - sudo chown ubuntu:ubuntu /tmp/pip_download_cache
-    - make drone
+    - DEBIAN_FRONTEND=noninteractive
+  commands:
+    - apt-get update && apt-get install -qy build-essential python-pip python-virtualenv python-dev software-properties-common python-software-properties libfuse-dev fuse git libffi-dev
+    - sudo add-apt-repository -y ppa:presslabs/gitfs-dev
+    - sudo apt-get update
+    - sudo apt-get install -y libgit2 libgit2-dev
+    - sudo chmod 660 /dev/fuse
+    - echo user_allow_other | sudo tee -a /etc/fuse.conf > /dev/null
+    - sudo chmod 644 /etc/fuse.conf
     - make test
-    - coveralls
-publish:
-    pypi:
-        username: presslabs
-        password: {{ pypi_password }}
 cache:
+  mount:
     - /var/cache/apt/
     - /tmp/pip_download_cache

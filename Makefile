@@ -44,18 +44,6 @@ $(VIRTUAL_ENV)/bin/py.test: $(VIRTUAL_ENV)/bin/pip
 $(VIRTUAL_ENV)/bin/pip:
 	virtualenv --setuptools $(VIRTUAL_ENV)
 
-drone: virtualenv
-	sudo apt-get update
-	sudo apt-get install -y software-properties-common python-software-properties
-	sudo add-apt-repository -y ppa:presslabs/gitfs-dev
-	sudo apt-get update
-	sudo apt-get install -y libgit2 libgit2-dev git git-core libfuse-dev fuse-utils fuse libfuse2
-	sudo chown ubuntu:ubuntu /dev/fuse
-	sudo chmod 660 /dev/fuse
-	echo user_allow_other | sudo tee -a /etc/fuse.conf > /dev/null
-	sudo chmod 644 /etc/fuse.conf
-	$(VIRTUAL_ENV)/bin/pip install python-coveralls
-
 virtualenv: $(VIRTUAL_ENV)/bin/pip
 
 testenv: virtualenv
