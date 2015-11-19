@@ -6,7 +6,7 @@ VAGRANTFILE_API_VERSION = "2"
 
 $provision = <<SCRIPT
 echo I am provisioning...
-sudo date > /etc/vagrant_provisioned_at
+sudo sh -c 'date > /etc/vagrant_provisioned_at'
 sudo apt-get update
 sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -q python-software-properties
 sudo add-apt-repository ppa:presslabs/gitfs
