@@ -14,14 +14,12 @@
 # limitations under the License.
 
 
-import collections
 import os
 import pytest
 import shutil
 import string
-import time
 
-from tests.integrations.base import BaseTest, pull, gitfs_log
+from tests.integrations.base import BaseTest, pull
 
 
 class TestWriteCurrentView(BaseTest):
