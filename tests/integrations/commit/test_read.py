@@ -1,3 +1,4 @@
+# Copyright 2015 Justus Perlwitz
 # Copyright 2014 PressLabs SRL
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -39,7 +40,7 @@ class TestReadCommitView(BaseTest):
         attrs = {
             'st_uid': os.getuid(),
             'st_gid': os.getgid(),
-            'st_mode': 0100444,
+            'st_mode': 33060,  # 0100444 in octal
         }
 
         for name, value in attrs.iteritems():

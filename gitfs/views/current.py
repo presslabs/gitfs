@@ -1,3 +1,4 @@
+# Copyright 2015 Justus Perlwitz
 # Copyright 2014 PressLabs SRL
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -125,7 +126,7 @@ class CurrentView(PassthroughView):
             writers += 1
             log.info("CurrentView: Open %s for write", full_path)
 
-            super(CurrentView, self).chmod(keep_path, 0644)
+            super(CurrentView, self).chmod(keep_path, 420)  # 0644 in octal
 
             self.dirty[fh] = {
                 'message': "Create the %s directory" % path,

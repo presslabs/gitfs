@@ -1,3 +1,4 @@
+# Copyright 2015 Justus Perlwitz
 # Copyright 2014 PressLabs SRL
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -38,7 +39,7 @@ class TestIndexView(object):
         result = view.getattr("/", 1)
 
         asserted_result = {
-            'st_mode': S_IFDIR | 0555,
+            'st_mode': S_IFDIR | 365,  # 0555 in octal
             'st_nlink': 2,
             'st_uid': 1,
             'st_gid': 1,

@@ -1,3 +1,4 @@
+# Copyright 2015 Justus Perlwitz
 # Copyright 2014 PressLabs SRL
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -38,7 +39,7 @@ class TestReadCurrentView(BaseTest):
         attrs = {
             'st_uid': os.getuid(),
             'st_gid': os.getgid(),
-            'st_mode': 0100644,
+            'st_mode': 33188,  # 0100644 in octal
             'st_ctime': real_stats.st_ctime,
             'st_mtime': real_stats.st_mtime,
             'st_atime': real_stats.st_atime,

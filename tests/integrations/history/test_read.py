@@ -1,3 +1,4 @@
+# Copyright 2015 Justus Perlwitz
 # Copyright 2014 PressLabs SRL
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -36,7 +37,7 @@ class TestHistoryView(BaseTest):
         attrs = {
             'st_uid': os.getuid(),
             'st_gid': os.getgid(),
-            'st_mode': 040555,
+            'st_mode': 16749,  # 040555 in octal
         }
 
         for name, value in attrs.iteritems():
@@ -56,7 +57,7 @@ class TestHistoryView(BaseTest):
         attrs = {
             'st_uid': os.getuid(),
             'st_gid': os.getgid(),
-            'st_mode': 040555,
+            'st_mode': 16749,  # 040555 in octal
         }
         for name, value in attrs.iteritems():
             assert getattr(stats, name) == value

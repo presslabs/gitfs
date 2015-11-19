@@ -1,3 +1,4 @@
+# Copyright 2015 Justus Perlwitz
 # Copyright 2014 PressLabs SRL
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -40,7 +41,7 @@ class IndexView(ReadOnlyView):
 
         attrs = super(IndexView, self).getattr(path, fh)
         attrs.update({
-            'st_mode': S_IFDIR | 0555,
+            'st_mode': S_IFDIR | 365,  # 0555 in octal
             'st_nlink': 2,
         })
 

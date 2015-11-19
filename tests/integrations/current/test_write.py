@@ -1,3 +1,4 @@
+# Copyright 2015 Justus Perlwitz
 # Copyright 2014 PressLabs SRL
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -238,12 +239,15 @@ class TestWriteCurrentView(BaseTest):
     def test_chmod_valid_mode(self, gitfs_log):
         filename = "%s/testing" % self.current_path
         with gitfs_log("SyncWorker: Set push_successful"):
-            os.chmod(filename, 0755)
+            os.chmod(
+                filename,
+                493,  # 0755 in octal
+            )
 
         with pull(self.sh):
             # check if the right mode was set
             stats = os.stat(filename)
-            assert stats.st_mode == 0100755
+            assert stats.st_mode == 33261  # 0100755 in octal
 
             self.assert_new_commit()
             self.assert_commit_message("Chmod to 0755 on /testing")
@@ -252,7 +256,10 @@ class TestWriteCurrentView(BaseTest):
         filename = "%s/testing" % self.current_path
 
         with pytest.raises(OSError):
-            os.chmod(filename, 0777)
+            os.chmod(
+                filename,
+                511,  # 0777 in octal
+            )
 
     def test_rename(self, gitfs_log):
         old_filename = "%s/testing" % self.current_path

@@ -1,3 +1,4 @@
+# Copyright 2015 Justus Perlwitz
 # Copyright 2014 PressLabs SRL
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -76,10 +77,15 @@ class TestPassthrough(object):
         with patch('gitfs.views.passthrough.os.chmod', mocked_chmod):
             view = PassthroughView(repo=self.repo, repo_path=self.repo_path)
 
-            view.chmod('/magic/path', 0777)
+            view.chmod(
+                '/magic/path',
+                511,  # 0777 in octal
+            )
 
-            mocked_chmod.assert_called_once_with('/the/root/path/magic/path',
-                                                 0777)
+            mocked_chmod.assert_called_once_with(
+                '/the/root/path/magic/path',
+                511,  # 0777 in octal
+            )
 
     def test_chown(self):
         mocked_chown = MagicMock()

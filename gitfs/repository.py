@@ -1,3 +1,4 @@
+# Copyright 2015 Justus Perlwitz
 # Copyright 2014 PressLabs SRL
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -277,10 +278,16 @@ class Repository(object):
 
     def get_git_object_default_stats(self, ref, path):
         types = {
-            GIT_FILEMODE_LINK: {'st_mode': S_IFLNK | 0444},
-            GIT_FILEMODE_TREE: {'st_mode': S_IFDIR | 0555, 'st_nlink': 2},
-            GIT_FILEMODE_BLOB: {'st_mode': S_IFREG | 0444},
-            GIT_FILEMODE_BLOB_EXECUTABLE: {'st_mode': S_IFREG | 0555},
+            GIT_FILEMODE_LINK: {
+                'st_mode': S_IFLNK | 292,  # 0444 in octal
+            }, GIT_FILEMODE_TREE: {
+                'st_mode': S_IFDIR | 365,  # 0555 in octal
+                'st_nlink': 2
+            }, GIT_FILEMODE_BLOB: {
+                'st_mode': S_IFREG | 292,  # 0444 in octal
+            }, GIT_FILEMODE_BLOB_EXECUTABLE: {
+                'st_mode': S_IFREG | 365,  # 0555 in octal
+            },
         }
 
         if path == "/":

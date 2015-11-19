@@ -1,3 +1,4 @@
+# Copyright 2015 Justus Perlwitz
 # Copyright 2014 PressLabs SRL
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -218,7 +219,10 @@ class TestCurrentView(object):
             mocked_full_path.assert_called_once_with(keep_path)
             mocked_os.path.exists.assert_called_once_with(keep_path)
             mocked_os.open.assert_called_once_with("full_path", mode)
-            mocked_chmod.assert_called_once_with(keep_path, 0644)
+            mocked_chmod.assert_called_once_with(
+                keep_path,
+                420,  # 0644 in octal
+            )
             assert current.dirty == {
                 10: {
                     'message': "Create the /path directory"
@@ -287,8 +291,13 @@ class TestCurrentView(object):
 
         current._stage = mocked_index
 
-        assert current.chmod("/path", 0100644) == "done"
-        message = 'Chmod to %s on %s' % (str(oct(0644))[-4:], "/path")
+        assert current.chmod(
+            "/path",
+            33188,  # 0100644 in octal
+        ) == "done"
+        message = 'Chmod to %s on %s' % (str(oct(
+            420  # 0644 in octal
+        ))[-4:], "/path")
         mocked_index.assert_called_once_with(add="/path", message=message)
 
         current_view.PassthroughView.chmod = old_chmod
@@ -307,7 +316,10 @@ class TestCurrentView(object):
             current = CurrentView(repo=mocked_repo, uid=1, gid=1,
                                   repo_path="repo_path",
                                   ignore=CachedIgnore())
-            assert current.chmod("/path/to/dir", 0040755) == "done"
+            assert current.chmod(
+                "/path/to/dir",
+                16877,  # 0040755 in octal
+            ) == "done"
 
             mocked_os.path.isdir.assert_called_once_with('repo/path/to/dir')
 
