@@ -227,7 +227,7 @@ class TestWriteCurrentView(BaseTest):
             # build the paths for the keep files
             keep_files = []
             path = self.repo_path
-            for letter in string.letters:
+            for letter in string.ascii_letters:
                 path = os.path.join(path, letter)
                 path_with_keep = os.path.join(path, '.keep')
                 keep_files.append(path_with_keep)
