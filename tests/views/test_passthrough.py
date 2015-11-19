@@ -14,11 +14,13 @@
 # limitations under the License.
 
 
-from six.moves import builtins
-import os
-from pytest import raises
-from fuse import FuseOSError
+from io import TextIOWrapper
 from mock import MagicMock, patch, call
+import os
+
+from fuse import FuseOSError
+from six.moves import builtins
+from pytest import raises
 
 from gitfs.views import PassthroughView
 
@@ -373,7 +375,7 @@ class TestPassthrough(object):
 
     def test_truncate(self):
         mocked_open = MagicMock()
-        mocked_file = MagicMock(spec=file)
+        mocked_file = MagicMock(spec=TextIOWrapper)
 
         with patch('gitfs.views.passthrough.open', create=True) as mocked_open:
             mocked_open().__enter__.return_value = mocked_file
