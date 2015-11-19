@@ -1,3 +1,4 @@
+# Copyright 2015 Justus Perlwitz
 # Copyright 2014 PressLabs SRL
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,13 +16,15 @@
 import sys
 from mock import MagicMock, patch, call
 
+from six import iteritems
+
 from gitfs.mounter import (prepare_components, parse_args, start_fuse,
                            get_credentials)
 
 
 class EmptyObject(object):
     def __init__(self, **kwargs):
-        for name, value in kwargs.iteritems():
+        for name, value in iteritems(kwargs):
             setattr(self, name, value)
 
 

@@ -24,6 +24,7 @@ import sys
 from logging import Formatter, StreamHandler
 from logging.handlers import TimedRotatingFileHandler, SysLogHandler
 from collections import OrderedDict
+from six import iteritems
 from six.moves.urllib.parse import urlparse
 
 from gitfs.log import log
@@ -127,7 +128,7 @@ class Args(object):
             return getattr(self.__dict__['config'], attr)
 
     def set_defaults(self, args):
-        for option, value in self.DEFAULTS.iteritems():
+        for option, value in iteritems(self.DEFAULTS):
             new_value = getattr(args, option, None)
 
             if not new_value:

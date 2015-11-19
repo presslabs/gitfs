@@ -1,3 +1,4 @@
+# Copyright 2015 Justus Perlwitz
 # Copyright 2014 PressLabs SRL
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,6 +15,8 @@
 
 
 from mock import MagicMock, patch, call
+
+from six import iteritems
 
 from gitfs.utils.args import Args
 
@@ -66,7 +69,7 @@ class TestArgs(object):
                 "not_magic": "False",
                 "ssh_user": "user",
             }
-            for name, value in asserted_results.iteritems():
+            for name, value in iteritems(asserted_results):
                 assert value == getattr(args, name)
 
             assert args.config == mocked_args

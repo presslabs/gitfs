@@ -22,6 +22,8 @@ from pygit2 import (clone_repository, Signature, GIT_SORT_TOPOLOGICAL,
                     GIT_FILEMODE_TREE, GIT_STATUS_CURRENT,
                     GIT_FILEMODE_LINK, GIT_FILEMODE_BLOB, GIT_BRANCH_REMOTE,
                     GIT_BRANCH_LOCAL, GIT_FILEMODE_BLOB_EXECUTABLE)
+from six import iteritems
+
 from gitfs.cache import CommitCache
 from gitfs.utils.path import split_path_into_components
 from gitfs.utils.commits import CommitsList
@@ -82,7 +84,7 @@ class Repository(object):
         self.ignore.update()
 
         status = self._repo.status()
-        for path, status in status.iteritems():
+        for path, status in iteritems(status):
             # path is in current status, move on
             if status == GIT_STATUS_CURRENT:
                 continue

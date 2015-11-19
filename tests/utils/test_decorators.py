@@ -1,3 +1,4 @@
+# Copyright 2015 Justus Perlwitz
 # Copyright 2014 PressLabs SRL
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,6 +19,8 @@ from threading import Event
 import pytest
 from mock import MagicMock, patch, call
 
+from six import iteritems
+
 from gitfs.utils.decorators.retry import retry
 from gitfs.utils.decorators.while_not import while_not
 
@@ -34,7 +37,7 @@ class MockedWraps(object):
 
 class EmptyMock(object):
     def __init__(self, **kwargs):
-        for name, value in kwargs.iteritems():
+        for name, value in iteritems(kwargs):
             setattr(self, name, value)
 
 

@@ -17,6 +17,8 @@
 import os
 from datetime import datetime
 
+from six import iteritems
+
 from tests.integrations.base import BaseTest
 
 
@@ -43,7 +45,7 @@ class TestReadCommitView(BaseTest):
             'st_mode': 33060,  # 0100444 in octal
         }
 
-        for name, value in attrs.iteritems():
+        for name, value in iteritems(attrs):
             assert getattr(stats, name) == value
 
         st_time = "%s %s" % (self.today, "-".join(commit.split("-")[:-1]))
