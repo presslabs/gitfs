@@ -5,7 +5,7 @@ build:
     - PIP_DOWNLOAD_CACHE=/tmp/pip_download_cache
     - DEBIAN_FRONTEND=noninteractive
   commands:
-    - apt-get update && apt-get install -qy build-essential python-pip python-virtualenv python-dev software-properties-common python-software-properties libfuse-dev fuse git libffi-dev
+    - apt-get update && apt-get install -qy build-essential python-pip python-virtualenv python-dev software-properties-common python-software-properties libfuse-dev fuse git libffi-dev python3.4-dev
     - sudo add-apt-repository -y ppa:presslabs/gitfs-dev
     - sudo apt-get update
     - sudo apt-get install -y libgit2 libgit2-dev
