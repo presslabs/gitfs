@@ -14,7 +14,7 @@
 # limitations under the License.
 
 
-import __builtin__
+from six.moves import builtins
 import os
 from pytest import raises
 from fuse import FuseOSError
@@ -32,8 +32,8 @@ class TestPassthrough(object):
 
             return original_super(*args, **kwargs)
 
-        __builtin__.original_super = super
-        __builtin__.super = mock_super
+        builtins.original_super = super
+        builtins.super = mock_super
 
         root = '/the/root/path'
 
@@ -47,8 +47,8 @@ class TestPassthrough(object):
         self.repo_path = root
 
     def teardown(self):
-        __builtin__.super = __builtin__.original_super
-        del __builtin__.original_super
+        builtins.super = builtins.original_super
+        del builtins.original_super
 
     def test_access(self):
         mocked_access = MagicMock()
