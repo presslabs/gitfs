@@ -1,3 +1,4 @@
+# Copyright 2015 Justus Perlwitz
 # Copyright 2014 PressLabs SRL
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,8 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-from Queue import Queue
+from six.moves.queue import Queue
 
 from gitfs.log import log
 

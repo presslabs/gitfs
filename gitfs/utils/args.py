@@ -1,3 +1,4 @@
+# Copyright 2015 Justus Perlwitz
 # Copyright 2014 PressLabs SRL
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,7 +24,7 @@ import sys
 from logging import Formatter, StreamHandler
 from logging.handlers import TimedRotatingFileHandler, SysLogHandler
 from collections import OrderedDict
-from urlparse import urlparse
+from six.moves.urllib.parse import urlparse
 
 from gitfs.log import log
 from gitfs.cache import lru_cache
