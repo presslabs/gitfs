@@ -40,7 +40,7 @@ class Sh:
         self.command = ""
 
         return subprocess.Popen(command, shell=True, stdout=subprocess.PIPE,
-                                cwd=self.cwd).stdout.read()
+                                cwd=self.cwd).stdout.read().decode()
 
 
 class pull:
@@ -85,7 +85,7 @@ class BaseTest(object):
 
         lines = self.sh.git.log("--before", '"%s 23:59:59"' % date,
                                 "--after", '"%s 00:00:00"' % date,
-                                '--pretty="%ai %H"').decode().splitlines()
+                                '--pretty="%ai %H"').splitlines()
 
         lines = map(lambda line: line.split(), lines)
 
