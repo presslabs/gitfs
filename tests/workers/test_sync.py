@@ -1,3 +1,4 @@
+# Copyright 2015 Justus Perlwitz
 # Copyright 2014 PressLabs SRL
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -11,12 +12,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from six.moves.queue import Empty
-
-import pygit2
-
-import pytest
 from mock import MagicMock, patch
+
+from six.moves.queue import Empty
+import pygit2
+import pytest
 
 from gitfs.worker.sync import SyncWorker
 

@@ -1,8 +1,7 @@
 import os
-import time
 import uuid
 
-from tests.integrations.base import BaseTest, gitfs_log
+from tests.integrations.base import BaseTest
 
 
 class TestRepository(BaseTest):
