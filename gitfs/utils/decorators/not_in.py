@@ -1,3 +1,4 @@
+# Copyright 2015 Justus Perlwitz
 # Copyright 2014 PressLabs SRL
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,6 +18,8 @@ import errno
 import inspect
 from functools import wraps
 
+from six import string_types
+
 from fuse import FuseOSError
 
 
@@ -29,7 +32,7 @@ class not_in(object):
         @wraps(f)
         def decorated(their_self, *args, **kwargs):
             # TODO: check for look_at in self first
-            if isinstance(self.look_at, basestring):
+            if isinstance(self.look_at, string_types):
                 self.look_at = getattr(their_self, self.look_at)
 
             self.check_args(f, args)

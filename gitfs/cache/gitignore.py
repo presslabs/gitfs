@@ -1,3 +1,4 @@
+# Copyright 2015 Justus Perlwitz
 # Copyright 2014 PressLabs SRL
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,6 +17,8 @@
 import re
 import os
 import fnmatch
+
+from six import string_types
 
 
 class CachedIgnore(object):
@@ -64,7 +67,7 @@ class CachedIgnore(object):
         return items
 
     def _parse_hard_ignore(self, hard_ignore):
-        if isinstance(hard_ignore, basestring):
+        if isinstance(hard_ignore, string_types):
             return hard_ignore.split("|")
         else:
             return []

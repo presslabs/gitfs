@@ -1,3 +1,4 @@
+# Copyright 2015 Justus Perlwitz
 # Copyright 2014 PressLabs SRL
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,6 +22,7 @@ import subprocess
 import time
 
 import pytest
+from six import string_types
 
 
 class Sh:
@@ -153,7 +155,7 @@ class GitFSLog(object):
         def log_context(gitfs_log):
             gitfs_log.clear()
             yield
-            if isinstance(expected, basestring):
+            if isinstance(expected, string_types):
                 gitfs_log.expect(expected, **kwargs)
             else:
                 gitfs_log.expect_multiple(expected, **kwargs)
