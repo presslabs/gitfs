@@ -39,7 +39,7 @@ $(VIRTUAL_ENV)/bin/py.test: $(VIRTUAL_ENV)/bin/pip
 	@touch $@
 
 $(VIRTUAL_ENV)/bin/pip:
-	virtualenv --setuptools $(VIRTUAL_ENV)
+	virtualenv --setuptools $(VIRTUAL_ENV) -ppython3.4
 
 virtualenv: $(VIRTUAL_ENV)/bin/pip
 
