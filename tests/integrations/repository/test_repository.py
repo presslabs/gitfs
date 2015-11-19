@@ -1,7 +1,7 @@
 import os
 import uuid
 
-from tests.integrations.base import BaseTest
+from tests.integrations.base import BaseTest, gitfs_log
 
 
 class TestRepository(BaseTest):

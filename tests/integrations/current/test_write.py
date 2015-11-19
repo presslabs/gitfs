@@ -19,7 +19,7 @@ import pytest
 import shutil
 import string
 
-from tests.integrations.base import BaseTest, pull
+from tests.integrations.base import BaseTest, pull, gitfs_log  # noqa
 
 
 class TestWriteCurrentView(BaseTest):
