@@ -45,7 +45,7 @@ class TestCommitCache(object):
         cache.update()
 
         cache['2014-09-20'] = Commit(1, 1, "1111111111")
-        assert cache.keys() == ['2014-09-20', '2014-09-19']
+        assert sorted(cache.keys()) == ['2014-09-19', '2014-09-20']
         asserted_time = datetime.fromtimestamp(mocked_commit.commit_time)
         asserted_time = "%s-%s-%s" % (asserted_time.hour, asserted_time.minute,
                                       asserted_time.second)

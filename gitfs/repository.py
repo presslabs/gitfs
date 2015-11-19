@@ -336,7 +336,7 @@ class Repository(object):
         Walk through all commits from current repo in order to compose the
         _history_ directory.
         """
-        return self.commits.keys()
+        return list(self.commits.keys())
 
     def get_commits_by_date(self, date):
         """
@@ -349,7 +349,7 @@ class Repository(object):
             the short sha1 of the commit (first 10 characters).
         :rtype: list
         """
-        return map(str, self.commits[date])
+        return list(map(str, self.commits[date]))
 
     def walk_branches(self, sort, *branches):
         """
