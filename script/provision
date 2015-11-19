@@ -9,7 +9,7 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -q python-virtualenv pyth
 sudo adduser "$USER" fuse
 sudo sh -c "echo 'user_allow_other' >> /etc/fuse.conf"
 virtualenv -q --setuptools /home/vagrant/gitfs -ppython3.4
-echo "source $HOME/gitfs/bin/activate" >> "$USER/.bashrc"
+echo "source $HOME/gitfs/bin/activate" >> "$HOME/.bashrc"
 echo Installing cffi
 /home/vagrant/gitfs/bin/pip install -q 'cffi'
 echo Installing requirements
