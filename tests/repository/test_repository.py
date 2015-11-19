@@ -183,7 +183,7 @@ class TestRepository(RepositoryBaseTest):
                 self.step = step
                 self.max_commit_number = max_commit_number
 
-            def next(self):
+            def __next__(self):
                 number = self.commit_number
                 if self.commit_number >= self.max_commit_number:
                     raise StopIteration()

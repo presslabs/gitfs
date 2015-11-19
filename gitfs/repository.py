@@ -373,7 +373,7 @@ class Repository(object):
         commits = []
         for iterator in iterators:
             try:
-                commit = iterator.next()
+                commit = next(iterator)
             except StopIteration:
                 commit = None
             commits.append(commit)
@@ -383,7 +383,7 @@ class Repository(object):
         while not all(stop_iteration):
             for index, iterator in enumerate(iterators):
                 try:
-                    commit = iterator.next()
+                    commit = next(iterator)
                     commits[index] = commit
                 except StopIteration:
                     stop_iteration[index] = True
