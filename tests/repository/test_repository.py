@@ -439,7 +439,7 @@ class TestRepository(RepositoryBaseTest):
         repo.get_git_object_type = mocked_git_obj
 
         assert repo.get_git_object_default_stats("ref", "/") == {
-            'st_mode': S_IFDIR | 365,  # 0555 in octal
+            'st_mode': S_IFDIR | 0o555,
             'st_nlink': 2
         }
         assert repo.get_git_object_default_stats("ref", "/ups") is None
@@ -457,7 +457,7 @@ class TestRepository(RepositoryBaseTest):
         repo.get_blob_size = mocked_size
 
         assert repo.get_git_object_default_stats("ref", "/ups") == {
-            'st_mode': S_IFREG | 292,  # 0444 in octal
+            'st_mode': S_IFREG | 0o444,
             'st_size': 10
         }
         mocked_size.assert_called_once_with("ref", "/ups")

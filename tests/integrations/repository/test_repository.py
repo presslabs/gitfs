@@ -30,7 +30,7 @@ class TestRepository(BaseTest):
             self.get_commits_by_date()[0]
         ))
         assert oct(os.stat(
-            self.current_path + "/" + file_name).st_mode & 511  # 0777 in octal
+            self.current_path + "/" + file_name).st_mode & 0o777
         ) == "0755"
 
     def test_new_file(self, gitfs_log):

@@ -81,12 +81,12 @@ class TestPassthrough(object):
 
             view.chmod(
                 '/magic/path',
-                511,  # 0777 in octal
+                0o777,
             )
 
             mocked_chmod.assert_called_once_with(
                 '/the/root/path/magic/path',
-                511,  # 0777 in octal
+                0o777,
             )
 
     def test_chown(self):

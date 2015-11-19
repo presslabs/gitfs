@@ -39,7 +39,7 @@ class TestIndexView(object):
         result = view.getattr("/", 1)
 
         asserted_result = {
-            'st_mode': S_IFDIR | 365,  # 0555 in octal
+            'st_mode': S_IFDIR | 0o555,
             'st_nlink': 2,
             'st_uid': 1,
             'st_gid': 1,

@@ -48,7 +48,7 @@ class TestHistory(object):
                 'st_ctime': "tomorrow",
                 'st_mtime': "tomorrow",
                 'st_nlink': 2,
-                'st_mode': S_IFDIR | 365,  # 0555 in octal
+                'st_mode': S_IFDIR | 0o555,
             }
             assert asserted_result == result
 

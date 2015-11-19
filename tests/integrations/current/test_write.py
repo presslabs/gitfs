@@ -241,13 +241,13 @@ class TestWriteCurrentView(BaseTest):
         with gitfs_log("SyncWorker: Set push_successful"):
             os.chmod(
                 filename,
-                493,  # 0755 in octal
+                0o755,
             )
 
         with pull(self.sh):
             # check if the right mode was set
             stats = os.stat(filename)
-            assert stats.st_mode == 33261  # 0100755 in octal
+            assert stats.st_mode == 0o100755
 
             self.assert_new_commit()
             self.assert_commit_message("Chmod to 0755 on /testing")
@@ -258,7 +258,7 @@ class TestWriteCurrentView(BaseTest):
         with pytest.raises(OSError):
             os.chmod(
                 filename,
-                511,  # 0777 in octal
+                0o777,
             )
 
     def test_rename(self, gitfs_log):

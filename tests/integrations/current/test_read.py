@@ -41,7 +41,7 @@ class TestReadCurrentView(BaseTest):
         attrs = {
             'st_uid': os.getuid(),
             'st_gid': os.getgid(),
-            'st_mode': 33188,  # 0100644 in octal
+            'st_mode': 0o100644,
             'st_ctime': real_stats.st_ctime,
             'st_mtime': real_stats.st_mtime,
             'st_atime': real_stats.st_atime,

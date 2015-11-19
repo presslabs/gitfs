@@ -221,7 +221,7 @@ class TestCurrentView(object):
             mocked_os.open.assert_called_once_with("full_path", mode)
             mocked_chmod.assert_called_once_with(
                 keep_path,
-                420,  # 0644 in octal
+                0o644,
             )
             assert current.dirty == {
                 10: {
@@ -293,10 +293,10 @@ class TestCurrentView(object):
 
         assert current.chmod(
             "/path",
-            33188,  # 0100644 in octal
+            0o100644,
         ) == "done"
         message = 'Chmod to %s on %s' % (str(oct(
-            420  # 0644 in octal
+            0o644,
         ))[-4:], "/path")
         mocked_index.assert_called_once_with(add="/path", message=message)
 
@@ -318,7 +318,7 @@ class TestCurrentView(object):
                                   ignore=CachedIgnore())
             assert current.chmod(
                 "/path/to/dir",
-                16877,  # 0040755 in octal
+                0o040755,
             ) == "done"
 
             mocked_os.path.isdir.assert_called_once_with('repo/path/to/dir')

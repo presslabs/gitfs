@@ -39,7 +39,7 @@ class TestHistoryView(BaseTest):
         attrs = {
             'st_uid': os.getuid(),
             'st_gid': os.getgid(),
-            'st_mode': 16749,  # 040555 in octal
+            'st_mode': 0o40555,
         }
 
         for name, value in iteritems(attrs):
@@ -59,7 +59,7 @@ class TestHistoryView(BaseTest):
         attrs = {
             'st_uid': os.getuid(),
             'st_gid': os.getgid(),
-            'st_mode': 16749,  # 040555 in octal
+            'st_mode': 0o40555,
         }
         for name, value in iteritems(attrs):
             assert getattr(stats, name) == value
