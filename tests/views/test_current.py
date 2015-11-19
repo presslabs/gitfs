@@ -295,9 +295,7 @@ class TestCurrentView(object):
             "/path",
             0o100644,
         ) == "done"
-        message = 'Chmod to %s on %s' % (str(oct(
-            0o644,
-        ))[-4:], "/path")
+        message = 'Chmod to 0%o on %s' % (0o644, "/path")
         mocked_index.assert_called_once_with(add="/path", message=message)
 
         current_view.PassthroughView.chmod = old_chmod
