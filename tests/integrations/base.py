@@ -85,12 +85,14 @@ class BaseTest(object):
 
         lines = self.sh.git.log("--before", '"%s 23:59:59"' % date,
                                 "--after", '"%s 00:00:00"' % date,
-                                '--pretty="%ai %H"').splitlines()
+                                '--pretty="%ai %H"').decode().splitlines()
 
         lines = map(lambda line: line.split(), lines)
 
-        return map(lambda tokens: "%s-%s" % (tokens[1].replace(":", "-"),
-                                             tokens[3][:10]), lines)
+        return list(
+            map(lambda tokens: "%s-%s" % (
+                tokens[1].replace(":", "-"),
+                tokens[3][:10]), lines))
 
     def get_commit_dates(self):
         return list(set(self.sh.git.log("--pretty=%ad", "--date=short").
@@ -123,7 +125,7 @@ class GitFSLog(object):
     def _read_data(self):
         # file should be opened in non-blocking mode, so this will
         # return None if it can't read any data
-        data = os.read(self.file_descriptor, 2048).splitlines(True)
+        data = os.read(self.file_descriptor, 2048).decode().splitlines(True)
         if not data:
             return False
         if self._partial_line:
