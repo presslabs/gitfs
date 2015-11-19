@@ -213,7 +213,7 @@ class TestWriteCurrentView(BaseTest):
 
     def test_create_embedded_directory_big_depth(self, gitfs_log):
         path = ""
-        for letter in string.letters:
+        for letter in string.ascii_lowercase:
             path = os.path.join(path, letter)
 
         with gitfs_log("SyncWorker: Set push_successful"):
