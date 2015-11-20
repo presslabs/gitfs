@@ -182,7 +182,7 @@ class TestRepository(RepositoryBaseTest):
                 self.step = step
                 self.max_commit_number = max_commit_number
 
-            def next(self):
+            def __next__(self):
                 number = self.commit_number
                 if self.commit_number >= self.max_commit_number:
                     raise StopIteration()
@@ -438,7 +438,7 @@ class TestRepository(RepositoryBaseTest):
         repo.get_git_object_type = mocked_git_obj
 
         assert repo.get_git_object_default_stats("ref", "/") == {
-            'st_mode': S_IFDIR | 0555,
+            'st_mode': S_IFDIR | 0o555,
             'st_nlink': 2
         }
         assert repo.get_git_object_default_stats("ref", "/ups") is None
@@ -456,7 +456,7 @@ class TestRepository(RepositoryBaseTest):
         repo.get_blob_size = mocked_size
 
         assert repo.get_git_object_default_stats("ref", "/ups") == {
-            'st_mode': S_IFREG | 0444,
+            'st_mode': S_IFREG | 0o444,
             'st_size': 10
         }
         mocked_size.assert_called_once_with("ref", "/ups")

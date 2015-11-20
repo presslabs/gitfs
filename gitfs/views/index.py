@@ -40,7 +40,7 @@ class IndexView(ReadOnlyView):
 
         attrs = super(IndexView, self).getattr(path, fh)
         attrs.update({
-            'st_mode': S_IFDIR | 0555,
+            'st_mode': S_IFDIR | 0o555,
             'st_nlink': 2,
         })
 

@@ -15,7 +15,6 @@
 
 import datetime
 import re
-import string
 
 MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug",
           "Sep", "Oct", "Nov", "Dec"]
@@ -52,18 +51,18 @@ SPEC = {
 class TimeParser(object):
     def __init__(self, format):
         # convert strptime format string to regular expression
-        format = string.join(re.split("(?:\s|%t|%n)+", format))
+        format = " ".join(re.split(r"(?:\s|%t|%n)+", format))
         pattern = []
 
         try:
-            for spec in re.findall("%\w|%%|.", format):
+            for spec in re.findall(r"%\w|%%|.", format):
                 if spec[0] == "%":
                     spec = SPEC[spec]
                 pattern.append(spec)
         except KeyError:
             raise ValueError("unknown specificer: %s" % spec)
 
-        self.pattern = re.compile("(?i)" + string.join(pattern, ""))
+        self.pattern = re.compile(r"(?i)" + "".join(pattern))
 
     def match(self, daytime):
         # match time string
@@ -104,7 +103,7 @@ class TimeParser(object):
             hour = get("hour12")
             if hour:
                 hour = int(hour)
-                if string.lower(get("ampm12", "")) == "pm":
+                if get("ampm12", "").lower() == "pm":
                     hour = hour + 12
                 tm[3] = hour
 

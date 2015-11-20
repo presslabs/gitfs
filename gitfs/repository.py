@@ -21,6 +21,8 @@ from pygit2 import (clone_repository, Signature, GIT_SORT_TOPOLOGICAL,
                     GIT_FILEMODE_TREE, GIT_STATUS_CURRENT,
                     GIT_FILEMODE_LINK, GIT_FILEMODE_BLOB, GIT_BRANCH_REMOTE,
                     GIT_BRANCH_LOCAL, GIT_FILEMODE_BLOB_EXECUTABLE)
+from six import iteritems
+
 from gitfs.cache import CommitCache
 from gitfs.utils.path import split_path_into_components
 from gitfs.utils.commits import CommitsList
@@ -81,7 +83,7 @@ class Repository(object):
         self.ignore.update()
 
         status = self._repo.status()
-        for path, status in status.iteritems():
+        for path, status in iteritems(status):
             # path is in current status, move on
             if status == GIT_STATUS_CURRENT:
                 continue
@@ -277,10 +279,16 @@ class Repository(object):
 
     def get_git_object_default_stats(self, ref, path):
         types = {
-            GIT_FILEMODE_LINK: {'st_mode': S_IFLNK | 0444},
-            GIT_FILEMODE_TREE: {'st_mode': S_IFDIR | 0555, 'st_nlink': 2},
-            GIT_FILEMODE_BLOB: {'st_mode': S_IFREG | 0444},
-            GIT_FILEMODE_BLOB_EXECUTABLE: {'st_mode': S_IFREG | 0555},
+            GIT_FILEMODE_LINK: {
+                'st_mode': S_IFLNK | 0o444,
+            }, GIT_FILEMODE_TREE: {
+                'st_mode': S_IFDIR | 0o555,
+                'st_nlink': 2
+            }, GIT_FILEMODE_BLOB: {
+                'st_mode': S_IFREG | 0o444,
+            }, GIT_FILEMODE_BLOB_EXECUTABLE: {
+                'st_mode': S_IFREG | 0o555,
+            },
         }
 
         if path == "/":
@@ -327,7 +335,7 @@ class Repository(object):
         Walk through all commits from current repo in order to compose the
         _history_ directory.
         """
-        return self.commits.keys()
+        return list(self.commits.keys())
 
     def get_commits_by_date(self, date):
         """
@@ -340,7 +348,7 @@ class Repository(object):
             the short sha1 of the commit (first 10 characters).
         :rtype: list
         """
-        return map(str, self.commits[date])
+        return list(map(str, self.commits[date]))
 
     def walk_branches(self, sort, *branches):
         """
@@ -364,7 +372,7 @@ class Repository(object):
         commits = []
         for iterator in iterators:
             try:
-                commit = iterator.next()
+                commit = next(iterator)
             except StopIteration:
                 commit = None
             commits.append(commit)
@@ -374,7 +382,7 @@ class Repository(object):
         while not all(stop_iteration):
             for index, iterator in enumerate(iterators):
                 try:
-                    commit = iterator.next()
+                    commit = next(iterator)
                     commits[index] = commit
                 except StopIteration:
                     stop_iteration[index] = True

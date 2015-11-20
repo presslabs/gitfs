@@ -125,7 +125,7 @@ class CurrentView(PassthroughView):
             writers += 1
             log.info("CurrentView: Open %s for write", full_path)
 
-            super(CurrentView, self).chmod(keep_path, 0644)
+            super(CurrentView, self).chmod(keep_path, 0o644)
 
             self.dirty[fh] = {
                 'message': "Create the %s directory" % path,

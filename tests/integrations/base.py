@@ -21,6 +21,7 @@ import subprocess
 import time
 
 import pytest
+from six import string_types
 
 
 class Sh:
@@ -38,7 +39,7 @@ class Sh:
         self.command = ""
 
         return subprocess.Popen(command, shell=True, stdout=subprocess.PIPE,
-                                cwd=self.cwd).stdout.read()
+                                cwd=self.cwd).stdout.read().decode()
 
 
 class pull:
@@ -87,8 +88,10 @@ class BaseTest(object):
 
         lines = map(lambda line: line.split(), lines)
 
-        return map(lambda tokens: "%s-%s" % (tokens[1].replace(":", "-"),
-                                             tokens[3][:10]), lines)
+        return list(
+            map(lambda tokens: "%s-%s" % (
+                tokens[1].replace(":", "-"),
+                tokens[3][:10]), lines))
 
     def get_commit_dates(self):
         return list(set(self.sh.git.log("--pretty=%ad", "--date=short").
@@ -121,7 +124,7 @@ class GitFSLog(object):
     def _read_data(self):
         # file should be opened in non-blocking mode, so this will
         # return None if it can't read any data
-        data = os.read(self.file_descriptor, 2048).splitlines(True)
+        data = os.read(self.file_descriptor, 2048).decode().splitlines(True)
         if not data:
             return False
         if self._partial_line:
@@ -153,7 +156,7 @@ class GitFSLog(object):
         def log_context(gitfs_log):
             gitfs_log.clear()
             yield
-            if isinstance(expected, basestring):
+            if isinstance(expected, string_types):
                 gitfs_log.expect(expected, **kwargs)
             else:
                 gitfs_log.expect_multiple(expected, **kwargs)

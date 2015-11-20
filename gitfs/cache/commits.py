@@ -66,7 +66,7 @@ class Commit(object):
         self.time = time
         self.timestamp = timestamp
 
-    def __cmp__(self, commit):
+    def __gt__(self, commit):
         return self.timestamp > commit.timestamp
 
     def __repr__(self):

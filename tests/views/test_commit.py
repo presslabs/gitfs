@@ -120,7 +120,7 @@ class TestCommitView(object):
         mocked_repo = MagicMock()
         mocked_commit = MagicMock()
         stats = {
-            'st_mode': S_IFDIR | 0555,
+            'st_mode': S_IFDIR | 0o555,
             'st_nlink': 2
         }
 
@@ -137,7 +137,7 @@ class TestCommitView(object):
             'st_gid': 1,
             'st_mtime': "now+1",
             'st_ctime': "now+1",
-            'st_mode': S_IFDIR | 0555,
+            'st_mode': S_IFDIR | 0o555,
             'st_nlink': 2
         }
         assert result == asserted_result
@@ -168,7 +168,7 @@ class TestCommitView(object):
         mocked_commit.commit_time = "now+1"
         mocked_repo.revparse_single.return_value = mocked_commit
         mocked_repo.get_git_object_default_stats.return_value = {
-            'st_mode': S_IFREG | 0444,
+            'st_mode': S_IFREG | 0o444,
             'st_size': 10
         }
 
@@ -182,7 +182,7 @@ class TestCommitView(object):
             'st_gid': 1,
             'st_mtime': "now+1",
             'st_ctime': "now+1",
-            'st_mode': S_IFREG | 0444,
+            'st_mode': S_IFREG | 0o444,
             'st_size': 10
         }
         assert result == asserted_result

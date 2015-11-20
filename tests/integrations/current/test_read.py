@@ -15,6 +15,8 @@
 
 import os
 
+from six import iteritems
+
 from tests.integrations.base import BaseTest
 
 
@@ -38,11 +40,11 @@ class TestReadCurrentView(BaseTest):
         attrs = {
             'st_uid': os.getuid(),
             'st_gid': os.getgid(),
-            'st_mode': 0100644,
+            'st_mode': 0o100644,
             'st_ctime': real_stats.st_ctime,
             'st_mtime': real_stats.st_mtime,
             'st_atime': real_stats.st_atime,
         }
 
-        for name, value in attrs.iteritems():
+        for name, value in iteritems(attrs):
             assert getattr(stats, name) == value

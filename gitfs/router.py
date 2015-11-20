@@ -196,7 +196,7 @@ class Router(object):
 
             return view, relative_path
 
-        raise ValueError("View not found!")
+        raise ValueError("Found no view for '{}'".format(path))
 
     def __getattr__(self, attr_name):
         """
@@ -205,7 +205,7 @@ class Router(object):
         filesystem.
         """
 
-        methods = inspect.getmembers(FUSE, predicate=inspect.ismethod)
-        fuse_allowed_methods = set([elem[0] for elem in methods])
+        methods = inspect.getmembers(FUSE, predicate=callable)
+        fuse_allowed_methods = set(elem[0] for elem in methods)
 
         return attr_name in fuse_allowed_methods - set(['bmap', 'lock'])

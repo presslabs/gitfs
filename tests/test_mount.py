@@ -15,13 +15,15 @@
 import sys
 from mock import MagicMock, patch, call
 
+from six import iteritems
+
 from gitfs.mounter import (prepare_components, parse_args, start_fuse,
                            get_credentials)
 
 
 class EmptyObject(object):
     def __init__(self, **kwargs):
-        for name, value in kwargs.iteritems():
+        for name, value in iteritems(kwargs):
             setattr(self, name, value)
 
 

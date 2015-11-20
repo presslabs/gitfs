@@ -14,6 +14,7 @@
 
 
 from collections import namedtuple
+from io import TextIOWrapper
 
 from mock import MagicMock, patch, call
 
@@ -107,7 +108,7 @@ class TestAcceptMine(object):
 
         mock_path = 'gitfs.merges.accept_mine.open'
         with patch(mock_path, create=True) as mocked_open:
-            mocked_file = MagicMock(spec=file)
+            mocked_file = MagicMock(spec=TextIOWrapper)
             mocked_open.return_value = mocked_file
 
             mine = AcceptMine(mocked_repo)

@@ -14,7 +14,10 @@
 
 
 import time
-import threading
+try:
+    from threading import _Event as Event  # Undocumented py2 class
+except ImportError:
+    from threading import Event
 from functools import wraps
 
 
@@ -29,7 +32,7 @@ class while_not(object):
             if not self.event:
                 raise ValueError("Except that %s to not be None %s" %
                                  obj.__class__.__name__)
-            if not isinstance(self.event, threading._Event):
+            if not isinstance(self.event, Event):
                 raise TypeError("%s should be of type threading.Event" %
                                 self.event)
 

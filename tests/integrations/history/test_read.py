@@ -16,6 +16,8 @@
 import os
 from datetime import datetime
 
+from six import iteritems
+
 from tests.integrations.base import BaseTest
 
 
@@ -36,10 +38,10 @@ class TestHistoryView(BaseTest):
         attrs = {
             'st_uid': os.getuid(),
             'st_gid': os.getgid(),
-            'st_mode': 040555,
+            'st_mode': 0o40555,
         }
 
-        for name, value in attrs.iteritems():
+        for name, value in iteritems(attrs):
             assert getattr(stats, name) == value
 
         ctime = self._get_commit_time(0)
@@ -56,9 +58,9 @@ class TestHistoryView(BaseTest):
         attrs = {
             'st_uid': os.getuid(),
             'st_gid': os.getgid(),
-            'st_mode': 040555,
+            'st_mode': 0o40555,
         }
-        for name, value in attrs.iteritems():
+        for name, value in iteritems(attrs):
             assert getattr(stats, name) == value
 
         st_time = "%s %s" % (self.today, "-".join(commit.split("-")[:-1]))

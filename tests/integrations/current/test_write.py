@@ -13,14 +13,12 @@
 # limitations under the License.
 
 
-import collections
 import os
 import pytest
 import shutil
 import string
-import time
 
-from tests.integrations.base import BaseTest, pull, gitfs_log
+from tests.integrations.base import BaseTest, pull, gitfs_log  # noqa
 
 
 class TestWriteCurrentView(BaseTest):
@@ -212,7 +210,7 @@ class TestWriteCurrentView(BaseTest):
 
     def test_create_embedded_directory_big_depth(self, gitfs_log):
         path = ""
-        for letter in string.letters:
+        for letter in string.ascii_lowercase:
             path = os.path.join(path, letter)
 
         with gitfs_log("SyncWorker: Set push_successful"):
@@ -226,7 +224,7 @@ class TestWriteCurrentView(BaseTest):
             # build the paths for the keep files
             keep_files = []
             path = self.repo_path
-            for letter in string.letters:
+            for letter in string.ascii_lowercase:
                 path = os.path.join(path, letter)
                 path_with_keep = os.path.join(path, '.keep')
                 keep_files.append(path_with_keep)
@@ -238,12 +236,15 @@ class TestWriteCurrentView(BaseTest):
     def test_chmod_valid_mode(self, gitfs_log):
         filename = "%s/testing" % self.current_path
         with gitfs_log("SyncWorker: Set push_successful"):
-            os.chmod(filename, 0755)
+            os.chmod(
+                filename,
+                0o755,
+            )
 
         with pull(self.sh):
             # check if the right mode was set
             stats = os.stat(filename)
-            assert stats.st_mode == 0100755
+            assert stats.st_mode == 0o100755
 
             self.assert_new_commit()
             self.assert_commit_message("Chmod to 0755 on /testing")
@@ -252,7 +253,10 @@ class TestWriteCurrentView(BaseTest):
         filename = "%s/testing" % self.current_path
 
         with pytest.raises(OSError):
-            os.chmod(filename, 0777)
+            os.chmod(
+                filename,
+                0o777,
+            )
 
     def test_rename(self, gitfs_log):
         old_filename = "%s/testing" % self.current_path

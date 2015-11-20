@@ -13,11 +13,13 @@
 # limitations under the License.
 
 
-import __builtin__
-import os
-from pytest import raises
-from fuse import FuseOSError
+from io import TextIOWrapper
 from mock import MagicMock, patch, call
+import os
+
+from fuse import FuseOSError
+from six.moves import builtins
+from pytest import raises
 
 from gitfs.views import PassthroughView
 
@@ -31,8 +33,8 @@ class TestPassthrough(object):
 
             return original_super(*args, **kwargs)
 
-        __builtin__.original_super = super
-        __builtin__.super = mock_super
+        builtins.original_super = super
+        builtins.super = mock_super
 
         root = '/the/root/path'
 
@@ -46,8 +48,8 @@ class TestPassthrough(object):
         self.repo_path = root
 
     def teardown(self):
-        __builtin__.super = __builtin__.original_super
-        del __builtin__.original_super
+        builtins.super = builtins.original_super
+        del builtins.original_super
 
     def test_access(self):
         mocked_access = MagicMock()
@@ -76,10 +78,15 @@ class TestPassthrough(object):
         with patch('gitfs.views.passthrough.os.chmod', mocked_chmod):
             view = PassthroughView(repo=self.repo, repo_path=self.repo_path)
 
-            view.chmod('/magic/path', 0777)
+            view.chmod(
+                '/magic/path',
+                0o777,
+            )
 
-            mocked_chmod.assert_called_once_with('/the/root/path/magic/path',
-                                                 0777)
+            mocked_chmod.assert_called_once_with(
+                '/the/root/path/magic/path',
+                0o777,
+            )
 
     def test_chown(self):
         mocked_chown = MagicMock()
@@ -367,7 +374,7 @@ class TestPassthrough(object):
 
     def test_truncate(self):
         mocked_open = MagicMock()
-        mocked_file = MagicMock(spec=file)
+        mocked_file = MagicMock(spec=TextIOWrapper)
 
         with patch('gitfs.views.passthrough.open', create=True) as mocked_open:
             mocked_open().__enter__.return_value = mocked_file

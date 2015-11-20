@@ -1,5 +1,4 @@
 import os
-import time
 import uuid
 
 from tests.integrations.base import BaseTest, gitfs_log
@@ -29,8 +28,9 @@ class TestRepository(BaseTest):
             self.get_commit_dates()[0],
             self.get_commits_by_date()[0]
         ))
-        assert oct(os.stat(self.current_path + "/" + file_name).st_mode & 0777) ==\
-            "0755"
+        assert oct(
+            os.stat(self.current_path + "/" + file_name).st_mode & 0o755
+        ) == oct(0o755)
 
     def test_new_file(self, gitfs_log):
         file_name = "new_file" + str(uuid.uuid4())
