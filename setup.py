@@ -17,4 +17,5 @@ setup(name='gitfs',
       install_requires=REQUIREMENTS,
       classifiers=[
           'Programming Language :: Python :: 2.7',
+          'Programming Language :: Python :: 3.4',
       ])
