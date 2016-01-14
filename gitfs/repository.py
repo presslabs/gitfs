@@ -448,8 +448,16 @@ class Repository(object):
                                     first_branch, second_branch)
 
         for first_commit, second_commit in walker:
-            if (first_commit in second_commits or
-               second_commit in first_commits):
+            if first_commit in second_commits:
+                index = second_commits.index(first_commit)
+                second_commits = second_commits[:index]
+                common_parent = first_commit
+                break
+
+            if second_commit in first_commits:
+                index = first_commits.index(second_commit)
+                first_commits = first_commits[:index]
+                common_parent = second_commit
                 break
 
             if first_commit not in first_commits:
@@ -459,15 +467,5 @@ class Repository(object):
 
             if second_commit.hex == first_commit.hex:
                 break
-
-        if first_commit in second_commits:
-            index = second_commits.index(first_commit)
-            second_commits = second_commits[:index]
-            common_parent = first_commit
-
-        if second_commit in first_commits:
-            index = first_commits.index(second_commit)
-            first_commits = first_commits[:index]
-            common_parent = second_commit
 
         return DivergeCommits(common_parent, first_commits, second_commits)
