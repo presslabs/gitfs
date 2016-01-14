@@ -87,7 +87,9 @@ class SyncWorker(Peasant):
                 self.commit(self.commits)
                 self.commits = []
             log.debug("Start syncing")
-            self.sync()
+            while not self.sync():
+                log.debug("Retry-ing")
+                pass
 
     def merge(self):
         log.debug("Start merging")
@@ -113,7 +115,7 @@ class SyncWorker(Peasant):
                 need_to_push = True
             except:
                 log.exception("Merge failed")
-                return
+                return False
 
         if need_to_push:
             try:
@@ -132,9 +134,12 @@ class SyncWorker(Peasant):
                 push_successful.clear()
                 fetch.set()
                 log.exception("Push failed")
+                return False
         else:
             sync_done.set()
             syncing.clear()
+
+        return True
 
     def commit(self, jobs):
         if len(jobs) == 1:
