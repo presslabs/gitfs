@@ -104,6 +104,8 @@ class AcceptMine(Merger):
     def __call__(self, local_branch, remote_branch, upstream):
         try:
             self._merge(local_branch, remote_branch, upstream)
+        except:
+            log.exception("AcceptMine: Failed to merge")
         finally:
             self._merge_clean_up(local_branch)
 
