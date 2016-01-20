@@ -33,9 +33,13 @@ class AcceptMine(Merger):
         return local
 
     def _create_local_copy(self, branch_name, new_branch):
-        old_branch = self.repository.lookup_branch(branch_name,
-                                                   pygit2.GIT_BRANCH_LOCAL)
-        return old_branch.rename(new_branch, True)
+        branch = self.repository.lookup_branch(branch_name,
+                                               pygit2.GIT_BRANCH_LOCAL)
+
+        branch_commit = branch.get_object()
+        local = self.repository.create_branch(new_branch, branch_commit)
+
+        return local
 
     def _merge(self, local_branch, remote_branch, upstream):
         log.debug("AcceptMine: Copy local branch to merging_local")
