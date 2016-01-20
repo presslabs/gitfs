@@ -37,7 +37,7 @@ class AcceptMine(Merger):
                                                    pygit2.GIT_BRANCH_LOCAL)
         return old_branch.rename(new_branch, True)
 
-    def __call__(self, local_branch, remote_branch, upstream):
+    def _merge(self, local_branch, remote_branch, upstream):
         log.debug("AcceptMine: Copy local branch to merging_local")
         local = self._create_local_copy(local_branch, "merging_local")
 
@@ -85,16 +85,23 @@ class AcceptMine(Merger):
         self.repository.create_reference("refs/heads/%s" % local_branch,
                                          ref.target,
                                          force=True)
+
+    def _merge_clean_up(self, local_branch):
         self.repository.checkout("refs/heads/%s" % local_branch,
                                  strategy=pygit2.GIT_CHECKOUT_FORCE)
 
-        log.debug("AcceptMine: Delete merging_local")
-        ref = self.repository.lookup_reference("refs/heads/merging_local")
-        ref.delete()
+        refs = [(target, "refs/heads/" + target) for target in ["merging_local", "merging_remote"]]
 
-        log.debug("AcceptMine: Delete merging_remote")
-        ref = self.repository.lookup_reference("refs/heads/merging_remote")
-        ref.delete()
+        for branch, ref in refs:
+            log.debug("AcceptMine: Delete %s" % branch)
+            ref = self.repository.lookup_reference(ref)
+            ref.delete()
+
+    def __call__(self, local_branch, remote_branch, upstream):
+        try:
+            self._merge(local_branch, remote_branch, upstream)
+        finally:
+            self._merge_clean_up(local_branch)
 
     def solve_conflicts(self, conflicts):
         if conflicts:
