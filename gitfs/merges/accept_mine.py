@@ -37,11 +37,10 @@ class AcceptMine(Merger):
                                                pygit2.GIT_BRANCH_LOCAL)
 
         branch_commit = branch.get_object()
-        local = self.repository.create_branch(new_branch, branch_commit)
 
-        return local
+        return self.repository.create_branch(new_branch, branch_commit)
 
-    def _merge(self, local_branch, remote_branch, upstream):
+    def merge(self, local_branch, remote_branch, upstream):
         log.debug("AcceptMine: Copy local branch to merging_local")
         local = self._create_local_copy(local_branch, "merging_local")
 
@@ -90,7 +89,7 @@ class AcceptMine(Merger):
                                          ref.target,
                                          force=True)
 
-    def _merge_clean_up(self, local_branch):
+    def clean_up(self, local_branch):
         self.repository.checkout("refs/heads/%s" % local_branch,
                                  strategy=pygit2.GIT_CHECKOUT_FORCE)
 
@@ -103,12 +102,12 @@ class AcceptMine(Merger):
 
     def __call__(self, local_branch, remote_branch, upstream):
         try:
-            self._merge(local_branch, remote_branch, upstream)
+            self.merge(local_branch, remote_branch, upstream)
         except:
             log.exception("AcceptMine: Failed to merge")
             raise
         finally:
-            self._merge_clean_up(local_branch)
+            self.clean_up(local_branch)
 
     def solve_conflicts(self, conflicts):
         if conflicts:
