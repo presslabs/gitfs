@@ -97,8 +97,7 @@ class AcceptMine(Merger):
 
         for branch, ref in refs:
             log.debug("AcceptMine: Delete %s" % branch)
-            ref = self.repository.lookup_reference(ref)
-            ref.delete()
+            self.repository.lookup_reference(ref).delete()
 
     def __call__(self, local_branch, remote_branch, upstream):
         try:
