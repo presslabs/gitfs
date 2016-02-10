@@ -11,7 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import random
 
+import time
 from six.moves.queue import Empty
 
 import pygit2
@@ -86,8 +88,19 @@ class SyncWorker(Peasant):
                 log.info("Get some commits")
                 self.commit(self.commits)
                 self.commits = []
+
+            count = 0
             log.debug("Start syncing")
-            self.sync()
+            while not self.sync():
+                if count < 5:
+                    count += 1
+
+                fuzz = random.randint(0, 1000) / 1000
+                wait = 2 ** count + fuzz
+
+                log.debug("Failed. Going to sleep for %d seconds", wait)
+                time.sleep(wait)
+                log.debug("Retry-ing")
 
     def merge(self):
         log.debug("Start merging")
@@ -113,7 +126,7 @@ class SyncWorker(Peasant):
                 need_to_push = True
             except:
                 log.exception("Merge failed")
-                return
+                return False
 
         if need_to_push:
             try:
@@ -132,9 +145,12 @@ class SyncWorker(Peasant):
                 push_successful.clear()
                 fetch.set()
                 log.exception("Push failed")
+                return False
         else:
             sync_done.set()
             syncing.clear()
+
+        return True
 
     def commit(self, jobs):
         if len(jobs) == 1:

@@ -11,8 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from mock import MagicMock, patch
+from _pygit2 import GitError
 
+from mock import MagicMock, patch, call
 from six.moves.queue import Empty
 import pygit2
 import pytest
@@ -110,6 +111,45 @@ class TestSyncWorker(object):
             assert mocked_push_successful.set.call_count == 1
             assert mocked_repo.behind is False
             mocked_repo.push.assert_called_once_with(upstream, branch)
+
+    def test_sync_with_push_conflict(self):
+        upstream = "origin"
+        branch = "master"
+        mocked_repo = MagicMock()
+        mocked_merge = MagicMock()
+        mocked_sync_done = MagicMock()
+        mocked_syncing = MagicMock()
+        mocked_push_successful = MagicMock()
+        mocked_fetch = MagicMock()
+        mocked_strategy = MagicMock()
+
+        mocked_repo.behind = True
+        mocked_repo.ahead = MagicMock(1)
+        mocked_repo.push.side_effect = [GitError("Mocked error"), None]
+
+        with patch.multiple('gitfs.worker.sync', sync_done=mocked_sync_done,
+                            syncing=mocked_syncing,
+                            push_successful=mocked_push_successful,
+                            fetch=mocked_fetch):
+            worker = SyncWorker("name", "email", "name", "email",
+                                repository=mocked_repo,
+                                strategy=mocked_strategy,
+                                upstream=upstream, branch=branch)
+            worker.merge = mocked_merge
+
+            while not worker.sync():
+                pass
+
+            assert mocked_syncing.clear.call_count == 1
+            assert mocked_push_successful.clear.call_count == 1
+            assert mocked_sync_done.clear.call_count == 2
+            assert mocked_sync_done.set.call_count == 1
+            assert mocked_fetch.set.call_count == 1
+            assert mocked_push_successful.set.call_count == 1
+            assert mocked_repo.behind is False
+            assert mocked_repo.ahead.call_count == 2
+
+            mocked_repo.push.assert_has_calls([call(upstream, branch), call(upstream, branch)])
 
     def test_commit_with_just_one_job(self):
         mocked_repo = MagicMock()
