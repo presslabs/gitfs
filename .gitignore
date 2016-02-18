@@ -1,4 +1,4 @@
-log.txt
+log.txt*
 *.log
 *.pot
 *.pyc
