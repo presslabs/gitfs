@@ -90,17 +90,20 @@ class SyncWorker(Peasant):
                 self.commits = []
 
             count = 0
-            log.debug("Start syncing")
-            while not self.sync():
-                if count < 5:
-                    count += 1
-
+            log.debug("Start syncing, first attempt.")
+            while not self.sync() and count < 5:
                 fuzz = random.randint(0, 1000) / 1000
                 wait = 2 ** count + fuzz
 
-                log.debug("Failed. Going to sleep for %d seconds", wait)
+                log.debug("Failed to sync. Going to sleep for %d seconds", wait)
                 time.sleep(wait)
-                log.debug("Retry-ing")
+
+                count += 1
+                log.debug("Retry-ing to sync with remote. Attempt #%d", count)
+
+            if count >= 5:
+                log.debug("Didn't manage to sync, I need some help")
+
 
     def merge(self):
         log.debug("Start merging")
@@ -122,7 +125,10 @@ class SyncWorker(Peasant):
             try:
                 log.debug("Start fetching")
                 self.repository.fetch(self.upstream, self.branch)
+                log.debug("Done fetching")
+                log.debug("Start merging")
                 self.merge()
+                log.debug("Merge done with success, ready to push")
                 need_to_push = True
             except:
                 log.exception("Merge failed")
@@ -147,6 +153,7 @@ class SyncWorker(Peasant):
                 log.exception("Push failed")
                 return False
         else:
+            log.debug("Sync done, clearing")
             sync_done.set()
             syncing.clear()
 

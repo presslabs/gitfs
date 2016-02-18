@@ -35,9 +35,7 @@ class AcceptMine(Merger):
     def _create_local_copy(self, branch_name, new_branch):
         branch = self.repository.lookup_branch(branch_name,
                                                pygit2.GIT_BRANCH_LOCAL)
-
         branch_commit = branch.get_object()
-
         return self.repository.create_branch(new_branch, branch_commit)
 
     def merge(self, local_branch, remote_branch, upstream):
@@ -90,13 +88,14 @@ class AcceptMine(Merger):
                                          force=True)
 
     def clean_up(self, local_branch):
+        log.debug("AcceptMine: Checkout force to branch %s", local_branch)
         self.repository.checkout("refs/heads/%s" % local_branch,
                                  strategy=pygit2.GIT_CHECKOUT_FORCE)
 
         refs = [(target, "refs/heads/" + target) for target in ["merging_local", "merging_remote"]]
 
         for branch, ref in refs:
-            log.debug("AcceptMine: Delete %s" % branch)
+            log.debug("AcceptMine: Delete %s", branch)
             self.repository.lookup_reference(ref).delete()
 
     def __call__(self, local_branch, remote_branch, upstream):
@@ -110,7 +109,7 @@ class AcceptMine(Merger):
 
     def solve_conflicts(self, conflicts):
         if conflicts:
-            for common, theirs, ours in conflicts:
+            for _, theirs, ours in conflicts:
                 if not ours and theirs:
                     log.debug("AcceptMine: if we deleted the file and they "
                               "didn't, remove the file")
