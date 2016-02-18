@@ -15,6 +15,7 @@
 
 import os
 from collections import namedtuple
+from shutil import rmtree
 from stat import S_IFDIR, S_IFREG, S_IFLNK
 
 from pygit2 import (clone_repository, Signature, GIT_SORT_TOPOLOGICAL,
@@ -76,6 +77,10 @@ class Repository(object):
 
         return ahead, behind
 
+    @staticmethod
+    def checkout_fail_rmtree_callback(function, path, excinfo):
+        log.info("Repository: Checkout couldn't delete %s", path)
+
     def checkout(self, ref, *args, **kwargs):
         result = self._repo.checkout(ref, *args, **kwargs)
 
@@ -89,17 +94,23 @@ class Repository(object):
                 continue
 
             # check if file exists or not
+            full_path = self._full_path(path)
             if path not in self._repo.index:
                 if path not in self.ignore:
-                    os.unlink(self._full_path(path))
+                    try:
+                        os.unlink(full_path)
+                    except OSError:
+                        # path points to a directory containing untracked files
+                        rmtree(full_path,
+                               onerror=Repository.checkout_fail_rmtree_callback)
                 continue
 
             # check files stats
             stats = self.get_git_object_default_stats(ref, path)
-            current_stat = os.lstat(self._full_path(path))
+            current_stat = os.lstat(full_path)
 
             if stats['st_mode'] != current_stat.st_mode:
-                os.chmod(self._full_path(path), current_stat.st_mode)
+                os.chmod(full_path, current_stat.st_mode)
                 self._repo.index.add(self._sanitize(path))
 
         return result
