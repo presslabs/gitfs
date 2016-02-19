@@ -28,6 +28,7 @@ class FetchWorker(Peasant):
             if idle.is_set():
                 timeout = self.idle_timeout
 
+            log.debug("Wait for %s" % timeout)
             fetch.wait(timeout)
 
             if shutting_down.is_set():
@@ -37,6 +38,7 @@ class FetchWorker(Peasant):
             self.fetch()
 
     def fetch(self):
+        log.debug("Lock fetching operation")
         with remote_operation:
             fetch.clear()
 
