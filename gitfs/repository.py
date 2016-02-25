@@ -25,6 +25,7 @@ from pygit2 import (clone_repository, Signature, GIT_SORT_TOPOLOGICAL,
 from six import iteritems
 
 from gitfs.cache import CommitCache
+from gitfs.log import log
 from gitfs.utils.path import split_path_into_components
 from gitfs.utils.commits import CommitsList
 
@@ -77,10 +78,6 @@ class Repository(object):
 
         return ahead, behind
 
-    @staticmethod
-    def checkout_fail_rmtree_callback(function, path, excinfo):
-        log.info("Repository: Checkout couldn't delete %s", path)
-
     def checkout(self, ref, *args, **kwargs):
         result = self._repo.checkout(ref, *args, **kwargs)
 
@@ -101,8 +98,12 @@ class Repository(object):
                         os.unlink(full_path)
                     except OSError:
                         # path points to a directory containing untracked files
-                        rmtree(full_path,
-                               onerror=Repository.checkout_fail_rmtree_callback)
+                        rmtree(
+                            full_path,
+                            onerror=lambda function, fpath, excinfo: log.info(
+                                "Repository: Checkout couldn't delete %s", fpath
+                            )
+                        )
                 continue
 
             # check files stats
