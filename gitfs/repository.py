@@ -183,7 +183,7 @@ class Repository(object):
         """
 
         repo = clone_repository(remote_url, path, checkout_branch=branch,
-                                credentials=credentials)
+                                callbacks=credentials)
         repo.checkout_head()
         return cls(repo)
 

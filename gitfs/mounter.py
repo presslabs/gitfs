@@ -18,6 +18,7 @@ import sys
 
 from fuse import FUSE
 from pygit2 import Keypair, UserPass
+from pygit2.remote import RemoteCallbacks
 
 from gitfs import __version__
 from gitfs.utils import Args
@@ -40,10 +41,11 @@ def parse_args(parser):
 
 def get_credentials(args):
     if args.password:
-        return UserPass(args.username, args.password)
+        credentials = UserPass(args.username, args.password)
     else:
-        return Keypair(args.ssh_user, args.ssh_key + ".pub",
-                       args.ssh_key, "")
+        credentials = Keypair(args.ssh_user, args.ssh_key + ".pub",
+                              args.ssh_key, "")
+    return RemoteCallbacks(credentials=credentials)
 
 
 def prepare_components(args):
