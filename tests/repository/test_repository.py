@@ -18,7 +18,7 @@ from collections import namedtuple
 from stat import S_IFDIR, S_IFREG
 
 import pytest
-from mock import MagicMock, patch, call
+from mock import MagicMock, patch, call, ANY
 from pygit2 import (GIT_BRANCH_REMOTE, GIT_SORT_TIME,
                     GIT_FILEMODE_BLOB, GIT_STATUS_CURRENT)
 
@@ -468,9 +468,7 @@ class TestRepository(RepositoryBaseTest):
             assert repo.checkout("ref", "args") == "done"
             assert mocked_repo.status.call_count == 1
             mocked_checkout.assert_called_once_with("ref", "args")
-            mocked_rmtree.assert_called_once_with(
-                "full_path", onerror=Repository.checkout_fail_rmtree_callback
-            )
+            mocked_rmtree.assert_called_once_with("full_path", onerror=ANY)
             mocked_os.lstat.assert_called_once_with("full_path")
             mocked_os.chmod.assert_called_once_with("full_path",
                                                     "16877")
