@@ -18,7 +18,7 @@ from collections import namedtuple
 from stat import S_IFDIR, S_IFREG
 
 import pytest
-from mock import MagicMock, patch, call
+from mock import MagicMock, patch, call, ANY
 from pygit2 import (GIT_BRANCH_REMOTE, GIT_SORT_TIME,
                     GIT_FILEMODE_BLOB, GIT_STATUS_CURRENT)
 
@@ -427,6 +427,51 @@ class TestRepository(RepositoryBaseTest):
             mocked_os.lstat.assert_called_once_with("full_path")
             mocked_os.chmod.assert_called_once_with("full_path",
                                                     "another_mode")
+            mocked_index.add.assert_called_once_with("current/another_path")
+
+    def test_checkout_with_directory_in_status(self):
+        mocked_checkout = MagicMock(return_value="done")
+        mocked_repo = MagicMock()
+        mocked_full_path = MagicMock()
+        mocked_index = MagicMock()
+        mocked_stats = MagicMock()
+        mocked_status = {
+            '/': GIT_STATUS_CURRENT,
+            '/current/some_path': "another_git_status",
+            '/current/another_path': "another_git_status",
+        }
+
+        mocked_full_path.return_value = "full_path"
+        mocked_repo.checkout = mocked_checkout
+        mocked_repo.status.return_value = mocked_status
+        mocked_stats.st_mode = "16877"
+
+        def contains(self, path):
+            if path == '/current/another_path':
+                return True
+            return False
+        mocked_index.__contains__ = contains
+        mocked_repo.index = mocked_index
+
+        mocked_os = MagicMock()
+        mocked_rmtree = MagicMock()
+        with patch.multiple('gitfs.repository',
+                            os=mocked_os,
+                            rmtree=mocked_rmtree):
+            mocked_os.unlink.side_effect = OSError
+            mocked_os.lstat.return_value = mocked_stats
+
+            repo = Repository(mocked_repo)
+            repo._full_path = mocked_full_path
+            repo.get_git_object_stat = lambda x: {'st_mode': 'a_stat'}
+
+            assert repo.checkout("ref", "args") == "done"
+            assert mocked_repo.status.call_count == 1
+            mocked_checkout.assert_called_once_with("ref", "args")
+            mocked_rmtree.assert_called_once_with("full_path", onerror=ANY)
+            mocked_os.lstat.assert_called_once_with("full_path")
+            mocked_os.chmod.assert_called_once_with("full_path",
+                                                    "16877")
             mocked_index.add.assert_called_once_with("current/another_path")
 
     def test_git_obj_default_stats_with_invalid_obj(self):
