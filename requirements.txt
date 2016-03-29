@@ -1,4 +1,4 @@
 fusepy==2.0.2
-pygit2==0.23.3
+pygit2==0.24.0
 six==1.10.0
 atomiclong

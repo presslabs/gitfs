@@ -1,6 +1,14 @@
 === (ongoing) ===
 * implement behavior for .gitignore
 
+=== 0.4.0 ==
+* delete directories on force checkout #221
+* improve logging #222
+* retry mechanism for push #201
+* port to python3 thanks to @justuswilhelm #199
+* improve test running speed thanks to @rciorba
+* improve development using vagrant
+
 === 0.3.3 ==
 * fetch before you merge #194
 
