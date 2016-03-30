@@ -124,7 +124,8 @@ class SyncWorker(Peasant):
             log.debug("I'm behind so I start merging")
             try:
                 log.debug("Start fetching")
-                self.repository.fetch(self.upstream, self.branch)
+                self.repository.fetch(self.upstream, self.branch,
+                                      self.credentials)
                 log.debug("Done fetching")
                 log.debug("Start merging")
                 self.merge()
@@ -138,7 +139,8 @@ class SyncWorker(Peasant):
             try:
                 with remote_operation:
                     log.debug("Start pushing")
-                    self.repository.push(self.upstream, self.branch)
+                    self.repository.push(self.upstream, self.branch,
+                                         self.credentials)
                     self.repository.behind = False
                     log.info("Push done")
                 log.debug("Clear syncing")

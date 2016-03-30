@@ -81,7 +81,8 @@ class TestMount(object):
                             CommitQueue=MagicMock(return_value=mocked_queue),
                             Router=MagicMock(return_value=mocked_router),
                             routes=mocked_routes, SyncWorker=mocked_merger,
-                            FetchWorker=mocked_fetcher, FUSE=mocked_fuse):
+                            FetchWorker=mocked_fetcher, FUSE=mocked_fuse,
+                            get_credentials=MagicMock(return_value='cred')):
 
             assert_result = (mocked_merge_worker, mocked_fetch_worker,
                              mocked_router)
@@ -91,7 +92,8 @@ class TestMount(object):
                                                    branch='branch',
                                                    repository='repo',
                                                    timeout=10,
-                                                   idle_timeout=10)
+                                                   idle_timeout=10,
+                                                   credentials='cred')
 
             asserted_call = {
                 'repository': 'repo',
@@ -100,6 +102,7 @@ class TestMount(object):
                 'timeout': 10,
                 'repo_path': 'repo_path',
                 'commit_queue': mocked_queue,
+                'credentials': 'cred',
                 'min_idle_times': 1,
             }
             mocked_merger.assert_called_once_with('commit',

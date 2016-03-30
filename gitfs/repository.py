@@ -121,7 +121,7 @@ class Repository(object):
             path = path[1:]
         return path
 
-    def push(self, upstream, branch):
+    def push(self, upstream, branch, credentials):
         """ Push changes from a branch to a remote
 
         Examples::
@@ -130,15 +130,15 @@ class Repository(object):
         """
 
         remote = self.get_remote(upstream)
-        remote.push(["refs/heads/%s" % (branch)])
+        remote.push(["refs/heads/%s" % (branch)], callbacks=credentials)
 
-    def fetch(self, upstream, branch_name):
+    def fetch(self, upstream, branch_name, credentials):
         """
         Fetch from remote and return True if we are behind or False otherwise
         """
 
         remote = self.get_remote(upstream)
-        remote.fetch()
+        remote.fetch(callbacks=credentials)
 
         _, behind = self.diverge(upstream, branch_name)
         self.behind = behind
@@ -421,9 +421,6 @@ class Repository(object):
 
         if not remote:
             raise ValueError("Missing remote")
-
-        if hasattr(self, 'credentials'):
-            remote[0].credentials = self.credentials
 
         return remote[0]
 

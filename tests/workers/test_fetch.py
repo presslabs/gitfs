@@ -50,10 +50,12 @@ class TestFetchWorker(object):
                             fetch=mocked_fetch):
             worker = FetchWorker(repository=mocked_repo,
                                  upstream="origin",
+                                 credentials="credentials",
                                  branch="master")
             worker.fetch()
 
-            mocked_repo.fetch.assert_called_once_with("origin", "master")
+            mocked_repo.fetch.assert_called_once_with("origin", "master",
+                                                      "credentials")
             assert mocked_fetch_ok.clear.call_count == 1
             assert mocked_fetch.clear.call_count == 1
 

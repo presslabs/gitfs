@@ -80,6 +80,7 @@ class TestSyncWorker(object):
     def test_sync(self):
         upstream = "origin"
         branch = "master"
+        credentials = "credentials"
         mocked_repo = MagicMock()
         mocked_merge = MagicMock()
         mocked_sync_done = MagicMock()
@@ -98,6 +99,7 @@ class TestSyncWorker(object):
             worker = SyncWorker("name", "email", "name", "email",
                                 repository=mocked_repo,
                                 strategy=mocked_strategy,
+                                credentials=credentials,
                                 upstream=upstream, branch=branch)
             worker.merge = mocked_merge
 
@@ -110,11 +112,13 @@ class TestSyncWorker(object):
             assert mocked_fetch.set.call_count == 1
             assert mocked_push_successful.set.call_count == 1
             assert mocked_repo.behind is False
-            mocked_repo.push.assert_called_once_with(upstream, branch)
+            mocked_repo.push.assert_called_once_with(upstream, branch,
+                                                     credentials)
 
     def test_sync_with_push_conflict(self):
         upstream = "origin"
         branch = "master"
+        credentials = "credentials"
         mocked_repo = MagicMock()
         mocked_merge = MagicMock()
         mocked_sync_done = MagicMock()
@@ -134,6 +138,7 @@ class TestSyncWorker(object):
             worker = SyncWorker("name", "email", "name", "email",
                                 repository=mocked_repo,
                                 strategy=mocked_strategy,
+                                credentials=credentials,
                                 upstream=upstream, branch=branch)
             worker.merge = mocked_merge
 
@@ -149,7 +154,8 @@ class TestSyncWorker(object):
             assert mocked_repo.behind is False
             assert mocked_repo.ahead.call_count == 2
 
-            mocked_repo.push.assert_has_calls([call(upstream, branch), call(upstream, branch)])
+            mocked_repo.push.assert_has_calls([call(upstream, branch, credentials),
+                                               call(upstream, branch, credentials)])
 
     def test_commit_with_just_one_job(self):
         mocked_repo = MagicMock()

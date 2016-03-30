@@ -37,9 +37,10 @@ class TestRepository(RepositoryBaseTest):
         mocked_repo.remotes = [mocked_remote]
 
         repo = Repository(mocked_repo)
-        repo.push("origin", "master")
+        repo.push("origin", "master", "credentials")
 
-        mocked_remote.push.assert_called_once_with(["refs/heads/master"])
+        mocked_remote.push.assert_called_once_with(["refs/heads/master"],
+                                                   callbacks="credentials")
 
     def test_fetch(self):
         class MockedCommit(object):
@@ -56,7 +57,7 @@ class TestRepository(RepositoryBaseTest):
         mocked_repo.lookup_branch().get_object.return_value = MockedCommit()
 
         repo = Repository(mocked_repo)
-        repo.fetch("origin", "master")
+        repo.fetch("origin", "master", "credentials")
 
         assert mocked_remote.fetch.call_count == 1
 
