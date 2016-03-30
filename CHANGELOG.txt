@@ -1,6 +1,9 @@
 === (ongoing) ===
 * implement behavior for .gitignore
 
+=== 0.4.1 ==
+* add credentials to push and fetch operations #226 (hotfix)
+
 === 0.4.0 ==
 * delete directories on force checkout #221
 * improve logging #222
