@@ -469,13 +469,19 @@ class Repository(object):
             if second_commit.hex == first_commit.hex:
                 break
 
-        if first_commit in second_commits:
+        try:
             index = second_commits.index(first_commit)
+        except ValueError:
+            pass
+        else:
             second_commits = second_commits[:index]
             common_parent = first_commit
 
-        if second_commit in first_commits:
+        try:
             index = first_commits.index(second_commit)
+        except ValueError:
+            pass
+        else:
             first_commits = first_commits[:index]
             common_parent = second_commit
 
