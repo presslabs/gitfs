@@ -60,7 +60,7 @@ class TimeParser(object):
                     spec = SPEC[spec]
                 pattern.append(spec)
         except KeyError:
-            raise ValueError("unknown specificer: %s" % spec)
+            raise ValueError("unknown specificer:{}".format(spec))
 
         self.pattern = re.compile(r"(?i)" + "".join(pattern))
 

@@ -40,7 +40,7 @@ class CurrentView(PassthroughView):
         new = re.sub(self.regex, '', new)
         result = super(CurrentView, self).rename(old, new)
 
-        message = "Rename %s to %s" % (old, new)
+        message = "Rename {} to {}".format(old, new)
         self._stage(**{
             'remove': os.path.split(old)[1],
             'add': new,
@@ -55,7 +55,7 @@ class CurrentView(PassthroughView):
     def symlink(self, name, target):
         result = os.symlink(target, self.repo._full_path(name))
 
-        message = "Create symlink to %s for %s" % (target, name)
+        message = "Create symlink to {} for {}".format(target, name)
         self._stage(add=name, message=message)
 
         log.debug("CurrentView: Created symlink to %s from %s", name, target)
@@ -69,7 +69,7 @@ class CurrentView(PassthroughView):
 
         result = super(CurrentView, self).link(target, name)
 
-        message = "Create link to %s for %s" % (target, name)
+        message = "Create link to {} for {}".format(target, name)
         self._stage(add=name, message=message)
 
         log.debug("CurrentView: Created link to %s from %s", name, target)
@@ -106,7 +106,7 @@ class CurrentView(PassthroughView):
 
         result = super(CurrentView, self).write(path, buf, offset, fh)
         self.dirty[fh] = {
-            'message': 'Update %s' % path,
+            'message': 'Update {}'.format(path),
         }
 
         log.debug("CurrentView: Wrote %s to %s", len(buf), path)
@@ -117,7 +117,7 @@ class CurrentView(PassthroughView):
     def mkdir(self, path, mode):
         result = super(CurrentView, self).mkdir(path, mode)
 
-        keep_path = "%s/.keep" % path
+        keep_path = "{}/.keep".format(path)
         full_path = self.repo._full_path(keep_path)
         if not os.path.exists(keep_path):
             global writers
@@ -128,7 +128,7 @@ class CurrentView(PassthroughView):
             super(CurrentView, self).chmod(keep_path, 0o644)
 
             self.dirty[fh] = {
-                'message': "Create the %s directory" % path,
+                'message': "Create the {} directory".format(path),
             }
 
             self.release(keep_path, fh)
@@ -142,7 +142,7 @@ class CurrentView(PassthroughView):
         super(CurrentView, self).chmod(path, mode)
 
         self.dirty[fh] = {
-            'message': "Created %s" % path,
+            'message': "Created {}".format(path),
         }
 
         log.debug("CurrentView: Created %s", path)
@@ -163,7 +163,7 @@ class CurrentView(PassthroughView):
         if os.path.isdir(self.repo._full_path(path)):
             return result
 
-        message = 'Chmod to %s on %s' % (str_mode, path)
+        message = 'Chmod to {} on {}'.format(str_mode, path)
         self._stage(add=path, message=message)
 
         log.debug("CurrentView: Change %s mode to %s", path,
@@ -179,7 +179,7 @@ class CurrentView(PassthroughView):
 
         result = super(CurrentView, self).fsync(path, fdatasync, fh)
 
-        message = 'Fsync %s' % path
+        message = 'Fsync {}'.format(path)
         self._stage(add=path, message=message)
 
         log.debug("CurrentView: Fsync %s", path)
@@ -227,7 +227,7 @@ class CurrentView(PassthroughView):
     @write_operation
     @not_in("ignore", check=["path"])
     def rmdir(self, path):
-        message = 'Delete the %s directory' % path
+        message = 'Delete the {} directory'.format(path)
 
         # Unlink all the files
         full_path = self.repo._full_path(path)
@@ -239,7 +239,7 @@ class CurrentView(PassthroughView):
                     self._stage(remove=os.path.join(path, _file), message=message)
 
         # Delete the actual directory
-        result = super(CurrentView, self).rmdir("%s/" % path)
+        result = super(CurrentView, self).rmdir("{}/".format(path))
         log.debug("CurrentView: %s", message)
 
         return result
@@ -249,7 +249,7 @@ class CurrentView(PassthroughView):
     def unlink(self, path):
         result = super(CurrentView, self).unlink(path)
 
-        message = 'Deleted %s' % path
+        message = 'Deleted {}'.format(path)
         self._stage(remove=path, message=message)
 
         log.debug("CurrentView: Deleted %s", path)
@@ -265,7 +265,8 @@ class CurrentView(PassthroughView):
                 paths = self._get_files_from_path(add)
                 if paths:
                     for path in paths:
-                        path = path.replace("%s/" % add, "%s/" % remove)
+                        path = path.replace("{}/".format(add),
+                                            "{}/".format(remove))
                         self.repo.index.remove(path)
                 else:
                     self.repo.index.remove(remove)
@@ -295,8 +296,8 @@ class CurrentView(PassthroughView):
         if os.path.isdir(full_path):
             for (dirpath, dirs, files) in os.walk(full_path):
                 for filename in files:
-                    paths.append("%s/%s" % (dirpath.replace(workdir, ''),
-                                 filename))
+                    paths.append("{}/{}".format(
+                        dirpath.replace(workdir, ''), filename))
         return paths
 
     def _sanitize(self, path):

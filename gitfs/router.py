@@ -53,7 +53,7 @@ class Router(object):
 
         self.routes = []
 
-        log.info('Cloning into %s' % self.repo_path)
+        log.info('Cloning into {}'.format(self.repo_path))
 
         self.repo = Repository.clone(self.remote_url, self.repo_path,
                                      self.branch, credentials)

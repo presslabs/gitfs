@@ -30,11 +30,11 @@ class while_not(object):
         @wraps(f)
         def decorated(obj, *args, **kwargs):
             if not self.event:
-                raise ValueError("Except that %s to not be None %s" %
-                                 obj.__class__.__name__)
+                raise ValueError("Except that %s to not be "
+                                 "None {}".format(obj.__class__.__name__))
             if not isinstance(self.event, Event):
-                raise TypeError("%s should be of type threading.Event" %
-                                self.event)
+                raise TypeError("{} should be of type threading."
+                                "Event".format(self.event))
 
             while self.event.is_set():
                 time.sleep(self.wait)

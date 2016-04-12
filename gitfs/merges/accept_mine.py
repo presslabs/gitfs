@@ -21,7 +21,7 @@ from .base import Merger
 
 class AcceptMine(Merger):
     def _create_remote_copy(self, branch_name, upstream, new_branch):
-        reference = "%s/%s" % (upstream, branch_name)
+        reference = "{}/{}".format(upstream, branch_name)
         remote = self.repository.lookup_branch(reference,
                                                pygit2.GIT_BRANCH_REMOTE)
         remote_commit = remote.get_object()

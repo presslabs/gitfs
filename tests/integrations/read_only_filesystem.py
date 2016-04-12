@@ -23,7 +23,7 @@ class ReadOnlyFSTest(BaseTest):
     path = ""
 
     def test_write_to_new_file(self):
-        filename = "%s/new_file" % self.path
+        filename = "{}/new_file".format(self.path)
         content = "Read only filesystem"
 
         with pytest.raises(IOError) as err:

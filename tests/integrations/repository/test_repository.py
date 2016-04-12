@@ -23,7 +23,7 @@ class TestRepository(BaseTest):
         with gitfs_log(["FetchWorker: Fetch done", "SyncWorker: Set push_successful"]):
             self.sh.git.push("origin", "master")
 
-        assert os.path.exists("%s/history/%s/%s" % (
+        assert os.path.exists("{}/history/{}/{}".format(
             self.mount_path,
             self.get_commit_dates()[0],
             self.get_commits_by_date()[0]

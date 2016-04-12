@@ -170,7 +170,7 @@ class SyncWorker(Peasant):
                 updates = updates | set(job['params']['add'])
                 updates = updates | set(job['params']['remove'])
 
-            message = "Update %s items" % len(updates)
+            message = "Update {} items".format(len(updates))
 
         old_head = self.repository.head.target
         new_commit = self.repository.commit(message, self.author,

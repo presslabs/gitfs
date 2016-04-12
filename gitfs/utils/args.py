@@ -162,7 +162,7 @@ class Args(object):
         return args.user
 
     def get_commiter_email(self, args):
-        return "%s@%s" % (args.user, socket.gethostname())
+        return "{}@{}".format(args.user, socket.gethostname())
 
     def get_repo_path(self, args):
         return tempfile.mkdtemp(dir="/var/lib/gitfs")

@@ -24,8 +24,8 @@ from tests.integrations.base import BaseTest
 class TestReadCommitView(BaseTest):
     def test_listdirs(self):
         commits = self.get_commits_by_date()
-        files = os.listdir("%s/history/%s/%s" % (self.mount_path, self.today,
-                           commits[-1]))
+        files = os.listdir("{}/history/{}/{}".format(
+            self.mount_path, self.today, commits[-1]))
 
         real_files = os.listdir(self.repo_path)
         real_files.remove(".git")
@@ -33,8 +33,8 @@ class TestReadCommitView(BaseTest):
 
     def test_stats(self):
         commit = self.get_commits_by_date()[0]
-        directory = "%s/history/%s/%s" % (self.mount_path, self.today, commit)
-        filename = "%s/testing" % directory
+        directory = "{}/history/{}/{}".format(self.mount_path, self.today, commit)
+        filename = "{}/testing".format(directory)
 
         stats = os.stat(filename)
 
@@ -47,7 +47,7 @@ class TestReadCommitView(BaseTest):
         for name, value in iteritems(attrs):
             assert getattr(stats, name) == value
 
-        st_time = "%s %s" % (self.today, "-".join(commit.split("-")[:-1]))
+        st_time = "{} {}".format(self.today, "-".join(commit.split("-")[:-1]))
 
         format = "%Y-%m-%d %H-%M-%S"
         ctime = datetime.fromtimestamp(stats.st_ctime).strftime(format)
