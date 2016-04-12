@@ -24,7 +24,7 @@ import pytest
 from six import string_types
 
 
-class Sh:
+class Sh(object):
     def __init__(self, cwd=None):
         self.command = ""
         self.cwd = cwd
@@ -42,7 +42,7 @@ class Sh:
                                 cwd=self.cwd).stdout.read().decode()
 
 
-class pull:
+class pull(object):
     def __init__(self, sh):
         self.sh = sh
 
