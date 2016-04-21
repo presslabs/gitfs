@@ -24,7 +24,7 @@ import pytest
 from six import string_types
 
 
-class Sh:
+class Sh(object):
     def __init__(self, cwd=None):
         self.command = ""
         self.cwd = cwd
@@ -42,7 +42,7 @@ class Sh:
                                 cwd=self.cwd).stdout.read().decode()
 
 
-class pull:
+class pull(object):
     def __init__(self, sh):
         self.sh = sh
 
@@ -55,7 +55,7 @@ class pull:
 
 class BaseTest(object):
     def setup(self):
-        self.mount_path = "%s" % os.environ["MOUNT_PATH"]
+        self.mount_path = "{}".format(os.environ["MOUNT_PATH"])
 
         self.repo_name = os.environ["REPO_NAME"]
         self.repo_path = os.environ["REPO_PATH"]

@@ -137,7 +137,7 @@ class TestRepository(RepositoryBaseTest):
         assert repo.remote_head(upstream, branch) == "simple_remote"
         assert mocked_remote.get_object.call_count == 1
 
-        ref = "%s/%s" % (upstream, branch)
+        ref = "{}/{}".format(upstream, branch)
         mocked_repo.lookup_branch.assert_called_once_with(ref,
                                                           GIT_BRANCH_REMOTE)
 

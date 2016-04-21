@@ -47,9 +47,9 @@ class CachedIgnore(object):
                 pattern = re.compile("path(\s*)=(\s*)(\w*)")
                 results = re.findall(pattern, content)
                 for result in results:
-                    self.items.append("/%s/*" % result[2])
-                    self.items.append("/%s" % result[2])
-                    self.items.append("%s" % result[2])
+                    self.items.append("/{}/*".format(result[2]))
+                    self.items.append("/{}".format(result[2]))
+                    self.items.append("{}".format(result[2]))
 
         self.cache = {}
         self.items += self.hard_ignore

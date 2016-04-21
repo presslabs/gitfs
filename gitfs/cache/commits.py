@@ -70,4 +70,4 @@ class Commit(object):
         return self.timestamp > commit.timestamp
 
     def __repr__(self):
-        return "%s-%s" % (self.time, self.hex[:10])
+        return "{}-{}".format(self.time, self.hex[:10])

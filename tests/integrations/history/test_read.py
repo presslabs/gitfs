@@ -23,16 +23,16 @@ from tests.integrations.base import BaseTest
 
 class TestHistoryView(BaseTest):
     def test_listdirs(self):
-        directory = os.listdir("%s/history/" % self.mount_path)
+        directory = os.listdir("{}/history/".format(self.mount_path))
         assert directory == self.get_commit_dates()
 
     def test_listdirs_with_commits(self):
         commits = self.get_commits_by_date(self.today)[::-1]
-        directory = os.listdir("%s/history/%s" % (self.mount_path, self.today))
+        directory = os.listdir("{}/history/{}".format(self.mount_path, self.today))
         assert directory == commits
 
     def test_stats(self):
-        directory = "%s/history/%s" % (self.mount_path, self.today)
+        directory = "{}/history/{}".format(self.mount_path, self.today)
         stats = os.stat(directory)
 
         attrs = {
@@ -52,7 +52,7 @@ class TestHistoryView(BaseTest):
 
     def test_stats_with_commits(self):
         commit = self.get_commits_by_date(self.today)[0]
-        directory = "%s/history/%s/%s" % (self.mount_path, self.today, commit)
+        directory = "{}/history/{}/{}".format(self.mount_path, self.today, commit)
         stats = os.stat(directory)
 
         attrs = {
@@ -63,7 +63,7 @@ class TestHistoryView(BaseTest):
         for name, value in iteritems(attrs):
             assert getattr(stats, name) == value
 
-        st_time = "%s %s" % (self.today, "-".join(commit.split("-")[:-1]))
+        st_time = "{} {}".format(self.today, "-".join(commit.split("-")[:-1]))
 
         assert st_time == self._from_timestamp(stats.st_ctime)
         assert st_time == self._from_timestamp(stats.st_mtime)
@@ -77,4 +77,4 @@ class TestHistoryView(BaseTest):
 
     def _get_commit_time(self, index):
         commits = sorted(self.get_commits_by_date(self.today))
-        return "%s %s" % (self.today, "-".join(commits[index].split("-")[:-1]))
+        return "{} {}".format(self.today, "-".join(commits[index].split("-")[:-1]))

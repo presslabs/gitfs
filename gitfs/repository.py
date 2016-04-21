@@ -64,7 +64,7 @@ class Repository(object):
         return ahead
 
     def diverge(self, upstream, branch):
-        reference = "%s/%s" % (upstream, branch)
+        reference = "{}/{}".format(upstream, branch)
         remote_branch = self.lookup_branch(reference, GIT_BRANCH_REMOTE)
         local_branch = self.lookup_branch(branch, GIT_BRANCH_LOCAL)
 

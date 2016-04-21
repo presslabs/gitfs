@@ -57,7 +57,7 @@ class TestAcceptMine(object):
         assert mine._create_remote_copy("old_branch", "upstream",
                                         "new_branch") == "branch"
 
-        reference = "%s/%s" % ("upstream", "old_branch")
+        reference = "{}/{}".format("upstream", "old_branch")
         mocked_repo.lookup_branch.assert_called_once_with(reference,
                                                           GIT_BRANCH_REMOTE)
         assert mocked_branch.get_object.call_count == 1

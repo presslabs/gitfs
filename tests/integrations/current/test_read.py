@@ -26,15 +26,15 @@ class TestReadCurrentView(BaseTest):
         assert dirs == set(['testing', 'me'])
 
     def test_read_from_a_file(self):
-        with open("%s/testing" % self.current_path) as f:
+        with open("{}/testing".format(self.current_path)) as f:
             content = f.read()
             assert content == "just testing around here\n"
 
     def test_get_correct_stats(self):
-        filename = "%s/testing" % self.current_path
+        filename = "{}/testing".format(self.current_path)
         stats = os.stat(filename)
 
-        filename = "%s/testing" % self.repo_path
+        filename = "{}/testing".format(self.repo_path)
         real_stats = os.stat(filename)
 
         attrs = {
