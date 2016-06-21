@@ -177,6 +177,7 @@ class TestCurrentView(object):
         assert current.dirty == {
             1: {
                 'message': 'Update /path',
+                'stage': True
             }
         }
         current_view.PassthroughView.write = old_write
@@ -224,7 +225,8 @@ class TestCurrentView(object):
             )
             assert current.dirty == {
                 10: {
-                    'message': "Create the /path directory"
+                    'message': "Create the /path directory",
+                    'stage': True
                 }
             }
             mocked_release.assert_called_once_with(keep_path, 10)
@@ -419,7 +421,7 @@ class TestCurrentView(object):
             assert current.open("path/", os.O_WRONLY) == 1
             mocked_os.open.assert_called_once_with("full_path", os.O_WRONLY)
 
-    def test_release(self):
+    def test_release_with_stage(self):
         message = "I need to stage this"
         mocked_os = MagicMock()
         mocked_stage = MagicMock()
@@ -433,7 +435,8 @@ class TestCurrentView(object):
             current._stage = mocked_stage
             current.dirty = {
                 4: {
-                    'message': message
+                    'message': message,
+                    'stage': True
                 }
             }
 
@@ -441,3 +444,27 @@ class TestCurrentView(object):
 
             mocked_os.close.assert_called_once_with(4)
             mocked_stage.assert_called_once_with(add="/path", message=message)
+
+    def test_release_without_stage(self):
+        message = "No need to stage this"
+        mocked_os = MagicMock()
+        mocked_stage = MagicMock()
+
+        mocked_os.close.return_value = 0
+
+        with patch.multiple('gitfs.views.current', os=mocked_os):
+            current = CurrentView(repo="repo",
+                                  repo_path="repo_path",
+                                  ignore=CachedIgnore())
+            current._stage = mocked_stage
+            current.dirty = {
+                4: {
+                    'message': message,
+                    'stage': False
+                }
+            }
+
+            assert current.release("/path", 4) == 0
+
+            mocked_os.close.assert_called_once_with(4)
+            assert mocked_stage.call_count == 0

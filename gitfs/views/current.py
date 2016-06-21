@@ -107,6 +107,7 @@ class CurrentView(PassthroughView):
         result = super(CurrentView, self).write(path, buf, offset, fh)
         self.dirty[fh] = {
             'message': 'Update {}'.format(path),
+            'stage': True
         }
 
         log.debug("CurrentView: Wrote %s to %s", len(buf), path)
@@ -129,6 +130,7 @@ class CurrentView(PassthroughView):
 
             self.dirty[fh] = {
                 'message': "Create the {} directory".format(path),
+                'stage': True
             }
 
             self.release(keep_path, fh)
@@ -143,6 +145,7 @@ class CurrentView(PassthroughView):
 
         self.dirty[fh] = {
             'message': "Created {}".format(path),
+            'stage': True
         }
 
         log.debug("CurrentView: Created %s", path)
@@ -191,6 +194,10 @@ class CurrentView(PassthroughView):
         global writers
         fh = self.open_for_read(path, flags)
         writers += 1
+        self.dirty[fh] = {
+            'message': "Opened {} for write".format(path),
+            'stage': False
+        }
 
         log.debug("CurrentView: Open %s for write", path)
         return fh
@@ -215,11 +222,14 @@ class CurrentView(PassthroughView):
 
         if fh in self.dirty:
             message = self.dirty[fh]['message']
+            should_stage = self.dirty[fh].get('stage', False)
             del self.dirty[fh]
+
             global writers
             writers -= 1
-            log.debug("CurrentView: Staged %s for commit", path)
-            self._stage(add=path, message=message)
+            if should_stage:
+                log.debug("CurrentView: Staged %s for commit", path)
+                self._stage(add=path, message=message)
 
         log.debug("CurrentView: Release %s", path)
         return os.close(fh)
