@@ -35,7 +35,7 @@ class CommitQueue(BaseQueue):
 
     def commit(self, add=None, message=None, remove=None):
         if message is None:
-            raise ValueError("Message shoduld not be None")
+            raise ValueError("Message should not be None")
 
         if add is None and remove is None:
             message = "You need to add or to remove some files from/to index"
