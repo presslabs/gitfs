@@ -1,6 +1,10 @@
 === (ongoing) ===
 * implement behavior for .gitignore
 
+=== 0.4.2 ==
+* fix pending writers bug #223
+* cleanup code and error messages (thanks to @promulo and @ChristianAlexander)
+
 === 0.4.1 ==
 * add credentials to push and fetch operations #226 (hotfix)
 
