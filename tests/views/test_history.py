@@ -63,7 +63,7 @@ class TestHistory(object):
                                   mount_time="now")
 
             with pytest.raises(FuseOSError):
-                 history.getattr("/not-ok", 1)
+                history.getattr("/not-ok", 1)
 
     def test_access_with_invalid_path_and_no_date(self):
         history = HistoryView()

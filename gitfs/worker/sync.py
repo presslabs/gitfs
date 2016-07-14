@@ -104,7 +104,6 @@ class SyncWorker(Peasant):
             if count >= 5:
                 log.debug("Didn't manage to sync, I need some help")
 
-
     def merge(self):
         log.debug("Start merging")
         self.strategy(self.branch, self.branch, self.upstream)
