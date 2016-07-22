@@ -30,7 +30,7 @@ commits yourself. A FUSE filesystem for git repositories, with local cache
 
 ## Development
 
-You can find more documentation on [gitfs docs page](http://www.presslabs.com/gitfs/docs/).
+You can find more documentation on [gitfs docs page](https://www.presslabs.com/help/gitfs/general).
 
 ### Contributing
 
