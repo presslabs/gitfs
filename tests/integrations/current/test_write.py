@@ -59,7 +59,7 @@ class TestWriteCurrentView(BaseTest):
             shutil.rmtree("{}/a_directory/".format(self.current_path))
 
         with pull(self.sh):
-            self.assert_commit_message("Update 2 items")
+            self.assert_commit_message("Update 2 items. Added 0 items. Removed 2 items.")
             self.assert_new_commit()
 
         assert os.path.exists(path) is False
@@ -93,7 +93,7 @@ class TestWriteCurrentView(BaseTest):
             os.link(filename, link_name)
 
         with pull(self.sh):
-            self.assert_commit_message("Update 2 items")
+            self.assert_commit_message("Update 2 items. Added 2 items. Removed 0 items.")
 
         is_link = os.path.isfile(link_name)
         assert is_link is not False
@@ -158,7 +158,7 @@ class TestWriteCurrentView(BaseTest):
                 assert os.path.exists(keep_file)
 
             self.assert_new_commit()
-            commit_msg = "Update 2 items"
+            commit_msg = "Update 2 items. Added 2 items. Removed 0 items."
             self.assert_commit_message(commit_msg)
 
     def test_create_directory_inside_an_already_existing_directory(self, gitfs_log):
@@ -205,7 +205,7 @@ class TestWriteCurrentView(BaseTest):
                 assert os.path.exists(keep_file)
 
             self.assert_new_commit()
-            commit_msg = "Update {} items".format(len(keep_files))
+            commit_msg = "Update {} items. Added {} items. Removed 0 items.".format(len(keep_files), len(keep_files))
             self.assert_commit_message(commit_msg)
 
     def test_create_embedded_directory_big_depth(self, gitfs_log):
@@ -283,7 +283,7 @@ class TestWriteCurrentView(BaseTest):
 
         with pull(self.sh):
             self.assert_new_commit()
-            self.assert_commit_message("Update 1 items")
+            self.assert_commit_message("Update 1 items. Added 2 items. Removed 0 items.")
 
     def test_create(self, gitfs_log):
         filename = "{}/new_empty_file".format(self.current_path)
@@ -357,7 +357,8 @@ class TestWriteCurrentView(BaseTest):
             self.assert_new_commit()
 
         with pull(self.sh):
-            self.assert_commit_message("Update {} items".format(no_of_files))
+            self.assert_commit_message("Update {} items. Added {} items. Removed 0 items.".format(no_of_files,
+                                                                                                  no_of_files))
 
     def test_delete_file(self, gitfs_log):
         filename = "{}/deletable_file".format(self.current_path)
