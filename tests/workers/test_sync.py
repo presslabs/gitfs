@@ -190,7 +190,7 @@ class TestSyncWorker(object):
                             repository=mocked_repo)
         worker.commit(jobs)
 
-        asserted_message = "Update 2 items"
+        asserted_message = "Update 2 items. Added 2 items. Removed 1 items."
         mocked_repo.commit.assert_called_once_with(asserted_message, author,
                                                    author)
         assert mocked_repo.commits.update.call_count == 1

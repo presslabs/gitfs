@@ -166,11 +166,20 @@ class SyncWorker(Peasant):
             message = jobs[0]['params']['message']
         else:
             updates = set([])
+            number_of_removal = 0
+            number_of_additions = 0
             for job in jobs:
-                updates = updates | set(job['params']['add'])
-                updates = updates | set(job['params']['remove'])
-
-            message = "Update {} items".format(len(updates))
+                removal_set = set(job['params']['remove'])
+                addition_set = set(job['params']['add'])
+                number_of_removal += len(removal_set)
+                number_of_additions += len(addition_set)
+                updates = updates | removal_set | addition_set
+            message = "Update {} items. ".format(len(updates))
+            if number_of_additions:
+                message += "Added {} items. ".format(number_of_additions)
+            if number_of_removal:
+                message += "Removed {} items. ".format(number_of_removal)
+            message = message.strip()
 
         old_head = self.repository.head.target
         new_commit = self.repository.commit(message, self.author,
