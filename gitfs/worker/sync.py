@@ -174,11 +174,12 @@ class SyncWorker(Peasant):
                 number_of_removal += len(removal_set)
                 number_of_additions += len(addition_set)
                 updates = updates | removal_set | addition_set
-
-            message = "Update {} items. Added {} items. " \
-                      "Removed {} items.".format(len(updates),
-                                                 number_of_additions,
-                                                 number_of_removal)
+            message = "Update {} items. ".format(len(updates))
+            if number_of_additions:
+                message += "Added {} items. ".format(number_of_additions)
+            if number_of_removal:
+                message += "Removed {} items. ".format(number_of_removal)
+            message = message.strip()
 
         old_head = self.repository.head.target
         new_commit = self.repository.commit(message, self.author,
