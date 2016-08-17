@@ -1,6 +1,9 @@
 === (ongoing) ===
 * implement behavior for .gitignore
 
+=== 0.4.3 ==
+* improve commit message thanks to @tusharmakkar08
+
 === 0.4.2 ==
 * fix pending writers bug #223
 * cleanup code and error messages (thanks to @promulo and @ChristianAlexander)
