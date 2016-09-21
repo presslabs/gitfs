@@ -103,7 +103,11 @@ class Args(object):
             from raven.conf import setup_logging
             from raven.handlers.logging import SentryHandler
 
-            sentry_handler = SentryHandler(args.sentry_dsn)
+            sentry_handler = SentryHandler(args.sentry_dsn, tags={
+                'owner': args.user,
+                'remote': args.remote_url,
+                'mountpoint': args.mount_point
+            })
             sentry_handler.setLevel("ERROR")
             setup_logging(sentry_handler)
             log.addHandler(sentry_handler)
