@@ -24,7 +24,7 @@ uninstall:
 	rm -rf $(DESTDIR)$(PREFIX)/bin/gitfs
 
 $(BUILD_DIR)/gitfs: $(BUILD_DIR) $(VIRTUAL_ENV)/bin/pex
-	$(VIRTUAL_ENV)/bin/pex -r 'fusepy==2.0.2' -r 'pygit2==0.24.0' -r 'atomiclong==0.1.1' -s . -e gitfs:mount -o $(BUILD_DIR)/gitfs
+	$(VIRTUAL_ENV)/bin/pex -v --disable-cache -r requirements.txt -e gitfs:mount -o $(BUILD_DIR)/gitfs .
 
 $(VIRTUAL_ENV)/bin/pex: virtualenv
 	$(VIRTUAL_ENV)/bin/pip install pex wheel
