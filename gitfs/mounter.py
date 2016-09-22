@@ -13,8 +13,8 @@
 # limitations under the License.
 
 
-import argparse
 import sys
+import argparse
 
 from fuse import FUSE
 from pygit2 import Keypair, UserPass
@@ -53,19 +53,24 @@ def prepare_components(args):
 
     credentials = get_credentials(args)
 
-    # setting router
-    router = Router(remote_url=args.remote_url,
-                    mount_path=args.mount_point,
-                    repo_path=args.repo_path,
-                    branch=args.branch,
-                    user=args.user,
-                    group=args.group,
-                    max_size=args.max_size * 1024 * 1024,
-                    max_offset=args.max_size * 1024 * 1024,
-                    commit_queue=commit_queue,
-                    credentials=credentials,
-                    ignore_file=args.ignore_file,
-                    hard_ignore=args.hard_ignore)
+    try:
+        # setting router
+        router = Router(remote_url=args.remote_url,
+                        mount_path=args.mount_point,
+                        repo_path=args.repo_path,
+                        branch=args.branch,
+                        user=args.user,
+                        group=args.group,
+                        max_size=args.max_size * 1024 * 1024,
+                        max_offset=args.max_size * 1024 * 1024,
+                        commit_queue=commit_queue,
+                        credentials=credentials,
+                        ignore_file=args.ignore_file,
+                        hard_ignore=args.hard_ignore)
+    except KeyError as error:
+        sys.stderr.write("Can't clone reference origin/%s from remote %s: %s\n" %
+                         (args.branch, args.remote_url, error))
+        raise error
 
     # register all the routes
     router.register(routes)
@@ -101,7 +106,10 @@ def start_fuse():
     parser = argparse.ArgumentParser(prog='GitFS')
     args = parse_args(parser)
 
-    merge_worker, fetch_worker, router = prepare_components(args)
+    try:
+        merge_worker, fetch_worker, router = prepare_components(args)
+    except:
+        return
 
     # ready to mount it
     if sys.platform == 'darwin':
