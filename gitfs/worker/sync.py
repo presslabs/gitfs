@@ -102,8 +102,7 @@ class SyncWorker(Peasant):
                 log.debug("Retry-ing to sync with remote. Attempt #%d", count)
 
             if count >= 5:
-                log.debug("Didn't manage to sync, I need some help")
-
+                log.error("Didn't manage to sync, I need some help")
 
     def merge(self):
         log.debug("Start merging")
@@ -149,10 +148,10 @@ class SyncWorker(Peasant):
                 sync_done.set()
                 log.debug("Set push_successful")
                 push_successful.set()
-            except:
+            except Exception as error:
                 push_successful.clear()
                 fetch.set()
-                log.exception("Push failed")
+                log.debug("Push failed because of %s", error)
                 return False
         else:
             log.debug("Sync done, clearing")
