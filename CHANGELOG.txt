@@ -1,5 +1,8 @@
-=== (ongoing) ===
-* implement behavior for .gitignore
+=== 0.4.4 ==
+* show a helpful message when trying to clone an empty repository #239
+* log exception only on failed push #240
+* add sentry tags #244
+* upgrade pygit2 to 0.24.1
 
 === 0.4.3 ==
 * improve commit message thanks to @tusharmakkar08
