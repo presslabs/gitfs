@@ -111,7 +111,11 @@ class Repository(object):
             current_stat = os.lstat(full_path)
 
             if stats['st_mode'] != current_stat.st_mode:
-                os.chmod(full_path, current_stat.st_mode)
+                try:
+                    os.chmod(full_path, current_stat.st_mode)
+                except OSError:
+                    log.info("Repository: Checkout couldn't chmod %s",
+                             full_path)
                 self._repo.index.add(self._sanitize(path))
 
         return result
