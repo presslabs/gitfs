@@ -132,6 +132,7 @@ class TestMount(object):
         mocked_prepare = MagicMock()
         mocked_argp = MagicMock()
         mocked_fuse = MagicMock()
+        mocked_resource = MagicMock()
         mocked_args = MagicMock()
 
         mocked_merge = MagicMock()
@@ -146,7 +147,7 @@ class TestMount(object):
         with patch.multiple('gitfs.mounter', argparse=mocked_argp,
                             parse_args=mocked_parse_args,
                             prepare_components=mocked_prepare,
-                            FUSE=mocked_fuse):
+                            FUSE=mocked_fuse, resource=MagicMock()):
             start_fuse()
 
             mocked_argp.ArgumentParser.assert_called_once_with(prog='GitFS')

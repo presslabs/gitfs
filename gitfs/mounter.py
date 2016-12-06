@@ -15,6 +15,7 @@
 
 import sys
 import argparse
+import resource
 
 from fuse import FUSE
 from pygit2 import Keypair, UserPass
@@ -110,6 +111,10 @@ def start_fuse():
         merge_worker, fetch_worker, router = prepare_components(args)
     except:
         return
+
+    if args.max_open_files != -1:
+        resource.setrlimit(resource.RLIMIT_NOFILE,
+                           (args.max_open_file, args.max_open_file))
 
     # ready to mount it
     if sys.platform == 'darwin':
