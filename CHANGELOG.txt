@@ -1,3 +1,6 @@
+=== 0.4.5 ==
+* add max_open_files mount option which allow to specify a files open hard and soft limit
+
 === 0.4.4 ==
 * show a helpful message when trying to clone an empty repository #239
 * log exception only on failed push #240
