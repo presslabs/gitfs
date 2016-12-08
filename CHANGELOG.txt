@@ -1,3 +1,6 @@
+=== 0.4.5.1 ==
+* fix typo for max_open_files argument on mount
+
 === 0.4.5 ==
 * add max_open_files mount option which allow to specify a files open hard and soft limit
 
