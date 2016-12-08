@@ -114,7 +114,7 @@ def start_fuse():
 
     if args.max_open_files != -1:
         resource.setrlimit(resource.RLIMIT_NOFILE,
-                           (args.max_open_file, args.max_open_file))
+                           (args.max_open_files, args.max_open_files))
 
     # ready to mount it
     if sys.platform == 'darwin':
