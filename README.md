@@ -9,6 +9,29 @@ integrates with git. You can mount a remote repository's branch locally, and any
 subsequent changes made to the files will be automatically committed to the
 remote.
 
+## Installation
+
+GitFS is `pip` installable, but requires some extra settings. First create a
+directory where GitFS can store it's working files and make sure your user has
+permissions to modify it:
+
+```bash
+mkdir -p /var/lib/gitfs
+chown -R $USER:$USER /var/lib/gitfs
+```
+
+Verify that your fuse settings allow non-root users:
+
+```bash
+sudo echo 'user_allow_other' >> /etc/fuse.conf"
+```
+
+Then use `pip` to install this repo:
+
+```bash
+pip install git+ssh://git@github.com/PressLabs/gitfs.git
+```
+
 ## What's its purpose?
 
 gitfs was designed to bring the full powers of git to everyone, no matter how
