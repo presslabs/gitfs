@@ -3,12 +3,16 @@ pipeline:
     image: jobandtalent/mkdocs
     commands:
       - mkdocs build --clean
+      - for i in $(ls | grep -v site); do rm -rf $i; done
+      - mv site/* .
+      - rm -rf site/
+      - ls -la
 
   github-pages:
     image: appleboy/drone-git-push
     branch: gh-pages
-    local_ref: gh-pages
-    path: site
+    commit: true
+    commit_message: "[docs] Update github pages"
     remote: git@github.com:/Presslabs/gitfs.git
     force: true
     secrets:
