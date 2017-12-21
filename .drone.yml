@@ -1,7 +1,8 @@
 pipeline:
-  image: jobandtalent/mkdocs
-  commands:
-    - mkdocs build --clean
+  build-github-pages:
+    image: jobandtalent/mkdocs
+    commands:
+      - mkdocs build --clean
 
   github-pages:
     image: appleboy/drone-git-push
