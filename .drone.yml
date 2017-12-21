@@ -1,25 +1,4 @@
 pipeline:
-  build-github-pages:
-    image: jobandtalent/mkdocs
-    commands:
-      - mkdocs build --clean
-      - for i in $(ls | grep -v site); do rm -rf $i; done
-      - mv site/* .
-      - rm -rf site/
-      - ls -la
-
-  github-pages:
-    image: appleboy/drone-git-push
-    branch: gh-pages
-    commit: true
-    commit_message: "[docs] Update github pages"
-    remote: git@github.com:/Presslabs/gitfs.git
-    force: true
-    secrets:
-        - GIT_PUSH_SSH_KEY
-    # when:
-    #   branch: master
-
   test:
     image: ubuntu:trusty
     privileged: true
@@ -39,3 +18,25 @@ pipeline:
       - make test
     volumes:
       - /var/cache/apt/:/var/cache/apt/
+
+  build-github-pages:
+    image: jobandtalent/mkdocs
+    commands:
+      - mkdocs build --clean
+      - for i in $(ls | grep -v site); do rm -rf $i; done
+      - mv site/* .
+      - rm -rf site/
+    when:
+        branch: master
+
+  github-pages:
+    image: appleboy/drone-git-push
+    branch: gh-pages
+    commit: true
+    commit_message: "[docs] Update github pages"
+    remote: git@github.com:/Presslabs/gitfs.git
+    force: true
+    secrets:
+        - GIT_PUSH_SSH_KEY
+    when:
+       branch: master
