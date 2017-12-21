@@ -3,7 +3,7 @@ pipeline:
     image: node:6.7
     pull: true
     commands:
-      - make github-pages
+      - make gh-pages
 
   github-pages:
     image: appleboy/drone-git-push

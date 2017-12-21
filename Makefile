@@ -59,7 +59,7 @@ docs: $(VIRTUAL_ENV)/bin/mkdocs
 
 .PHONY: gh-pages
 gh-pages: docs
-    git config --global user.email "bot@presslabs.com"
+	git config --global user.email "bot@presslabs.com"
 	git config --global user.name "Igor Debot"
 	cp docs/index.html .
 	git add .
