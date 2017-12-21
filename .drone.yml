@@ -1,9 +1,7 @@
 pipeline:
-  build-docs:
-    image: node:6.7
-    pull: true
-    commands:
-      - make gh-pages
+  image: jobandtalent/mkdocs
+  commands:
+    - mkdocs build --clean
 
   github-pages:
     image: appleboy/drone-git-push
