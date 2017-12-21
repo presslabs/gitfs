@@ -53,7 +53,17 @@ clean:
 	rm -rf $(BUILD_DIR)
 	rm -rf $(TEST_DIR)
 
+.PHONY: docs
 docs: $(VIRTUAL_ENV)/bin/mkdocs
 	$(VIRTUAL_ENV)/bin/mkdocs build
+
+.PHONY: gh-pages
+gh-pages: docs
+    git config --global user.email "bot@presslabs.com"
+	git config --global user.name "Igor Debot"
+	cp docs/index.html .
+	git add .
+	echo -n "(autodoc) " > /tmp/COMMIT_MESSAGE ; git log -1 --pretty=%B >> /tmp/COMMIT_MESSAGE ; echo >> /tmp/COMMIT_MESSAGE ; echo "Commited-By: $$CI_BUILD_URL" >> /tmp/COMMIT_MESSAGE
+	git commit -F /tmp/COMMIT_MESSAGE
 
 .PHONY: clean test testenv virtualenv drone all

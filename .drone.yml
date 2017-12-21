@@ -1,4 +1,11 @@
 build:
+  git_push:
+  branch: gh-pages
+  remote: git@github.com:/Presslabs/react-particles-icons.git
+  force: true
+  # when:
+  #   branch: master
+
   image: ubuntu:trusty
   privileged: true
   environment:
