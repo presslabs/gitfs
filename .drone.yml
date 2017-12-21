@@ -1,28 +1,38 @@
-build:
-  git_push:
-  branch: gh-pages
-  remote: git@github.com:/Presslabs/react-particles-icons.git
-  force: true
-  # when:
-  #   branch: master
+pipeline:
+  build-docs:
+    image: node:6.7
+    pull: true
+    commands:
+      - make github-pages
 
-  image: ubuntu:trusty
-  privileged: true
-  environment:
-    - PIP_DOWNLOAD_CACHE=/tmp/pip_download_cache
-    - DEBIAN_FRONTEND=noninteractive
-  commands:
-    - apt-get update && apt-get install -qy build-essential python-pip python-virtualenv python-dev software-properties-common python-software-properties libfuse-dev fuse git libffi-dev python3.4-dev
-    - sudo add-apt-repository -y ppa:presslabs/gitfs
-    - sudo apt-get update
-    - sudo apt-get install -y libgit2 libgit2-dev
-    - sudo chmod 660 /dev/fuse
-    - echo user_allow_other | sudo tee -a /etc/fuse.conf > /dev/null
-    - sudo chmod 644 /etc/fuse.conf
-    - git config --global user.email "drone@example.com"
-    - git config --global user.name "Drone CI"
-    - make test
-cache:
-  mount:
-    - /var/cache/apt/
-    - /tmp/pip_download_cache
+  github-pages:
+    image: appleboy/drone-git-push
+    branch: gh-pages
+    local_ref: gh-pages
+    path: site
+    remote: git@github.com:/Presslabs/gitfs.git
+    force: true
+    secrets:
+        - GIT_PUSH_SSH_KEY
+    # when:
+    #   branch: master
+
+  test:
+    image: ubuntu:trusty
+    privileged: true
+    environment:
+      - PIP_DOWNLOAD_CACHE=/tmp/pip_download_cache
+      - DEBIAN_FRONTEND=noninteractive
+    commands:
+      - apt-get update && apt-get install -qy build-essential python-pip python-virtualenv python-dev software-properties-common python-software-properties libfuse-dev fuse git libffi-dev python3.4-dev
+      - sudo add-apt-repository -y ppa:presslabs/gitfs
+      - sudo apt-get update
+      - sudo apt-get install -y libgit2 libgit2-dev
+      - sudo chmod 660 /dev/fuse
+      - echo user_allow_other | sudo tee -a /etc/fuse.conf > /dev/null
+      - sudo chmod 644 /etc/fuse.conf
+      - git config --global user.email "drone@example.com"
+      - git config --global user.name "Drone CI"
+      - make test
+    volumes:
+      - /var/cache/apt/:/var/cache/apt/
