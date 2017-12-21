@@ -54,8 +54,8 @@ clean:
 	rm -rf $(TEST_DIR)
 
 .PHONY: docs
-docs: $(VIRTUAL_ENV)/bin/mkdocs
-	$(VIRTUAL_ENV)/bin/mkdocs build
+docs:
+	mkdocs build --clean
 
 .PHONY: gh-pages
 gh-pages: docs
