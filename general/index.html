@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        
+        
+        <link rel="shortcut icon" href="../img/favicon.ico">
+
+	<title>General - My Docs</title>
+
+        <link href="../css/bootstrap-custom.min.css" rel="stylesheet">
+        <link href="../css/font-awesome-4.5.0.css" rel="stylesheet">
+        <link href="../css/base.css" rel="stylesheet">
+        <link rel="stylesheet" href="../css/highlight.css">
+
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+            <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+        <![endif]-->
+
+        
+    </head>
+
+    <body>
+
+        <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+    <div class="container">
+
+        <!-- Collapsed navigation -->
+        <div class="navbar-header">
+            
+            <!-- Expander button -->
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            
+
+            <!-- Main title -->
+            <a class="navbar-brand" href="..">My Docs</a>
+        </div>
+
+        <!-- Expanded navigation -->
+        <div class="navbar-collapse collapse">
+            
+                <!-- Main navigation -->
+                <ul class="nav navbar-nav">
+                
+                
+                    <li >
+                        <a href="..">Home</a>
+                    </li>
+                
+                
+                
+                    <li >
+                        <a href="../arguments/">Arguments</a>
+                    </li>
+                
+                
+                
+                    <li class="active">
+                        <a href="./">General</a>
+                    </li>
+                
+                
+                
+                    <li >
+                        <a href="../how-it-works/">How it works</a>
+                    </li>
+                
+                
+                
+                    <li >
+                        <a href="../usage/">Usage</a>
+                    </li>
+                
+                
+                </ul>
+            
+
+            <ul class="nav navbar-nav navbar-right">
+                <li>
+                    <a href="#" data-toggle="modal" data-target="#mkdocs_search_modal">
+                        <i class="fa fa-search"></i> Search
+                    </a>
+                </li>
+                
+                    <li >
+                        <a rel="next" href="../arguments/">
+                            <i class="fa fa-arrow-left"></i> Previous
+                        </a>
+                    </li>
+                    <li >
+                        <a rel="prev" href="../how-it-works/">
+                            Next <i class="fa fa-arrow-right"></i>
+                        </a>
+                    </li>
+                
+                
+            </ul>
+        </div>
+    </div>
+</div>
+
+        <div class="container">
+            
+                <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
+    <ul class="nav bs-sidenav">
+    
+        <li class="main active"><a href="#welcome-to-gitfs">Welcome to gitfs</a></li>
+        
+            <li><a href="#whats-its-purpose">What’s its purpose?</a></li>
+        
+            <li><a href="#features">Features</a></li>
+        
+            <li><a href="#license">License</a></li>
+        
+    
+    </ul>
+</div></div>
+                <div class="col-md-9" role="main">
+
+<h2 id="welcome-to-gitfs">Welcome to gitfs</h2>
+<p>gitfs is a <a href="http://fuse.sourceforge.net/">FUSE</a> file system that fully integrates with git. You can mount a remote repository’s branch locally, and any subsequent changes made to the files will be automatically committed to the remote.</p>
+<h3 id="whats-its-purpose">What’s its purpose?</h3>
+<p>gitfs was designed to bring the full powers of git to everyone, irrespective of their experience using the tool. You can mount any repository, and all the changes you make will be automatically converted into commits. gitfs will also expose the history of the branch you’re currently working on by simulating snapshots of every commit.</p>
+<p>gitfs is useful in places where you want to keep track of all your files, but at the same time you don’t have the possibility of organizing everything into commits yourself. A FUSE file system for git repositories, with local cache.</p>
+<h3 id="features">Features</h3>
+<ul>
+<li>Automatically commits changes: create, delete, update files and their metadata</li>
+<li>Browse through working index and commit history</li>
+<li>Merges with upstream by automatically accepting local changes</li>
+<li>Mounts the file system as a user or a group</li>
+<li>Caching commits reduces the memory footprint and speeds up navigation</li>
+<li>Reduces the number of commits by grouping pushes</li>
+<li>Development</li>
+<li>You are highly encouraged to use gitfs, to contribute with code, tests, documentation, or just to share your experience. Development of gitfs happens at <a href="https://github.com/Presslabs/gitfs">github.com/Presslabs/gitfs</a>. The concise contribution guide can be found in the <a href="https://github.com/Presslabs/gitfs/blob/master/CONTRIBUTING.md">CONTRIBUTING.md</a> file.</li>
+</ul>
+<h3 id="license">License</h3>
+<p>This project is licensed under the Apache 2.0 license. Have a look at the <a href="https://github.com/Presslabs/gitfs/blob/master/LICENSE">LICENSE</a> file in the top distribution directory for the complete, unabridged reference.</p></div>
+            
+        </div>
+
+        <footer class="col-md-12">
+            <hr>
+            
+            <p>Documentation built with <a href="http://www.mkdocs.org/">MkDocs</a>.</p>
+        </footer>
+
+        <script src="../js/jquery-1.10.2.min.js"></script>
+        <script src="../js/bootstrap-3.0.3.min.js"></script>
+        <script src="../js/highlight.pack.js"></script>
+        <script>var base_url = '..';</script>
+        <script data-main="../mkdocs/js/search.js" src="../mkdocs/js/require.js"></script>
+        <script src="../js/base.js"></script>
+
+        <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="Search Modal" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                        <h4 class="modal-title" id="exampleModalLabel">Search</h4>
+                    </div>
+                    <div class="modal-body">
+                        <p>
+                            From here you can search these documents. Enter
+                            your search terms below.
+                        </p>
+                        <form role="form">
+                            <div class="form-group">
+                                <input type="text" class="form-control" placeholder="Search..." id="mkdocs-search-query">
+                            </div>
+                        </form>
+                        <div id="mkdocs-search-results"></div>
+                    </div>
+                    <div class="modal-footer">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </body>
+</html>
