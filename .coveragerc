@@ -1,6 +1,0 @@
-# .coveragerc to control coverage.py
-[run]
-source=gitfs
-[report]
-fail_under=92
-show_missing=True
