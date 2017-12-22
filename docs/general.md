@@ -14,7 +14,8 @@ gitfs is useful in places where you want to keep track of all your files, but at
 - Mounts the file system as a user or a group
 - Caching commits reduces the memory footprint and speeds up navigation
 - Reduces the number of commits by grouping pushes
-- Development
+
+### Development
 - You are highly encouraged to use gitfs, to contribute with code, tests, documentation, or just to share your experience. Development of gitfs happens at [github.com/Presslabs/gitfs](https://github.com/Presslabs/gitfs). The concise contribution guide can be found in the [CONTRIBUTING.md](https://github.com/Presslabs/gitfs/blob/master/CONTRIBUTING.md) file.
 
 ### License
