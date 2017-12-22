@@ -1,0 +1,26 @@
+{% if meta.source %}
+<div class="source-links">
+{% for filename in meta.source %}
+    <span class="label label-primary">{{ filename }}</span>
+{% endfor %}
+</div>
+{% endif %}
+
+{{ content }}
+
+{% if include_next_prev %}
+<ul class="content-nav">
+  <li {% if not previous_page %}class="disabled"{% endif %}>
+    <h3>{{ previous_page.title }}</h3>
+    <a rel="next" {% if previous_page %}href="{{ previous_page.url }}"{% endif %}>
+      <i class="fa fa-arrow-left"></i> Previous
+    </a>
+  </li>
+  <li {% if not next_page %}class="disabled"{% endif %}>
+    <h3>{{ next_page.title }}</h3>
+    <a rel="prev" {% if next_page %}href="{{ next_page.url }}"{% endif %}>
+      Next <i class="fa fa-arrow-right"></i>
+    </a>
+  </li>
+</ul>
+{% endif %}
