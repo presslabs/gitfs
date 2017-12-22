@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        
+        
+        <link rel="shortcut icon" href="../img/favicon.ico">
+
+	<title>How it works - My Docs</title>
+
+        <link href="../css/bootstrap-custom.min.css" rel="stylesheet">
+        <link href="../css/font-awesome-4.5.0.css" rel="stylesheet">
+        <link href="../css/base.css" rel="stylesheet">
+        <link rel="stylesheet" href="../css/highlight.css">
+
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+            <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+        <![endif]-->
+
+        
+    </head>
+
+    <body>
+
+        <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+    <div class="container">
+
+        <!-- Collapsed navigation -->
+        <div class="navbar-header">
+            
+            <!-- Expander button -->
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            
+
+            <!-- Main title -->
+            <a class="navbar-brand" href="..">My Docs</a>
+        </div>
+
+        <!-- Expanded navigation -->
+        <div class="navbar-collapse collapse">
+            
+                <!-- Main navigation -->
+                <ul class="nav navbar-nav">
+                
+                
+                    <li >
+                        <a href="..">Home</a>
+                    </li>
+                
+                
+                
+                    <li >
+                        <a href="../arguments/">Arguments</a>
+                    </li>
+                
+                
+                
+                    <li >
+                        <a href="../general/">General</a>
+                    </li>
+                
+                
+                
+                    <li class="active">
+                        <a href="./">How it works</a>
+                    </li>
+                
+                
+                
+                    <li >
+                        <a href="../usage/">Usage</a>
+                    </li>
+                
+                
+                </ul>
+            
+
+            <ul class="nav navbar-nav navbar-right">
+                <li>
+                    <a href="#" data-toggle="modal" data-target="#mkdocs_search_modal">
+                        <i class="fa fa-search"></i> Search
+                    </a>
+                </li>
+                
+                    <li >
+                        <a rel="next" href="../general/">
+                            <i class="fa fa-arrow-left"></i> Previous
+                        </a>
+                    </li>
+                    <li >
+                        <a rel="prev" href="../usage/">
+                            Next <i class="fa fa-arrow-right"></i>
+                        </a>
+                    </li>
+                
+                
+            </ul>
+        </div>
+    </div>
+</div>
+
+        <div class="container">
+            
+                <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
+    <ul class="nav bs-sidenav">
+    
+        <li class="main active"><a href="#fuse">FUSE</a></li>
+        
+            <li><a href="#pygit2">pygit2</a></li>
+        
+            <li><a href="#structure">Structure</a></li>
+        
+            <li><a href="#class-diagram">Class diagram</a></li>
+        
+            <li><a href="#router">Router</a></li>
+        
+            <li><a href="#view">View</a></li>
+        
+            <li><a href="#worker">Worker</a></li>
+        
+            <li><a href="#idle-mode">Idle mode</a></li>
+        
+    
+    </ul>
+</div></div>
+                <div class="col-md-9" role="main">
+
+<h2 id="fuse">FUSE</h2>
+<p>gitfs uses <a href="http://fuse.sourceforge.net/">FUSE</a> to create its filesystem. It’s used to create the <code>current</code> and <code>history</code> directories that you can find where you mounted the repository. More on that <a href="../usage/#user-content-directory-structure">here</a>.</p>
+<h3 id="pygit2">pygit2</h3>
+<p><a href="https://github.com/libgit2/pygit2">pygit2</a> gives us direct access to git and makes room for a lot of optimization. The alternative, using shell commands, would have been a pain to implement and so would have been tying it to a state too.</p>
+<h3 id="structure">Structure</h3>
+<p>This is a simplified overview of the <code>gitfs</code> structure.</p>
+<h3 id="class-diagram">Class diagram</h3>
+<h3 id="router">Router</h3>
+<p>The <code>Router</code> class is used in order to dispatch paths to different <code>Views</code>.</p>
+<h3 id="view">View</h3>
+<p>Views are used to offer different functionality depending on your current path.</p>
+<p>They are divided into two super classes:
+- <code>PassthroughView</code>
+- <code>ReadOnlyView</code></p>
+<p>The <code>PassthroughView</code> will work just like you would expect a normal directory to. It’s purpose is to map all of <code>FUSE</code>'s operations to the similar ones in <code>Python</code>.</p>
+<p>The <code>ReadOnlyView</code> is used when user writes are not desired.</p>
+<p>The subclasses of these are:</p>
+<ul>
+<li><code>PassthroughView</code></li>
+<li><code>CurrentView</code> – this is the view which handles the current directory and does the automated commits and pushes</li>
+<li><code>ReadOnlyView</code></li>
+<li><code>HistoryView</code> – this is the view which handles the history directory and categorizes commits by date</li>
+<li><code>CommitView</code> – this is the view which handles the <code>history/*day*</code> directory</li>
+<li><code>IndexView</code> – this is the view which handles the <code>history/*day*/*commit*</code> directory and shows you a read-only snapshot pointing to that commit</li>
+</ul>
+<h3 id="worker">Worker</h3>
+<p>All workers inherit the <code>Peasant</code> class which is nothing more than a specialized <code>Thread</code>.</p>
+<p>Here are the workers with their more than explicit names:
+- <code>FetchWorker</code>
+- <code>MergeWorker</code></p>
+<h3 id="idle-mode">Idle mode</h3>
+<p>gitfs uses the FetchWorker in order to bring your changes from upstream.
+The FetchWorker will fetch, by default, at a period of 30 seconds (you can change the timeout at mount, using <code>-o fetch_timeout=5</code>, for 5 seconds).</p>
+<p>If nothing was changed, for more than 5min on the filesystem, gitfs will enter in idle mode. In this mode, will fetch each 30min. You can modify those parameters using <code>min_idle_times</code> in order to change the amount of idle cycles required until gitfs will go in idle mode (by default 10 times, which means 5min) and <code>idle_fetch_timeout</code> to control the period of time between fetches, for idle mode.</p></div>
+            
+        </div>
+
+        <footer class="col-md-12">
+            <hr>
+            
+            <p>Documentation built with <a href="http://www.mkdocs.org/">MkDocs</a>.</p>
+        </footer>
+
+        <script src="../js/jquery-1.10.2.min.js"></script>
+        <script src="../js/bootstrap-3.0.3.min.js"></script>
+        <script src="../js/highlight.pack.js"></script>
+        <script>var base_url = '..';</script>
+        <script data-main="../mkdocs/js/search.js" src="../mkdocs/js/require.js"></script>
+        <script src="../js/base.js"></script>
+
+        <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="Search Modal" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                        <h4 class="modal-title" id="exampleModalLabel">Search</h4>
+                    </div>
+                    <div class="modal-body">
+                        <p>
+                            From here you can search these documents. Enter
+                            your search terms below.
+                        </p>
+                        <form role="form">
+                            <div class="form-group">
+                                <input type="text" class="form-control" placeholder="Search..." id="mkdocs-search-query">
+                            </div>
+                        </form>
+                        <div id="mkdocs-search-results"></div>
+                    </div>
+                    <div class="modal-footer">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </body>
+</html>

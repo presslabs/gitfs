@@ -1,0 +1,139 @@
+{
+    "docs": [
+        {
+            "location": "/",
+            "text": "Welcome to MkDocs\n\n\nFor full documentation visit \nmkdocs.org\n.\n\n\nCommands\n\n\n\n\nmkdocs new [dir-name]\n - Create a new project.\n\n\nmkdocs serve\n - Start the live-reloading docs server.\n\n\nmkdocs build\n - Build the documentation site.\n\n\nmkdocs help\n - Print this help message.\n\n\n\n\nProject layout\n\n\nmkdocs.yml    # The configuration file.\ndocs/\n    index.md  # The documentation homepage.\n    ...       # Other markdown pages, images and other files.",
+            "title": "Home"
+        },
+        {
+            "location": "/#welcome-to-mkdocs",
+            "text": "For full documentation visit  mkdocs.org .",
+            "title": "Welcome to MkDocs"
+        },
+        {
+            "location": "/#commands",
+            "text": "mkdocs new [dir-name]  - Create a new project.  mkdocs serve  - Start the live-reloading docs server.  mkdocs build  - Build the documentation site.  mkdocs help  - Print this help message.",
+            "title": "Commands"
+        },
+        {
+            "location": "/#project-layout",
+            "text": "mkdocs.yml    # The configuration file.\ndocs/\n    index.md  # The documentation homepage.\n    ...       # Other markdown pages, images and other files.",
+            "title": "Project layout"
+        },
+        {
+            "location": "/arguments/",
+            "text": "Using options\n\n\nIn order to use options when mounting gitfs, you need to append the options as an argument when using the mount command like this:\n\n\n-o option1=value1,option2=value2,option3=value3...\n\n\n\n\nAll available options\n\n\n\n\n\n\n\n\nName\n\n\nDefault\n\n\nDescription\n\n\n\n\n\n\n\n\n\n\nremote_url\n\n\n\n\nthe URL of the remote. The accepted formats are: \nhttps://username:password@hostname.com/repo.git\n \u2013 for HTTP\nusername@hostname.com:repo.git\n \u2013 for SSH\n\n\n\n\n\n\nbranch\n\n\nmaster\n\n\nthe branch name to follow\n\n\n\n\n\n\nrepo_path\n\n\n/var/lib/gitfs/repo_path\n\n\nthe location where the repositories will be cloned\n\n\n\n\n\n\nmax_size\n\n\n10MB\n\n\nthe maximum file size in MBs allowed for an individual file. If set to 0, then allow any file size\n\n\n\n\n\n\nuser\n\n\nroot\n\n\nthe user that will mount the file system\n\n\n\n\n\n\ngroup\n\n\nroot\n\n\nthe group that will mount the file system\n\n\n\n\n\n\ncommitter_name\n\n\nuser\n\n\nthe name that will be displayed for all the commits\n\n\n\n\n\n\ncommitter_email\n\n\nuser@FQDN\n\n\nthe email that will be displayed for all the commits\n\n\n\n\n\n\nmerge_timeout\n\n\n5 sec\n\n\nthe interval between idle state and commits/pushes\n\n\n\n\n\n\nfetch_timeout\n\n\n30 sec\n\n\nthe interval between fetches\n\n\n\n\n\n\nmin_idle_times\n\n\n10\n\n\nidle cycles until gitfs will go to idle mode\n\n\n\n\n\n\nidle_fetch_timeout\n\n\n30 min\n\n\nthe interval between fetches, when in idle mode\n\n\n\n\n\n\nlog\n\n\nsyslog\n\n\nthe path of the log file. Special name \nsyslog\n will log to the system logger\n\n\n\n\n\n\nlog_level\n\n\nwarning\n\n\nthe logging level. One of \nerror\n, \nwarning\n, \ninfo\n, \ndebug\n\n\n\n\n\n\ndebug\n\n\nfalse\n\n\nthe switch that sets the log level to \ndebug\n and also enables FUSE\u2019s debug\n\n\n\n\n\n\nforeground\n\n\ntrue\n\n\nthe switch that specifies whether FUSE will work in the foreground or not\n\n\n\n\n\n\nallow_other\n\n\ntrue\n\n\nthe switch that overrides the security measure restricting file access to the user mounting the file system. So, all users, including root, can access the files. This option is, by default, only allowed to root, but this restriction can be removed with a configuration option described in the previous section\n\n\n\n\n\n\nallow_root\n\n\nfalse\n\n\nthe switch that\u2019s similar to \nallow_other\n but file access is limited to the user mounting the file system and root. This option and \nallow_other\n are mutually exclusive\n\n\n\n\n\n\nusername\n\n\n\n\nthe username for HTTP basic auth\n\n\n\n\n\n\npassword\n\n\n\n\nthe password for HTTP basic auth\n\n\n\n\n\n\nkey\n\n\n$HOME/.ssh/id_rsa\n\n\nthe path of the SSH private key. \nNOTE\n: the public key is constructed by appending .pub to this path and the file \nMUST\n exist",
+            "title": "Arguments"
+        },
+        {
+            "location": "/arguments/#using-options",
+            "text": "In order to use options when mounting gitfs, you need to append the options as an argument when using the mount command like this:  -o option1=value1,option2=value2,option3=value3...",
+            "title": "Using options"
+        },
+        {
+            "location": "/arguments/#all-available-options",
+            "text": "Name  Default  Description      remote_url   the URL of the remote. The accepted formats are:  https://username:password@hostname.com/repo.git  \u2013 for HTTP username@hostname.com:repo.git  \u2013 for SSH    branch  master  the branch name to follow    repo_path  /var/lib/gitfs/repo_path  the location where the repositories will be cloned    max_size  10MB  the maximum file size in MBs allowed for an individual file. If set to 0, then allow any file size    user  root  the user that will mount the file system    group  root  the group that will mount the file system    committer_name  user  the name that will be displayed for all the commits    committer_email  user@FQDN  the email that will be displayed for all the commits    merge_timeout  5 sec  the interval between idle state and commits/pushes    fetch_timeout  30 sec  the interval between fetches    min_idle_times  10  idle cycles until gitfs will go to idle mode    idle_fetch_timeout  30 min  the interval between fetches, when in idle mode    log  syslog  the path of the log file. Special name  syslog  will log to the system logger    log_level  warning  the logging level. One of  error ,  warning ,  info ,  debug    debug  false  the switch that sets the log level to  debug  and also enables FUSE\u2019s debug    foreground  true  the switch that specifies whether FUSE will work in the foreground or not    allow_other  true  the switch that overrides the security measure restricting file access to the user mounting the file system. So, all users, including root, can access the files. This option is, by default, only allowed to root, but this restriction can be removed with a configuration option described in the previous section    allow_root  false  the switch that\u2019s similar to  allow_other  but file access is limited to the user mounting the file system and root. This option and  allow_other  are mutually exclusive    username   the username for HTTP basic auth    password   the password for HTTP basic auth    key  $HOME/.ssh/id_rsa  the path of the SSH private key.  NOTE : the public key is constructed by appending .pub to this path and the file  MUST  exist",
+            "title": "All available options"
+        },
+        {
+            "location": "/general/",
+            "text": "Welcome to gitfs\n\n\ngitfs is a \nFUSE\n file system that fully integrates with git. You can mount a remote repository\u2019s branch locally, and any subsequent changes made to the files will be automatically committed to the remote.\n\n\nWhat\u2019s its purpose?\n\n\ngitfs was designed to bring the full powers of git to everyone, irrespective of their experience using the tool. You can mount any repository, and all the changes you make will be automatically converted into commits. gitfs will also expose the history of the branch you\u2019re currently working on by simulating snapshots of every commit.\n\n\ngitfs is useful in places where you want to keep track of all your files, but at the same time you don\u2019t have the possibility of organizing everything into commits yourself. A FUSE file system for git repositories, with local cache.\n\n\nFeatures\n\n\n\n\nAutomatically commits changes: create, delete, update files and their metadata\n\n\nBrowse through working index and commit history\n\n\nMerges with upstream by automatically accepting local changes\n\n\nMounts the file system as a user or a group\n\n\nCaching commits reduces the memory footprint and speeds up navigation\n\n\nReduces the number of commits by grouping pushes\n\n\nDevelopment\n\n\nYou are highly encouraged to use gitfs, to contribute with code, tests, documentation, or just to share your experience. Development of gitfs happens at \ngithub.com/Presslabs/gitfs\n. The concise contribution guide can be found in the \nCONTRIBUTING.md\n file.\n\n\n\n\nLicense\n\n\nThis project is licensed under the Apache 2.0 license. Have a look at the \nLICENSE\n file in the top distribution directory for the complete, unabridged reference.",
+            "title": "General"
+        },
+        {
+            "location": "/general/#welcome-to-gitfs",
+            "text": "gitfs is a  FUSE  file system that fully integrates with git. You can mount a remote repository\u2019s branch locally, and any subsequent changes made to the files will be automatically committed to the remote.",
+            "title": "Welcome to gitfs"
+        },
+        {
+            "location": "/general/#whats-its-purpose",
+            "text": "gitfs was designed to bring the full powers of git to everyone, irrespective of their experience using the tool. You can mount any repository, and all the changes you make will be automatically converted into commits. gitfs will also expose the history of the branch you\u2019re currently working on by simulating snapshots of every commit.  gitfs is useful in places where you want to keep track of all your files, but at the same time you don\u2019t have the possibility of organizing everything into commits yourself. A FUSE file system for git repositories, with local cache.",
+            "title": "What\u2019s its purpose?"
+        },
+        {
+            "location": "/general/#features",
+            "text": "Automatically commits changes: create, delete, update files and their metadata  Browse through working index and commit history  Merges with upstream by automatically accepting local changes  Mounts the file system as a user or a group  Caching commits reduces the memory footprint and speeds up navigation  Reduces the number of commits by grouping pushes  Development  You are highly encouraged to use gitfs, to contribute with code, tests, documentation, or just to share your experience. Development of gitfs happens at  github.com/Presslabs/gitfs . The concise contribution guide can be found in the  CONTRIBUTING.md  file.",
+            "title": "Features"
+        },
+        {
+            "location": "/general/#license",
+            "text": "This project is licensed under the Apache 2.0 license. Have a look at the  LICENSE  file in the top distribution directory for the complete, unabridged reference.",
+            "title": "License"
+        },
+        {
+            "location": "/how-it-works/",
+            "text": "FUSE\n\n\ngitfs uses \nFUSE\n to create its filesystem. It\u2019s used to create the \ncurrent\n and \nhistory\n directories that you can find where you mounted the repository. More on that \nhere\n.\n\n\npygit2\n\n\npygit2\n gives us direct access to git and makes room for a lot of optimization. The alternative, using shell commands, would have been a pain to implement and so would have been tying it to a state too.\n\n\nStructure\n\n\nThis is a simplified overview of the \ngitfs\n structure.\n\n\nClass diagram\n\n\nRouter\n\n\nThe \nRouter\n class is used in order to dispatch paths to different \nViews\n.\n\n\nView\n\n\nViews are used to offer different functionality depending on your current path.\n\n\nThey are divided into two super classes:\n- \nPassthroughView\n\n- \nReadOnlyView\n\n\nThe \nPassthroughView\n will work just like you would expect a normal directory to. It\u2019s purpose is to map all of \nFUSE\n's operations to the similar ones in \nPython\n.\n\n\nThe \nReadOnlyView\n is used when user writes are not desired.\n\n\nThe subclasses of these are:\n\n\n\n\nPassthroughView\n\n\nCurrentView\n \u2013 this is the view which handles the current directory and does the automated commits and pushes\n\n\nReadOnlyView\n\n\nHistoryView\n \u2013 this is the view which handles the history directory and categorizes commits by date\n\n\nCommitView\n \u2013 this is the view which handles the \nhistory/*day*\n directory\n\n\nIndexView\n \u2013 this is the view which handles the \nhistory/*day*/*commit*\n directory and shows you a read-only snapshot pointing to that commit\n\n\n\n\nWorker\n\n\nAll workers inherit the \nPeasant\n class which is nothing more than a specialized \nThread\n.\n\n\nHere are the workers with their more than explicit names:\n- \nFetchWorker\n\n- \nMergeWorker\n\n\nIdle mode\n\n\ngitfs uses the FetchWorker in order to bring your changes from upstream.\nThe FetchWorker will fetch, by default, at a period of 30 seconds (you can change the timeout at mount, using \n-o fetch_timeout=5\n, for 5 seconds).\n\n\nIf nothing was changed, for more than 5min on the filesystem, gitfs will enter in idle mode. In this mode, will fetch each 30min. You can modify those parameters using \nmin_idle_times\n in order to change the amount of idle cycles required until gitfs will go in idle mode (by default 10 times, which means 5min) and \nidle_fetch_timeout\n to control the period of time between fetches, for idle mode.",
+            "title": "How it works"
+        },
+        {
+            "location": "/how-it-works/#fuse",
+            "text": "gitfs uses  FUSE  to create its filesystem. It\u2019s used to create the  current  and  history  directories that you can find where you mounted the repository. More on that  here .",
+            "title": "FUSE"
+        },
+        {
+            "location": "/how-it-works/#pygit2",
+            "text": "pygit2  gives us direct access to git and makes room for a lot of optimization. The alternative, using shell commands, would have been a pain to implement and so would have been tying it to a state too.",
+            "title": "pygit2"
+        },
+        {
+            "location": "/how-it-works/#structure",
+            "text": "This is a simplified overview of the  gitfs  structure.",
+            "title": "Structure"
+        },
+        {
+            "location": "/how-it-works/#class-diagram",
+            "text": "",
+            "title": "Class diagram"
+        },
+        {
+            "location": "/how-it-works/#router",
+            "text": "The  Router  class is used in order to dispatch paths to different  Views .",
+            "title": "Router"
+        },
+        {
+            "location": "/how-it-works/#view",
+            "text": "Views are used to offer different functionality depending on your current path.  They are divided into two super classes:\n-  PassthroughView \n-  ReadOnlyView  The  PassthroughView  will work just like you would expect a normal directory to. It\u2019s purpose is to map all of  FUSE 's operations to the similar ones in  Python .  The  ReadOnlyView  is used when user writes are not desired.  The subclasses of these are:   PassthroughView  CurrentView  \u2013 this is the view which handles the current directory and does the automated commits and pushes  ReadOnlyView  HistoryView  \u2013 this is the view which handles the history directory and categorizes commits by date  CommitView  \u2013 this is the view which handles the  history/*day*  directory  IndexView  \u2013 this is the view which handles the  history/*day*/*commit*  directory and shows you a read-only snapshot pointing to that commit",
+            "title": "View"
+        },
+        {
+            "location": "/how-it-works/#worker",
+            "text": "All workers inherit the  Peasant  class which is nothing more than a specialized  Thread .  Here are the workers with their more than explicit names:\n-  FetchWorker \n-  MergeWorker",
+            "title": "Worker"
+        },
+        {
+            "location": "/how-it-works/#idle-mode",
+            "text": "gitfs uses the FetchWorker in order to bring your changes from upstream.\nThe FetchWorker will fetch, by default, at a period of 30 seconds (you can change the timeout at mount, using  -o fetch_timeout=5 , for 5 seconds).  If nothing was changed, for more than 5min on the filesystem, gitfs will enter in idle mode. In this mode, will fetch each 30min. You can modify those parameters using  min_idle_times  in order to change the amount of idle cycles required until gitfs will go in idle mode (by default 10 times, which means 5min) and  idle_fetch_timeout  to control the period of time between fetches, for idle mode.",
+            "title": "Idle mode"
+        },
+        {
+            "location": "/usage/",
+            "text": "Installing\n\n\n\n\nUbuntu 12.04 and 14.04 are fully supported for now.\n\n\n\n\nsudo add-apt-repository ppa:presslabs/gitfs\nsudo apt-get update\nsudo apt-get install gitfs\n\n\n\n\n\n\nFor using gitfs on Mac, the steps are as follows:\n\n\n\n\nPrerequisites\n- \nHomebrew\n\n\nbrew install homebrew/fuse/gitfs\n\n\n\n\nMounting\n\n\nBefore mounting, you\u2019ll need a working git repository. You can use a \nlocal repository\n or maybe a git service like \nGitHub\n.\n\n\nIn order to mount your repository to the desired directory, use:\n\n\ngitfs http://your.com/repository.git /mount/directory\n\n\n\n\nDirectory structure\n\n\ncurrent/\n \u2013 contains a snapshot of the commit that the branch\u2019s HEAD is pointing to. Any changes made here will be automatically committed and pushed to the repository you have mounted.\n\n\nhistory/\n \u2013 contains a series of directories whose names are dates. In these directories you will find each commit\u2019s read-only snapshot categorized by the time and SHA of that commit. Every snapshot will be read-only.\n\n\nThe history folder can look like this:\n\n\n2014-09-15\n    12:33:26-b6758e0c38\n    15:52:02-68a2154362\n    16:14:52-1d5e4f71ba\n    16:16:40-c74a4d8078\n    16:17:24-cf3f4fbad8\n2014-09-17\n    11:19:55-256c692b89\n    14:30:25-0ab3d88431\n    15:04:21-8e214eb797\n2014-09-18\n    11:40:06-9e154650f1\n    16:05:23-cebf6b7388\n\n\n\n\nThe inner folders are the snapshots of their respective commits.\n\n\nKeeping things up to date\n\n\ngitfs\n automatically fetches the newest changes from your repository at a given time interval. The default delay between fetches is \n30s\n but you can change this value with the \nfetch_delay\n argument. See \nArguments\n for more details.\n\n\nThe inner folders are the snapshots of their respective commits.\n\n\nKeeping things up to date\n\n\ngitfs\n automatically fetches the newest changes from your repository at a given time interval. The default delay between fetches is \n30s\n but you can change this value with the \nfetch_delay\n argument. See \nArguments\n for more details.",
+            "title": "Usage"
+        },
+        {
+            "location": "/usage/#installing",
+            "text": "Ubuntu 12.04 and 14.04 are fully supported for now.   sudo add-apt-repository ppa:presslabs/gitfs\nsudo apt-get update\nsudo apt-get install gitfs   For using gitfs on Mac, the steps are as follows:   Prerequisites\n-  Homebrew  brew install homebrew/fuse/gitfs",
+            "title": "Installing"
+        },
+        {
+            "location": "/usage/#mounting",
+            "text": "Before mounting, you\u2019ll need a working git repository. You can use a  local repository  or maybe a git service like  GitHub .  In order to mount your repository to the desired directory, use:  gitfs http://your.com/repository.git /mount/directory",
+            "title": "Mounting"
+        },
+        {
+            "location": "/usage/#directory-structure",
+            "text": "current/  \u2013 contains a snapshot of the commit that the branch\u2019s HEAD is pointing to. Any changes made here will be automatically committed and pushed to the repository you have mounted.  history/  \u2013 contains a series of directories whose names are dates. In these directories you will find each commit\u2019s read-only snapshot categorized by the time and SHA of that commit. Every snapshot will be read-only.  The history folder can look like this:  2014-09-15\n    12:33:26-b6758e0c38\n    15:52:02-68a2154362\n    16:14:52-1d5e4f71ba\n    16:16:40-c74a4d8078\n    16:17:24-cf3f4fbad8\n2014-09-17\n    11:19:55-256c692b89\n    14:30:25-0ab3d88431\n    15:04:21-8e214eb797\n2014-09-18\n    11:40:06-9e154650f1\n    16:05:23-cebf6b7388  The inner folders are the snapshots of their respective commits.",
+            "title": "Directory structure"
+        },
+        {
+            "location": "/usage/#keeping-things-up-to-date",
+            "text": "gitfs  automatically fetches the newest changes from your repository at a given time interval. The default delay between fetches is  30s  but you can change this value with the  fetch_delay  argument. See  Arguments  for more details.  The inner folders are the snapshots of their respective commits.",
+            "title": "Keeping things up to date"
+        },
+        {
+            "location": "/usage/#keeping-things-up-to-date_1",
+            "text": "gitfs  automatically fetches the newest changes from your repository at a given time interval. The default delay between fetches is  30s  but you can change this value with the  fetch_delay  argument. See  Arguments  for more details.",
+            "title": "Keeping things up to date"
+        }
+    ]
+}
