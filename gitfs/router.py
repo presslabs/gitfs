@@ -33,7 +33,8 @@ from gitfs.log import log
 
 
 class Router(object):
-    def __init__(self, remote_url, repo_path, mount_path, credentials,
+    def __init__(self, remote_url, repo_path, mount_path,
+                 current_path, history_path, credentials,
                  branch=None, user="root", group="root", **kwargs):
         """
         Clone repo from a remote into repo_path/<repo_name> and checkout to
@@ -49,6 +50,8 @@ class Router(object):
         self.remote_url = remote_url
         self.repo_path = repo_path
         self.mount_path = mount_path
+        self.current_path = current_path
+        self.history_path = history_path
         self.branch = branch
 
         self.routes = []
@@ -180,6 +183,8 @@ class Router(object):
             kwargs['mount_path'] = self.mount_path
             kwargs['regex'] = route['regex']
             kwargs['relative_path'] = relative_path
+            kwargs['current_path'] = self.current_path
+            kwargs['history_path'] = self.history_path
             kwargs['uid'] = self.uid
             kwargs['gid'] = self.gid
             kwargs['branch'] = self.branch

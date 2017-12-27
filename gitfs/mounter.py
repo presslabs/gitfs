@@ -23,7 +23,7 @@ from pygit2.remote import RemoteCallbacks
 
 from gitfs import __version__
 from gitfs.utils import Args
-from gitfs.routes import routes
+from gitfs.routes import prepare_routes
 from gitfs.router import Router
 from gitfs.worker import CommitQueue, SyncWorker, FetchWorker
 
@@ -58,6 +58,8 @@ def prepare_components(args):
         # setting router
         router = Router(remote_url=args.remote_url,
                         mount_path=args.mount_point,
+                        current_path=args.current_path,
+                        history_path=args.history_path,
                         repo_path=args.repo_path,
                         branch=args.branch,
                         user=args.user,
@@ -74,6 +76,7 @@ def prepare_components(args):
         raise error
 
     # register all the routes
+    routes = prepare_routes(args)
     router.register(routes)
 
     # setup workers

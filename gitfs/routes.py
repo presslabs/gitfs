@@ -18,9 +18,17 @@ from gitfs.views import IndexView, CurrentView, HistoryView, CommitView
 
 # TODO: replace regex with the strict one for the Historyview
 # -> r'^/history/(?<date>(19|20)\d\d[-](0[1-9]|1[012])[-](0[1-9]|[12][0-9]|3[01]))/',
-routes = [
-        (r'^/history/(?P<date>\d{4}-\d{1,2}-\d{1,2})/(?P<time>\d{2}-\d{2}-\d{2})-(?P<commit_sha1>[0-9a-f]{10})', CommitView),
-        (r'^/history/(?P<date>\d{4}-\d{1,2}-\d{1,2})', HistoryView),
-        (r'^/history', HistoryView),
-        (r'^/current', CurrentView),
-        (r'^/', IndexView)]
+def prepare_routes(args):
+    routes = []
+
+    routes.append((r'^/%s/(?P<date>\d{4}-\d{1,2}-\d{1,2})/(?P<time>\d{2}-\d{2}-\d{2})-(?P<commit_sha1>[0-9a-f]{10})' % args.history_path, CommitView))
+    routes.append((r'^/%s/(?P<date>\d{4}-\d{1,2}-\d{1,2})' % args.history_path, HistoryView))
+    routes.append((r'^/%s' % args.history_path, HistoryView))
+
+    if ('/' == args.current_path):
+        routes.append((r'^/', CurrentView))
+    else:
+        routes.append((r'^/%s' % args.current_path, CurrentView))
+        routes.append((r'^/', IndexView))
+
+    return routes

@@ -33,6 +33,9 @@ class PassthroughView(View):
         self.repo = kwargs['repo']
         self.root = kwargs['repo_path']
 
+        self.is_current_path_root = ('/' == kwargs['current_path'])
+        self.history_path = kwargs['history_path']
+
     def access(self, path, mode):
         full_path = self.repo._full_path(path)
         if not os.access(full_path, mode):
@@ -63,6 +66,9 @@ class PassthroughView(View):
             for entry in os.listdir(full_path):
                 if entry not in hidden_items:
                     dirents.append(entry)
+
+        if self.is_current_path_root:
+            dirents.append(self.history_path)
 
         for directory in dirents:
             yield directory
