@@ -2,12 +2,14 @@ clone:
   default:
     image: plugins/git
     recursive: true
+    group: clone
     submodule_update_remote: true
     submodule_override:
        docs-theme: https://github.com/PressLabs/docs-theme.git
 
   presslabs-org:
     image: alpine/git
+    group: clone
     commands:
       # write the ssh key to disk
       - mkdir /root/.ssh
@@ -55,7 +57,6 @@ pipeline:
       - cd docs/
       - mkdocs build --clean
       - for i in $(ls | grep -v compiled_docs); do rm -rf $i; done
-      - rm .drone.yml
       - mkdir -p /drone/src/presslabs-org/wp-content/root/gitfs
       - mv compiled_docs/* /drone/src/presslabs-org/wp-content/root/gitfs
       - rm -rf compiled_docs/
