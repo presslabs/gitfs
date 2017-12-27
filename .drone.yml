@@ -58,6 +58,7 @@ pipeline:
       - mkdocs build --clean
       - for i in $(ls | grep -v compiled_docs); do rm -rf $i; done
       - mkdir -p /drone/src/presslabs-org/wp-content/root/gitfs/docs
+      - rm -rf /drone/src/presslabs-org/wp-content/root/gitfs/docs/*
       - mv compiled_docs/* /drone/src/presslabs-org/wp-content/root/gitfs/docs
       - rm -rf compiled_docs/
     when:
