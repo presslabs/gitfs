@@ -22,7 +22,7 @@ clone:
       - ssh-keyscan -H github.com > /etc/ssh/ssh_known_hosts 2> /dev/null
 
       # clone presslabs-org
-      - git clone git@github.com:/PressLabs/presslabs-org.git /drone/src/presslabs-org
+      - git clone git@github.com:/PressLabs/presslabs-org.git@prod /drone/src/presslabs-org
     secrets:
       - GIT_PUSH_SSH_KEY
 
@@ -65,7 +65,7 @@ pipeline:
 
   update-presslabs-org:
     image: appleboy/drone-git-push
-    branch: master
+    branch: prod
     group: docs
     commit: true
     path: /drone/src/presslabs-org
