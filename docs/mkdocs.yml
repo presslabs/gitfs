@@ -1,0 +1,19 @@
+site_name: gitfs
+site_url: https://presslabs.org/gitfs/
+repo_url: https://github.com/PressLabs/gitfs.git
+repo_name: gitfs
+site_author: Presslabs
+theme_dir: docs-theme
+docs_dir: documentation
+site_dir: compiled_docs
+extra:
+  home_url: https://www.presslabs.com
+markdown_extensions:
+    - admonition
+    - toc:
+        baselevel: 1
+pages:
+    - General: 'index.md'
+    - Arguments: 'arguments.md'
+    - How it works: 'how-it-works.md'
+    - Usage: 'usage.md'
