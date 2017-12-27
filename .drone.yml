@@ -32,8 +32,6 @@ pipeline:
 
   clone-presslabs-org:
     image: alpine/git
-    secrets:
-      - GIT_PUSH_SSH_KEY
     group: docs
     commands:
       # write the ssh key to disk
@@ -48,6 +46,8 @@ pipeline:
 
       # clone presslabs-org
       - git clone git@github.com:/PressLabs/presslabs-org.git /drone/src/presslabs-org
+    secrets:
+      - GIT_PUSH_SSH_KEY
     when:
       branch: master
 
