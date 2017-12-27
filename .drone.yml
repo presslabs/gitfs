@@ -1,6 +1,15 @@
+clone:
+  default:
+    image: plugins/git
+    recursive: true
+    submodule_update_remote: true
+    submodule_override:
+       docs-theme: https://github.com/PressLabs/docs-theme.git
+
 pipeline:
   test:
     image: ubuntu:trusty
+    group: build
     privileged: true
     environment:
       - PIP_DOWNLOAD_CACHE=/tmp/pip_download_cache
@@ -18,3 +27,57 @@ pipeline:
       - make test
     volumes:
       - /var/cache/apt/:/var/cache/apt/
+    when:
+      branch: master
+
+  clone-presslabs-org:
+    image: alpine/git
+    secrets:
+      - GIT_PUSH_SSH_KEY
+    group: docs
+    commands:
+      # write the ssh key to disk
+      - mkdir /root/.ssh
+      - echo -n "$GIT_PUSH_SSH_KEY" > /root/.ssh/id_rsa
+      - chmod 600 /root/.ssh/id_rsa
+
+      # add github to known hosts
+      - touch /root/.ssh/known_hosts
+      - chmod 600 /root/.ssh/known_hosts
+      - ssh-keyscan -H github.com > /etc/ssh/ssh_known_hosts 2> /dev/null
+
+      # clone presslabs-org
+      - git clone git@github.com:/PressLabs/presslabs-org.git /drone/src/presslabs-org
+    when:
+      branch: master
+
+  build-docs:
+    image: jobandtalent/mkdocs
+    group: docs
+    commands:
+      - cd docs/
+      - mkdocs build --clean
+      - for i in $(ls | grep -v compiled_docs); do rm -rf $i; done
+      - rm .drone.yml
+      - mkdir -p /drone/src/presslabs-org/wp-content/root/gitfs
+      - mv compiled_docs/* /drone/src/presslabs-org/wp-content/root/gitfs
+      - rm -rf compiled_docs/
+    when:
+      branch: master
+
+  update-presslabs-org:
+    image: appleboy/drone-git-push
+    branch: master
+    group: docs
+    commit: true
+    path: /drone/src/presslabs-org
+    commit_message: "[docs] Update gitfs docs"
+    remote: git@github.com:/Presslabs/presslabs-org.git
+    secrets:
+      - GIT_PUSH_SSH_KEY
+    when:
+      branch: master
+
+workspace:
+   base: /drone
+   path: src/gitfs
