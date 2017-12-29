@@ -59,6 +59,8 @@ class Args(object):
             ("hard_ignore", ("", "string")),
             ("min_idle_times", (10, "float")),
             ("max_open_files", (-1, "int")),
+            ("history_path", ("history", "string")),
+            ("current_path", ("current", "string")),
         ])
         self.config = self.build_config(parser.parse_args())
 

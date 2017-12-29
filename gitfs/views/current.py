@@ -34,6 +34,8 @@ class CurrentView(PassthroughView):
         super(CurrentView, self).__init__(*args, **kwargs)
         self.dirty = {}
 
+        self.current_path = kwargs['current_path']
+
     @write_operation
     @not_in("ignore", check=["old", "new"])
     def rename(self, old, new):
@@ -64,8 +66,8 @@ class CurrentView(PassthroughView):
     @write_operation
     @not_in("ignore", check=["target"])
     def link(self, name, target):
-        if target.startswith('/current/'):
-            target = target.replace('/current/', '/')
+        if target.startswith('/%s/' % self.current_path):
+            target = target.replace('/%s/' % self.current_path, '/')
 
         result = super(CurrentView, self).link(target, name)
 

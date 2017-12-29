@@ -23,6 +23,12 @@ from .read_only import ReadOnlyView
 
 class IndexView(ReadOnlyView):
 
+    def __init__(self, *args, **kwargs):
+        super(ReadOnlyView, self).__init__(*args, **kwargs)
+
+        self.current_path = kwargs['current_path']
+        self.history_path = kwargs['history_path']
+
     def getattr(self, path, fh=None):
         '''
         Returns a dictionary with keys identical to the stat C structure of
@@ -47,4 +53,4 @@ class IndexView(ReadOnlyView):
         return attrs
 
     def readdir(self, path, fh):
-        return ['.', '..', 'current', 'history']
+        return ['.', '..', self.current_path, self.history_path]
