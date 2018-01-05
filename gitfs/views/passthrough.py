@@ -33,8 +33,8 @@ class PassthroughView(View):
         self.repo = kwargs['repo']
         self.root = kwargs['repo_path']
 
-        self.is_current_path_root = ('/' == kwargs['current_path'])
-        self.history_path = kwargs['history_path']
+        self.is_current_path_root = kwargs.get('current_path', 'current') == '/'
+        self.history_path = kwargs.get('history_path', 'history')
 
     def access(self, path, mode):
         full_path = self.repo._full_path(path)

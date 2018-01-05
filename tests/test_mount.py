@@ -45,6 +45,8 @@ class TestMount(object):
             'remote_url': 'remote_url',
             'mount_point': 'mount_point',
             'username': 'user',
+            'current_path': 'current',
+            'history_path': 'history',
             'password': '',
             'ssh_key': '/home/user/.ssh/id_rsa',
             'ssh_user': 'user',
@@ -80,7 +82,7 @@ class TestMount(object):
         with patch.multiple('gitfs.mounter',
                             CommitQueue=MagicMock(return_value=mocked_queue),
                             Router=MagicMock(return_value=mocked_router),
-                            routes=mocked_routes, SyncWorker=mocked_merger,
+                            prepare_routes=mocked_routes, SyncWorker=mocked_merger,
                             FetchWorker=mocked_fetcher, FUSE=mocked_fuse,
                             get_credentials=MagicMock(return_value='cred')):
 

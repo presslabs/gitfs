@@ -26,8 +26,8 @@ class IndexView(ReadOnlyView):
     def __init__(self, *args, **kwargs):
         super(ReadOnlyView, self).__init__(*args, **kwargs)
 
-        self.current_path = kwargs['current_path']
-        self.history_path = kwargs['history_path']
+        self.current_path = kwargs.get('current_path', 'current')
+        self.history_path = kwargs.get('history_path', 'history')
 
     def getattr(self, path, fh=None):
         '''

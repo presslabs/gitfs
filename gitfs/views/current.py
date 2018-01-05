@@ -34,7 +34,7 @@ class CurrentView(PassthroughView):
         super(CurrentView, self).__init__(*args, **kwargs)
         self.dirty = {}
 
-        self.current_path = kwargs['current_path']
+        self.current_path = kwargs.get('current_path', 'current')
 
     @write_operation
     @not_in("ignore", check=["old", "new"])

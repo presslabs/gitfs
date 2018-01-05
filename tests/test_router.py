@@ -200,6 +200,8 @@ class TestRouter(object):
                 'ignore': mocks['repo'].ignore,
                 'repo_path': mocks['repo_path'],
                 'mount_path': mocks['mount_path'],
+                'history_path': 'history',
+                'current_path': 'current',
                 'regex': "/current",
                 'relative_path': "/",
                 'uid': 1,

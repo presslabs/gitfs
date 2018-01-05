@@ -34,7 +34,7 @@ from gitfs.log import log
 
 class Router(object):
     def __init__(self, remote_url, repo_path, mount_path,
-                 current_path, history_path, credentials,
+                 credentials, current_path="current", history_path="history",
                  branch=None, user="root", group="root", **kwargs):
         """
         Clone repo from a remote into repo_path/<repo_name> and checkout to
