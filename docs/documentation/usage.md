@@ -13,7 +13,7 @@ sudo apt-get install gitfs
 Prerequisites
 - [Homebrew](http://brew.sh/)
 ```
-brew install homebrew/fuse/gitfs
+brew install gitfs
 ```
 
 ### Mounting
