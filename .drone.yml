@@ -25,6 +25,8 @@ clone:
       - git clone -b prod git@github.com:/PressLabs/presslabs-org.git /drone/src/presslabs-org
     secrets:
       - GIT_PUSH_SSH_KEY
+    when:
+      branch: master
 
 pipeline:
   test:
@@ -47,8 +49,6 @@ pipeline:
       - make test
     volumes:
       - /var/cache/apt/:/var/cache/apt/
-    when:
-      branch: master
 
   build-docs:
     image: jobandtalent/mkdocs
