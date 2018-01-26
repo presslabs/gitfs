@@ -9,6 +9,11 @@ integrates with git. You can mount a remote repository's branch locally, and any
 subsequent changes made to the files will be automatically committed to the
 remote.
 
+gitfs was developed by the awesome engineering team at [Presslabs](https://www.presslabs.com/), 
+a Managed WordPress Hosting provider.
+
+For more open-source projects, check [Presslabs Code](https://www.presslabs.org/). 
+
 ## What's its purpose?
 
 gitfs was designed to bring the full powers of git to everyone, no matter how
@@ -30,7 +35,7 @@ commits yourself. A FUSE filesystem for git repositories, with local cache.
 
 ## Development
 
-You can find more documentation on [gitfs docs page](https://www.presslabs.com/help/gitfs/general).
+You can find more documentation on [gitfs docs page](https://www.presslabs.org/gitfs/docs/).
 
 ### Contributing
 
