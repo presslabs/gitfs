@@ -12,6 +12,8 @@ markdown_extensions:
     - admonition
     - toc:
         baselevel: 1
+    - figcaption_ng
+    - codehilite(css_class=language-)
 pages:
     - General: 'index.md'
     - Arguments: 'arguments.md'

@@ -55,6 +55,7 @@ pipeline:
     group: build
     commands:
       - cd docs/
+      - pip3 install mdx_figcaption_ng
       - mkdocs build --clean
       - for i in $(ls | grep -v compiled_docs); do rm -rf $i; done
       - mkdir -p /drone/src/presslabs-org/wp-content/root/gitfs/docs
