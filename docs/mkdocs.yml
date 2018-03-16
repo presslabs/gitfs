@@ -6,6 +6,9 @@ site_author: Presslabs
 theme_dir: docs-theme
 docs_dir: documentation
 site_dir: compiled_docs
+google_analytics:
+  - 'UA-21970334-7'
+  - 'presslabs.org'
 extra:
   home_url: https://www.presslabs.com
 markdown_extensions:
