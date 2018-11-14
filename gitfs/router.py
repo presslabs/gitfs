@@ -18,6 +18,7 @@ import os
 import time
 import shutil
 import inspect
+import sys
 
 from pwd import getpwnam
 from grp import getgrnam
@@ -80,7 +81,11 @@ class Router(object):
         self.max_size = kwargs['max_size']
         self.max_offset = kwargs['max_offset']
 
-        self.repo.commits.update()
+        try:
+            self.repo.commits.update()
+        except Exception, e:
+            log.error("[Exception] repo.commits.update failed: %s", str(e))
+            sys.exit()
 
         self.workers = []
 
@@ -99,7 +104,7 @@ class Router(object):
             worker.join()
         log.debug('Workers stopped')
 
-        shutil.rmtree(self.repo_path)
+        #shutil.rmtree(self.repo_path)
         log.info('Successfully umounted %s', self.mount_path)
 
     def __call__(self, operation, *args):
