@@ -13,209 +13,500 @@
 # limitations under the License.
 
 
-import re
 import os
-import time
-import shutil
-import inspect
 import sys
+from collections import namedtuple
+from shutil import rmtree
+from stat import S_IFDIR, S_IFREG, S_IFLNK
 
-from pwd import getpwnam
-from grp import getgrnam
+from pygit2 import (clone_repository, discover_repository, init_repository, Signature, GIT_SORT_TOPOLOGICAL,
+                    GIT_FILEMODE_TREE, GIT_STATUS_CURRENT,
+                    GIT_FILEMODE_LINK, GIT_FILEMODE_BLOB, GIT_BRANCH_REMOTE,
+                    GIT_BRANCH_LOCAL, GIT_FILEMODE_BLOB_EXECUTABLE, GIT_REPOSITORY_INIT_NO_REINIT)
+from six import iteritems
 
-from errno import ENOSYS
-
-from fuse import FUSE, FuseOSError
-
-from gitfs.repository import Repository
-from gitfs.cache import CachedIgnore, lru_cache
-from gitfs.events import shutting_down, fetch, idle
+from gitfs.cache import CommitCache
 from gitfs.log import log
+from gitfs.utils.path import split_path_into_components
+from gitfs.utils.commits import CommitsList
 
 
-class Router(object):
-    def __init__(self, remote_url, repo_path, mount_path,
-                 credentials, current_path="current", history_path="history",
-                 branch=None, user="root", group="root", **kwargs):
+DivergeCommits = namedtuple("DivergeCommits", ["common_parent",
+                            "first_commits", "second_commits"])
+
+
+class Repository(object):
+
+    def __init__(self, repository, commits=None):
+        self._repo = repository
+        self.commits = commits or CommitCache(self)
+
+        self.behind = False
+
+    def __getitem__(self, item):
         """
-        Clone repo from a remote into repo_path/<repo_name> and checkout to
-        a specific branch.
-
-        :param str remote_url: URL of the repository to clone
-        :param str repo_path: Where are all the repos are cloned
-        :param str branch: Branch to checkout after the
-            clone. The default is to use the remote's default branch.
-
-        """
-
-        self.remote_url = remote_url
-        self.repo_path = repo_path
-        self.mount_path = mount_path
-        self.current_path = current_path
-        self.history_path = history_path
-        self.branch = branch
-
-        self.routes = []
-
-        log.info('Cloning into {}'.format(self.repo_path))
-
-        self.repo = Repository.clone(self.remote_url, self.repo_path,
-                                     self.branch, credentials)
-        log.info('Done cloning')
-
-        self.repo.credentials = credentials
-
-        submodules = os.path.join(self.repo_path, '.gitmodules')
-        ignore = os.path.join(self.repo_path, '.gitignore')
-        self.repo.ignore = CachedIgnore(submodules=submodules,
-                                        ignore=ignore,
-                                        exclude=kwargs['ignore_file'] or None,
-                                        hard_ignore=kwargs['hard_ignore'])
-
-        self.uid = getpwnam(user).pw_uid
-        self.gid = getgrnam(group).gr_gid
-
-        self.commit_queue = kwargs['commit_queue']
-        self.mount_time = int(time.time())
-
-        self.max_size = kwargs['max_size']
-        self.max_offset = kwargs['max_offset']
-
-        try:
-            self.repo.commits.update()
-        except Exception, e:
-            log.error("[Exception] repo.commits.update failed: %s", str(e))
-            sys.exit()
-
-        self.workers = []
-
-    def init(self, path):
-        for worker in self.workers:
-            worker.start()
-
-        log.debug('Done init')
-
-    def destroy(self, path):
-        log.debug('Stopping workers')
-        shutting_down.set()
-        fetch.set()
-
-        for worker in self.workers:
-            worker.join()
-        log.debug('Workers stopped')
-
-        #shutil.rmtree(self.repo_path)
-        log.info('Successfully umounted %s', self.mount_path)
-
-    def __call__(self, operation, *args):
-        """
-        Magic method which calls a specific method from a view.
-
-        In Fuse API, almost each method receives a path argument. Based on that
-        path we can route each call to a specific view. For example, if a
-        method which has a path argument like `/current/dir1/dir2/file1` is
-        called, we need to get the certain view that will know how to handle
-        this path, instantiate it and then call our method on the newly created
-        object.
-
-        :param str operation: Method name to be called
-        :param args: tuple containing the arguments to be transmitted to
-            the method
-        :rtype: function
+        Proxy method for pygit2.Repository
         """
 
-        if operation in ['destroy', 'init']:
-            view = self
+        return self._repo[item]
+
+    def __getattr__(self, attr):
+        """
+        Proxy method for pygit2.Repository
+        """
+
+        if attr not in self.__dict__:
+            return getattr(self._repo, attr)
         else:
-            path = args[0]
-            view, relative_path = self.get_view(path)
-            args = (relative_path,) + args[1:]
+            return self.__dict__[attr]
 
-        log.debug('Call %s %s with %r' % (operation,
-                                          view.__class__.__name__,
-                                          args))
+    def ahead(self, upstream, branch):
+        ahead, _ = self.diverge(upstream, branch)
+        return ahead
 
-        if not hasattr(view, operation):
-            log.debug('No attribute %s on %s' % (operation,
-                      view.__class__.__name__))
-            raise FuseOSError(ENOSYS)
+    def diverge(self, upstream, branch):
+        reference = "{}/{}".format(upstream, branch)
+        remote_branch = self.lookup_branch(reference, GIT_BRANCH_REMOTE)
+        local_branch = self.lookup_branch(branch, GIT_BRANCH_LOCAL)
 
-        idle.clear()
-        return getattr(view, operation)(*args)
+        if remote_branch.target == local_branch.target:
+            return False, False
 
-    def register(self, routes):
-        for regex, view in routes:
-            log.debug('Registering %s for %s', view, regex)
-            self.routes.append({
-                'regex': regex,
-                'view': view
-            })
+        diverge_commits = self.find_diverge_commits(local_branch,
+                                                    remote_branch)
+        behind = len(diverge_commits.second_commits) > 0
+        ahead = len(diverge_commits.first_commits) > 0
 
-    def get_view(self, path):
-        """
-        Try to map a given path to it's specific view.
+        return ahead, behind
 
-        If a match is found, a view object is created with the right regex
-        groups(named or unnamed).
+    def checkout(self, ref, *args, **kwargs):
+        result = self._repo.checkout(ref, *args, **kwargs)
 
-        :param str path: path to be matched
-        :rtype: view object, relative path
-        """
+        # update ignore cache after a checkout
+        self.ignore.update()
 
-        for route in self.routes:
-            result = re.search(route['regex'], path)
-            if result is None:
+        status = self._repo.status()
+        for path, status in iteritems(status):
+            # path is in current status, move on
+            if status == GIT_STATUS_CURRENT:
                 continue
 
-            groups = result.groups()
-            relative_path = re.sub(route['regex'], '', path)
-            relative_path = '/' if not relative_path else relative_path
+            # check if file exists or not
+            full_path = self._full_path(path)
+            if path not in self._repo.index:
+                if path not in self.ignore:
+                    try:
+                        os.unlink(full_path)
+                    except OSError:
+                        # path points to a directory containing untracked files
+                        rmtree(
+                            full_path,
+                            onerror=lambda function, fpath, excinfo: log.info(
+                                "Repository: Checkout couldn't delete %s", fpath
+                            )
+                        )
+                continue
 
-            cache_key = result.group(0)
-            log.debug("Router: Cache key for %s: %s", path, cache_key)
+            # check files stats
+            stats = self.get_git_object_default_stats(ref, path)
+            current_stat = os.lstat(full_path)
 
-            view = lru_cache.get_if_exists(cache_key)
-            if view is not None:
-                log.debug("Router: Serving %s from cache", path)
-                return view, relative_path
+            if stats['st_mode'] != current_stat.st_mode:
+                try:
+                    os.chmod(full_path, current_stat.st_mode)
+                except OSError:
+                    log.info("Repository: Checkout couldn't chmod %s",
+                             full_path)
+                self._repo.index.add(self._sanitize(path))
 
-            kwargs = result.groupdict()
+        return result
 
-            # TODO: move all this to a nice config variable
-            kwargs['repo'] = self.repo
-            kwargs['ignore'] = self.repo.ignore
-            kwargs['repo_path'] = self.repo_path
-            kwargs['mount_path'] = self.mount_path
-            kwargs['regex'] = route['regex']
-            kwargs['relative_path'] = relative_path
-            kwargs['current_path'] = self.current_path
-            kwargs['history_path'] = self.history_path
-            kwargs['uid'] = self.uid
-            kwargs['gid'] = self.gid
-            kwargs['branch'] = self.branch
-            kwargs['mount_time'] = self.mount_time
-            kwargs['queue'] = self.commit_queue
-            kwargs['max_size'] = self.max_size
-            kwargs['max_offset'] = self.max_offset
+    def _sanitize(self, path):
+        if path is not None and path.startswith("/"):
+            path = path[1:]
+        return path
 
-            args = set(groups) - set(kwargs.values())
-            view = route['view'](*args, **kwargs)
+    def push(self, upstream, branch, credentials):
+        """ Push changes from a branch to a remote
 
-            lru_cache[cache_key] = view
-            log.debug("Router: Added %s to cache", path)
+        Examples::
 
-            return view, relative_path
-
-        raise ValueError("Found no view for '{}'".format(path))
-
-    def __getattr__(self, attr_name):
-        """
-        It will only be called by the `__init__` method from `fuse.FUSE` to
-        establish which operations will be allowed after mounting the
-        filesystem.
+                repo.push("origin", "master")
         """
 
-        methods = inspect.getmembers(FUSE, predicate=callable)
-        fuse_allowed_methods = set(elem[0] for elem in methods)
+        remote = self.get_remote(upstream)
+        remote.push(["refs/heads/%s" % (branch)], callbacks=credentials)
 
-        return attr_name in fuse_allowed_methods - set(['bmap', 'lock'])
+    def fetch(self, upstream, branch_name, credentials):
+        """
+        Fetch from remote and return True if we are behind or False otherwise
+        """
+
+        remote = self.get_remote(upstream)
+        remote.fetch(callbacks=credentials)
+
+        _, behind = self.diverge(upstream, branch_name)
+        self.behind = behind
+        return behind
+
+    def commit(self, message, author, commiter, parents=None, ref="HEAD"):
+        """ Wrapper for create_commit. It creates a commit from a given ref
+        (default is HEAD)
+        """
+
+        status = self._repo.status()
+        if status == {}:
+            return None
+
+        # sign the author
+        author = Signature(author[0], author[1])
+        commiter = Signature(commiter[0], commiter[1])
+
+        # write index localy
+        tree = self._repo.index.write_tree()
+        self._repo.index.write()
+
+        # get parent
+        if parents is None:
+            parents = [self._repo.revparse_single(ref).id]
+
+        return self._repo.create_commit(ref, author, commiter, message,
+                                        tree, parents)
+
+    @classmethod
+    def clone(cls, remote_url, path, branch=None, credentials=None):
+        """Clone a repo in a give path and update the working directory with
+        a checkout to head (GIT_CHECKOUT_SAFE_CREATE)
+
+        :param str remote_url: URL of the repository to clone
+
+        :param str path: Local path to clone into
+
+        :param str branch: Branch to checkout after the
+        clone. The default is to use the remote's default branch.
+
+        """
+        existingRepoPath = discover_repository(path)
+        if existingRepoPath=="":
+            log.debug("clone_repository %s", path)
+            
+            try:
+                repo = clone_repository(remote_url, path, checkout_branch=branch,
+                                callbacks=credentials)
+            except Exception, e:
+                log.error("[Exception] clone_repository failed: %s", str(e))
+                sys.exit()
+                
+            repo.checkout_head()
+            log.info("repo cloned")
+        else:
+            log.debug("init_repository %s", existingRepoPath)
+            try:
+                repo = init_repository(existingRepoPath)
+            except Exception, e:
+                log.error("[Exception] init_repository failed: %s", str(e))
+                sys.exit()
+                
+            log.info("existing repo opened")
+
+        return cls(repo)
+
+    def _is_searched_entry(self, entry_name, searched_entry, path_components):
+        """
+        Checks if a tree entry is the one that is being searched for. For
+        that, the name has to correspond and it has to be the last element
+        in the path_components list (this means that the path corresponds
+        exactly).
+
+        :param entry_name: the name of the tree entry
+        :param searched_entry: the name of the object that is being searched
+                               for
+        :type searched_entry: str
+        :param path_components: the path of the object being searched for
+        :type path_components: list
+        """
+
+        return (entry_name == searched_entry and
+                len(path_components) == 1 and
+                entry_name == path_components[0])
+
+    def _get_git_object(self, tree, obj_name, path_components, modifier):
+        """
+        It recursively searches for the object in the repository. To declare
+        an object as found, the name and the relative path have to correspond.
+        It also includes the relative path as a condition for success, to avoid
+        finding an object with the correct name but with a wrong location.
+
+        :param tree: a `pygit2.Tree` instance
+        :param entry_name: the name of the object
+        :type entry_name: str
+        :param path_components: the path of the object being searched for as
+            a list (e.g: for '/a/b/c/file.txt' => ['a', 'b', 'c', 'file.txt'])
+        :type path_components: list
+        :param modifier: a function used to retrieve some specific
+            characteristic of the git object
+        :type modifier: function
+        :returns: an instance corresponding to the object that is being
+            searched for in case of success, or None otherwise.
+        :rtype: one of the following:
+            an instance of `pygit2.Tree`
+            an instance of `pygit2.Blob`
+            None
+        """
+
+        git_obj = None
+        for entry in tree:
+            if self._is_searched_entry(entry.name, obj_name, path_components):
+                return modifier(entry)
+            elif entry.filemode == GIT_FILEMODE_TREE:
+                git_obj = self._get_git_object(self._repo[entry.id], obj_name,
+                                               path_components[1:], modifier)
+                if git_obj:
+                    return git_obj
+
+        return git_obj
+
+    def get_git_object_type(self, tree, path):
+        """
+        Returns the filemode of the git object with the relative path <path>.
+
+        :param tree: a `pygit2.Tree` instance
+        :param path: the relative path of the object
+        :type entry_name: str
+        :returns: the filemode for the entry in case of success
+            (which can be one of the following) or None otherwise.
+            0     (0000000)  GIT_FILEMODE_NEW
+            16384 (0040000)  GIT_FILEMODE_TREE
+            33188 (0100644)  GIT_FILEMODE_BLOB
+            33261 (0100755)  GIT_FILEMODE_BLOB_EXECUTABLE
+            40960 (0120000)  GIT_FILEMODE_LINK
+            57344 (0160000)  GIT_FILEMODE_COMMIT
+        :rtype: int, None
+        """
+
+        path_components = split_path_into_components(path)
+        try:
+            return self._get_git_object(tree, path_components[-1],
+                                        path_components,
+                                        lambda entry: entry.filemode)
+        except:
+            return GIT_FILEMODE_TREE
+
+    def get_git_object(self, tree, path):
+        """
+        Returns the git object with the relative path <path>.
+
+        :param tree: a `pygit2.Tree` instance
+        :param path: the relative path of the object
+        :type path: str
+        :returns: an instance corresponding to the object that is being
+            searched for in case of success, or None else.
+        :rtype: one of the following:
+            an intance of `pygit2.Tree`
+            an intance of `pygit2.Blob`
+            None
+        """
+
+        # It acts as a proxy for the _get_git_object method, which
+        # does the actual searching.
+        path_components = split_path_into_components(path)
+        return self._get_git_object(tree, path_components[-1], path_components,
+                                    lambda entry: self._repo[entry.id])
+
+    def get_git_object_default_stats(self, ref, path):
+        types = {
+            GIT_FILEMODE_LINK: {
+                'st_mode': S_IFLNK | 0o444,
+            }, GIT_FILEMODE_TREE: {
+                'st_mode': S_IFDIR | 0o555,
+                'st_nlink': 2
+            }, GIT_FILEMODE_BLOB: {
+                'st_mode': S_IFREG | 0o444,
+            }, GIT_FILEMODE_BLOB_EXECUTABLE: {
+                'st_mode': S_IFREG | 0o555,
+            },
+        }
+
+        if path == "/":
+            return types[GIT_FILEMODE_TREE]
+
+        obj_type = self.get_git_object_type(ref, path)
+        if obj_type is None:
+            return obj_type
+
+        stats = types[obj_type]
+        if obj_type in [GIT_FILEMODE_BLOB, GIT_FILEMODE_BLOB_EXECUTABLE]:
+            stats['st_size'] = self.get_blob_size(ref, path)
+
+        return stats
+
+    def get_blob_size(self, tree, path):
+        """
+        Returns the size of a the data contained by a blob object
+        with the relative path <path>.
+
+        :param tree: a `pygit2.Tree` instance
+        :param path: the relative path of the object
+        :type path: str
+        :returns: the size of data contained by the blob object.
+        :rtype: int
+        """
+        return self.get_git_object(tree, path).size
+
+    def get_blob_data(self, tree, path):
+        """
+        Returns the data contained by a blob object with the relative
+        path <path>.
+
+        :param tree: a `pygit2.Tree` instance
+        :param path: the relative path of the object
+        :type path: str
+        :returns: the data contained by the blob object.
+        :rtype: str
+        """
+        return self.get_git_object(tree, path).data
+
+    def get_commit_dates(self):
+        """
+        Walk through all commits from current repo in order to compose the
+        _history_ directory.
+        """
+        return list(self.commits.keys())
+
+    def get_commits_by_date(self, date):
+        """
+        Retrieves all the commits from a particular date.
+
+        :param date: date with the format: yyyy-mm-dd
+        :type date: str
+        :returns: a list containg the commits for that day. Each list item
+            will have the format: hh:mm:ss-<short_sha1>, where short_sha1 is
+            the short sha1 of the commit (first 10 characters).
+        :rtype: list
+        """
+        return list(map(str, self.commits[date]))
+
+    def walk_branches(self, sort, *branches):
+        """
+        Simple iterator which take a sorting strategy and some branch and
+        iterates through those branches one commit at a time, yielding a list
+        of commits
+
+        :param sort: a sorting option `GIT_SORT_NONE, GIT_SORT_TOPOLOGICAL,
+        GIT_SORT_TIME, GIT_SORT_REVERSE`. Default is 'GIT_SORT_TOPOLOGICAL'
+        :param branches: branch to iterate through
+        :type branches: list
+        :returns: yields a list of commits corresponding to given branches
+        :rtype: list
+
+        """
+
+        iterators = [self._repo.walk(branch.target, sort)
+                     for branch in branches]
+        stop_iteration = [False for branch in branches]
+
+        commits = []
+        for iterator in iterators:
+            try:
+                commit = next(iterator)
+            except StopIteration:
+                commit = None
+            commits.append(commit)
+
+        yield (commit for commit in commits)
+
+        while not all(stop_iteration):
+            for index, iterator in enumerate(iterators):
+                try:
+                    commit = next(iterator)
+                    commits[index] = commit
+                except StopIteration:
+                    stop_iteration[index] = True
+
+            if not all(stop_iteration):
+                yield (commit for commit in commits)
+
+    def remote_head(self, upstream, branch):
+        ref = "%s/%s" % (upstream, branch)
+        remote = self._repo.lookup_branch(ref, GIT_BRANCH_REMOTE)
+        return remote.get_object()
+
+    def get_remote(self, name):
+        """ Retrieve a remote by name. Raise a ValueError if the remote was not
+        added to repo
+
+        Examples::
+
+                repo.get_remote("fork")
+        """
+
+        remote = [remote for remote in self._repo.remotes
+                  if remote.name == name]
+
+        if not remote:
+            raise ValueError("Missing remote")
+
+        return remote[0]
+
+    def _full_path(self, partial):
+        if partial.startswith("/"):
+            partial = partial[1:]
+        return os.path.join(self._repo.workdir, partial)
+
+    def find_diverge_commits(self, first_branch, second_branch):
+        """
+        Take two branches and find diverge commits.
+
+             2--3--4--5
+            /
+        1--+              Return:
+            \               - common parent: 1
+             6              - first list of commits: (2, 3, 4, 5)
+                            - second list of commits: (6)
+
+        :param first_branch: first branch to look for common parent
+        :type first_branch: `pygit2.Branch`
+        :param second_branch: second branch to look for common parent
+        :type second_branch: `pygit2.Branch`
+        :returns: a namedtuple with common parent, a list of first's branch
+        commits and another list with second's branch commits
+        :rtype: DivergeCommits (namedtuple)
+        """
+
+        common_parent = None
+        first_commits = CommitsList()
+        second_commits = CommitsList()
+
+        walker = self.walk_branches(GIT_SORT_TOPOLOGICAL,
+                                    first_branch, second_branch)
+
+        for first_commit, second_commit in walker:
+            if (first_commit in second_commits or
+               second_commit in first_commits):
+                break
+
+            if first_commit not in first_commits:
+                first_commits.append(first_commit)
+            if second_commit not in second_commits:
+                second_commits.append(second_commit)
+
+            if second_commit.hex == first_commit.hex:
+                break
+
+        try:
+            index = second_commits.index(first_commit)
+        except ValueError:
+            pass
+        else:
+            second_commits = second_commits[:index]
+            common_parent = first_commit
+
+        try:
+            index = first_commits.index(second_commit)
+        except ValueError:
+            pass
+        else:
+            first_commits = first_commits[:index]
+            common_parent = second_commit
+
+        return DivergeCommits(common_parent, first_commits, second_commits)
