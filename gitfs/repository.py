@@ -186,6 +186,7 @@ class Repository(object):
         clone. The default is to use the remote's default branch.
 
         """
+        
         hasExistingRepo = False
         try:    
             existingRepoPath = discover_repository(path)
