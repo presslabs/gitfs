@@ -99,7 +99,7 @@ class Router(object):
             worker.join()
         log.debug('Workers stopped')
 
-        shutil.rmtree(self.repo_path)
+        #shutil.rmtree(self.repo_path)
         log.info('Successfully umounted %s', self.mount_path)
 
     def __call__(self, operation, *args):
