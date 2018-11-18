@@ -186,8 +186,16 @@ class Repository(object):
         clone. The default is to use the remote's default branch.
 
         """
-        existingRepoPath = discover_repository(path)
-        if existingRepoPath=="":
+        hasExistingRepo = False
+        try:    
+            existingRepoPath = discover_repository(path)
+            if existingRepoPath<>"":
+                hasExistingRepo = True
+        except Exception, e:
+            log.debug("[Exception] discover_repository repo not found: %s", str(e))
+            pass
+
+        if hasExistingRepo == False:
             log.debug("clone_repository %s", path)
             
             try:
@@ -207,7 +215,7 @@ class Repository(object):
                 log.error("[Exception] init_repository failed: %s", str(e))
                 sys.exit()
                 
-            log.info("existing repo opened")
+            log.info("existing repo '%s' opened", existingRepoPath)
 
         return cls(repo)
 
