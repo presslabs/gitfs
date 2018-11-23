@@ -103,7 +103,7 @@ class CurrentView(PassthroughView):
             is off limit, raise EFBIG error and delete the file.
         """
 
-        if offset + len(buf) > self.max_size:
+        if ( self.max_size > 0 ) and ( offset + len(buf) > self.max_size ):
             raise FuseOSError(errno.EFBIG)
 
         result = super(CurrentView, self).write(path, buf, offset, fh)
