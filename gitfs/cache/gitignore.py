@@ -18,7 +18,7 @@ import os
 import fnmatch
 
 from six import string_types
-
+from gitfs.log import log
 
 class CachedIgnore(object):
     def __init__(self, ignore=False, submodules=False, exclude=False,
@@ -38,6 +38,8 @@ class CachedIgnore(object):
     def update(self):
         self.items = ['.git', '.git/*', '/.git/*', '*.keep', '*.gitmodules']
 
+        log.debug("[ignore] CachedIgnore.update" )
+        
         self.items += self._parse_ignore_file(self.ignore)
         self.items += self._parse_ignore_file(self.exclude)
 
@@ -57,6 +59,7 @@ class CachedIgnore(object):
     def _parse_ignore_file(self, ignore_file):
         items = []
 
+        log.debug("[ignore] _parse_ignore_file: %s", ignore_file)
         if ignore_file and os.path.exists(ignore_file):
             with open(ignore_file) as gitignore:
                 for item in gitignore.readlines():
@@ -77,7 +80,9 @@ class CachedIgnore(object):
     def check_key(self, key):
         for item in self.items:
             if self._check_item_and_key(item, key):
+                log.debug("[ignore] check_key match:%s,%s", item, key)
                 return True
+                
         return False
 
     def _check_item_and_key(self, item, key):

@@ -38,10 +38,14 @@ class CurrentView(PassthroughView):
 
     @write_operation
     @not_in("ignore", check=["old", "new"])
-    def rename(self, old, new):
+    def rename(self, old, new, gitignore):
         new = re.sub(self.regex, '', new)
         result = super(CurrentView, self).rename(old, new)
 
+        if gitignore == True:
+            log.debug("[ignore] rename:%s", name)
+            return result
+            
         message = "Rename {} to {}".format(old, new)
         self._stage(**{
             'remove': os.path.split(old)[1],
@@ -54,9 +58,13 @@ class CurrentView(PassthroughView):
 
     @write_operation
     @not_in("ignore", check=["target"])
-    def symlink(self, name, target):
+    def symlink(self, name, target, gitignore):
         result = os.symlink(target, self.repo._full_path(name))
-
+        
+        if gitignore == True:
+            log.debug("[ignore] symlink:%s", name)
+            return result
+            
         message = "Create symlink to {} for {}".format(target, name)
         self._stage(add=name, message=message)
 
@@ -65,12 +73,16 @@ class CurrentView(PassthroughView):
 
     @write_operation
     @not_in("ignore", check=["target"])
-    def link(self, name, target):
+    def link(self, name, target, gitignore):
         if target.startswith('/%s/' % self.current_path):
             target = target.replace('/%s/' % self.current_path, '/')
 
         result = super(CurrentView, self).link(target, name)
-
+        
+        if gitignore == True:
+            log.debug("[ignore] link:%s", name)
+            return result
+            
         message = "Create link to {} for {}".format(target, name)
         self._stage(add=name, message=message)
 
@@ -96,17 +108,22 @@ class CurrentView(PassthroughView):
 
     @write_operation
     @not_in("ignore", check=["path"])
-    def write(self, path, buf, offset, fh):
+    def write(self, path, buf, offset, fh, gitignore):
         """
             We don't like big big files, so we need to be really carefull
             with them. First we check for offset, then for size. If any of this
             is off limit, raise EFBIG error and delete the file.
         """
 
-        if offset + len(buf) > self.max_size:
+        if ( self.max_size > 0 ) and ( offset + len(buf) > self.max_size ):
             raise FuseOSError(errno.EFBIG)
 
         result = super(CurrentView, self).write(path, buf, offset, fh)
+        
+        if gitignore == True:
+            log.debug("[ignore] write:%s. Wrote %s bytes to %s", path, len(buf), path)
+            return result
+            
         self.dirty[fh] = {
             'message': 'Update {}'.format(path),
             'stage': True
@@ -117,9 +134,13 @@ class CurrentView(PassthroughView):
 
     @write_operation
     @not_in("ignore", check=["path"])
-    def mkdir(self, path, mode):
+    def mkdir(self, path, mode, gitignore):
         result = super(CurrentView, self).mkdir(path, mode)
-
+        
+        if gitignore == True:
+            log.debug("[ignore] mkdir:%s", path)
+            return result
+            
         keep_path = "{}/.keep".format(path)
         full_path = self.repo._full_path(keep_path)
         if not os.path.exists(keep_path):
@@ -141,10 +162,15 @@ class CurrentView(PassthroughView):
 
         return result
 
-    def create(self, path, mode, fi=None):
+    @not_in("ignore", check=["path"])    
+    def create(self, path, mode, fi=None, gitignore=False):
         fh = self.open_for_write(path, os.O_WRONLY | os.O_CREAT)
         super(CurrentView, self).chmod(path, mode)
 
+        if gitignore == True:
+            log.debug("[ignore] create:%s", path)
+            return fh
+        
         self.dirty[fh] = {
             'message': "Created {}".format(path),
             'stage': True
@@ -155,10 +181,11 @@ class CurrentView(PassthroughView):
 
     @write_operation
     @not_in("ignore", check=["path"])
-    def chmod(self, path, mode):
+    def chmod(self, path, mode, gitignore):
         """
         Executes chmod on the file at os level and then it commits the change.
         """
+        
         str_mode = ('%o' % mode)[-4:]
         if str_mode not in ['0755', '0644']:
             raise FuseOSError(errno.EINVAL)
@@ -168,6 +195,10 @@ class CurrentView(PassthroughView):
         if os.path.isdir(self.repo._full_path(path)):
             return result
 
+        if gitignore == True:
+            log.debug("[ignore] chmod:%s", path)
+            return result
+            
         message = 'Chmod to {} on {}'.format(str_mode, path)
         self._stage(add=path, message=message)
 
@@ -177,13 +208,17 @@ class CurrentView(PassthroughView):
 
     @write_operation
     @not_in("ignore", check=["path"])
-    def fsync(self, path, fdatasync, fh):
+    def fsync(self, path, fdatasync, fh, gitignore):
         """
         Each time you fsync, a new commit and push are made
         """
 
         result = super(CurrentView, self).fsync(path, fdatasync, fh)
-
+        
+        if gitignore == True:
+            log.debug("[ignore] fsync:%s", path)
+            return result
+            
         message = 'Fsync {}'.format(path)
         self._stage(add=path, message=message)
 
@@ -192,10 +227,16 @@ class CurrentView(PassthroughView):
 
     @write_operation
     @not_in("ignore", check=["path"])
-    def open_for_write(self, path, flags):
-        global writers
+    def open_for_write(self, path, flags, gitignore):
         fh = self.open_for_read(path, flags)
-        writers += 1
+        
+        if gitignore == True:
+            log.debug("[ignore] open_for_write:%s", path)
+            return fh
+
+        global writers
+        writers += 1  
+        
         self.dirty[fh] = {
             'message': "Opened {} for write".format(path),
             'stage': False
@@ -207,21 +248,30 @@ class CurrentView(PassthroughView):
     def open_for_read(self, path, flags):
         full_path = self.repo._full_path(path)
         log.info("CurrentView: Open %s for read", path)
+        
         return os.open(full_path, flags)
 
     def open(self, path, flags):
         write_mode = flags & (os.O_WRONLY | os.O_RDWR |
                               os.O_APPEND | os.O_CREAT)
         if write_mode:
+            log.debug("[ignore] open.write_mode: %s", path)
             return self.open_for_write(path, flags)
+            
+        log.debug("[ignore] open.read_mode: %s", path)    
         return self.open_for_read(path, flags)
 
-    def release(self, path, fh):
+    @not_in("ignore", check=["path"])
+    def release(self, path, fh, gitignore):
         """
         Check for path if something was written to. If so, commit and push
         the changed to upstream.
         """
 
+        if gitignore == True:
+            log.debug("[ignore] release:%s", path)        
+            return os.close(fh)
+            
         if fh in self.dirty:
             message = self.dirty[fh]['message']
             should_stage = self.dirty[fh].get('stage', False)
@@ -238,7 +288,7 @@ class CurrentView(PassthroughView):
 
     @write_operation
     @not_in("ignore", check=["path"])
-    def rmdir(self, path):
+    def rmdir(self, path, gitignore):
         message = 'Delete the {} directory'.format(path)
 
         # Unlink all the files
@@ -248,7 +298,8 @@ class CurrentView(PassthroughView):
                 deleting_file = os.path.join(root, _file)
                 if os.path.exists(deleting_file):
                     result = super(CurrentView, self).unlink(os.path.join(path, _file))
-                    self._stage(remove=os.path.join(path, _file), message=message)
+                    if gitignore == False:
+                        self._stage(remove=os.path.join(path, _file), message=message)
 
         # Delete the actual directory
         result = super(CurrentView, self).rmdir("{}/".format(path))
@@ -258,9 +309,13 @@ class CurrentView(PassthroughView):
 
     @write_operation
     @not_in("ignore", check=["path"])
-    def unlink(self, path):
+    def unlink(self, path, gitignore):
         result = super(CurrentView, self).unlink(path)
-
+        
+        if gitignore == True:
+            log.debug("[ignore] unlink:%s", path)
+            return result
+            
         message = 'Deleted {}'.format(path)
         self._stage(remove=path, message=message)
 

@@ -20,7 +20,7 @@ from functools import wraps
 from six import string_types
 
 from fuse import FuseOSError
-
+from gitfs.log import log
 
 class not_in(object):
     def __init__(self, look_at, check=None):
@@ -34,7 +34,17 @@ class not_in(object):
             if isinstance(self.look_at, string_types):
                 self.look_at = getattr(their_self, self.look_at)
 
-            self.check_args(f, args)
+            #self.check_args(f, args)
+            
+            gitignore = False
+            try:
+                self.check_args(f, args)
+            except Exception, e:
+                gitignore = True
+                pass
+                
+            kwargs["gitignore"] = gitignore
+            
             result = f(their_self, *args, **kwargs)
 
             return result
