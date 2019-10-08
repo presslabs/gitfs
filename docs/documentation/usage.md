@@ -25,6 +25,28 @@ In order to mount your repository to the desired directory, use:
 ```
 gitfs http://your.com/repository.git /mount/directory
 ```
+#### Full github example
+Consider the following setup:
+- apache2 running as `www-data` user/group
+- `foo_user` - your username at github.com
+- `boo_password` - a password for your github's account
+- `https://github.com/foo_user/my_git_project.git` - your project's URL
+
+Before mounting your repo, run once these two commands:
+- `mkdir /var/lib/gitfs`
+- `mkdir /var/mount/whatever_dir`
+
+Now it's time for test run:
+
+`gitfs -o log=/var/log/gitfs.log,debug=true,foreground=true,commiter_name=foo_user,commiter_email=foo_user@whatever.com,user=www-data,group=www-data,username=foo_user,password=boo_password https://github.com/foo_user/my_git_project.git /var/mount/whatever_dir`
+
+Open second terminal window and monitor the log file via command `tail -f /var/log/gitfs.log`. Play around with files in your dir and see how it reflects in your repository at github, make sure that it works in both directions. Use Ctrl-C to stop gitfs when you are done. 
+
+For production use the following arguments:
+
+`gitfs -o log=/var/log/gitfs.log,debug=false,foreground=false,log_level=warning,commiter_name=foo_user,commiter_email=foo_user@whatever.com,user=www-data,group=www-data,username=foo_user,password=boo_password https://github.com/foo_user/my_git_project.git /var/mount/whatever_dir`
+
+See [Arguments](arguments.md) for more details.
 
 ### Directory structure
 
