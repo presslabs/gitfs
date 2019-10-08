@@ -12,8 +12,6 @@ remote.
 gitfs was developed by the awesome engineering team at [Presslabs](https://www.presslabs.com/), 
 a Managed WordPress Hosting provider.
 
-For more open-source projects, check [Presslabs Code](https://www.presslabs.org/). 
-
 ## What's its purpose?
 
 gitfs was designed to bring the full powers of git to everyone, no matter how
