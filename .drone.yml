@@ -1,16 +1,13 @@
 pipeline:
   test:
-    image: ubuntu:trusty
+    image: ubuntu:18.04
     group: build
     privileged: true
     environment:
       - PIP_DOWNLOAD_CACHE=/tmp/pip_download_cache
       - DEBIAN_FRONTEND=noninteractive
     commands:
-      - apt-get update && apt-get install -qy build-essential python-pip python-virtualenv python-dev software-properties-common python-software-properties libfuse-dev fuse git libffi-dev python3.4-dev
-      - sudo add-apt-repository -y ppa:presslabs/gitfs
-      - sudo apt-get update
-      - sudo apt-get install -y libgit2 libgit2-dev
+      - apt-get update && apt-get install -qy build-essential python-pip python-virtualenv python-dev software-properties-common python-software-properties libfuse-dev fuse git libffi-dev python3.7-dev libgit2 libgit2-dev libgit2 libgit2-dev
       - sudo chmod 660 /dev/fuse
       - echo user_allow_other | sudo tee -a /etc/fuse.conf > /dev/null
       - sudo chmod 644 /etc/fuse.conf
