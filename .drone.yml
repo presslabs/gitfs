@@ -7,7 +7,7 @@ pipeline:
       - PIP_DOWNLOAD_CACHE=/tmp/pip_download_cache
       - DEBIAN_FRONTEND=noninteractive
     commands:
-      - apt-get update && apt-get install -qy build-essential python-pip python-virtualenv python-dev software-properties-common python-software-properties libfuse-dev fuse git libffi-dev python3.7-dev libgit2 libgit2-dev libgit2 libgit2-dev
+      - apt update && apt install -qy build-essential python-pip python-virtualenv python-dev software-properties-common libfuse-dev fuse git libffi-dev python3.7-dev libgit2-dev
       - sudo chmod 660 /dev/fuse
       - echo user_allow_other | sudo tee -a /etc/fuse.conf > /dev/null
       - sudo chmod 644 /etc/fuse.conf
