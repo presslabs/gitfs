@@ -33,15 +33,15 @@ commits yourself. A FUSE filesystem for git repositories, with local cache.
 
 ## Development
 
-You can find more documentation on [gitfs docs page](https://www.presslabs.org/gitfs/docs/).
+You can find more documentation on [gitfs homepage](https://www.presslabs.com/code/gitfs/).
 
 ### Contributing
 
-Development of gitfs happens at http://github.com/PressLabs/gitfs.
+Development of gitfs happens at http://github.com/presslabs/gitfs.
 
-Issues are tracked at http://github.com/PressLabs/gitfs/issues.
+Issues are tracked at http://github.com/presslabs/gitfs/issues.
 
-Python package can be found at https://pypi.python.org/pypi/gitfs/.
+The Python package can be found at https://pypi.python.org/pypi/gitfs/.
 
 You are highly encouraged to contribute with code, tests, documentation or just
 sharing experience.
