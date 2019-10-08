@@ -14,14 +14,15 @@
 
 
 import os
+import sys
 from collections import namedtuple
 from shutil import rmtree
 from stat import S_IFDIR, S_IFREG, S_IFLNK
 
-from pygit2 import (clone_repository, Signature, GIT_SORT_TOPOLOGICAL,
+from pygit2 import (clone_repository, discover_repository, init_repository, Signature, GIT_SORT_TOPOLOGICAL,
                     GIT_FILEMODE_TREE, GIT_STATUS_CURRENT,
                     GIT_FILEMODE_LINK, GIT_FILEMODE_BLOB, GIT_BRANCH_REMOTE,
-                    GIT_BRANCH_LOCAL, GIT_FILEMODE_BLOB_EXECUTABLE)
+                    GIT_BRANCH_LOCAL, GIT_FILEMODE_BLOB_EXECUTABLE, GIT_REPOSITORY_INIT_NO_REINIT)
 from six import iteritems
 
 from gitfs.cache import CommitCache
@@ -185,10 +186,38 @@ class Repository(object):
         clone. The default is to use the remote's default branch.
 
         """
+        
+        hasExistingRepo = False
+        try:    
+            existingRepoPath = discover_repository(path)
+            if existingRepoPath<>"":
+                hasExistingRepo = True
+        except Exception, e:
+            log.debug("[Exception] discover_repository repo not found: %s", str(e))
+            pass
 
-        repo = clone_repository(remote_url, path, checkout_branch=branch,
+        if hasExistingRepo == False:
+            log.debug("clone_repository %s", path)
+            
+            try:
+                repo = clone_repository(remote_url, path, checkout_branch=branch,
                                 callbacks=credentials)
-        repo.checkout_head()
+            except Exception, e:
+                log.error("[Exception] clone_repository failed: %s", str(e))
+                sys.exit()
+                
+            repo.checkout_head()
+            log.info("repo cloned")
+        else:
+            log.debug("init_repository %s", existingRepoPath)
+            try:
+                repo = init_repository(existingRepoPath)
+            except Exception, e:
+                log.error("[Exception] init_repository failed: %s", str(e))
+                sys.exit()
+                
+            log.info("existing repo '%s' opened", existingRepoPath)
+
         return cls(repo)
 
     def _is_searched_entry(self, entry_name, searched_entry, path_components):
