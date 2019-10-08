@@ -1,33 +1,3 @@
-clone:
-  default:
-    image: plugins/git
-    recursive: true
-    group: clone
-    submodule_update_remote: true
-    submodule_override:
-       docs-theme: https://github.com/PressLabs/docs-theme.git
-
-  presslabs-org:
-    image: alpine/git
-    group: clone
-    commands:
-      # write the ssh key to disk
-      - mkdir /root/.ssh
-      - echo -n "$GIT_PUSH_SSH_KEY" > /root/.ssh/id_rsa
-      - chmod 600 /root/.ssh/id_rsa
-
-      # add github to known hosts
-      - touch /root/.ssh/known_hosts
-      - chmod 600 /root/.ssh/known_hosts
-      - ssh-keyscan -H github.com > /etc/ssh/ssh_known_hosts 2> /dev/null
-
-      # clone presslabs-org
-      - git clone -b prod git@github.com:/PressLabs/presslabs-org.git /drone/src/presslabs-org
-    secrets:
-      - GIT_PUSH_SSH_KEY
-    when:
-      branch: master
-
 pipeline:
   test:
     image: ubuntu:trusty
@@ -50,34 +20,13 @@ pipeline:
     volumes:
       - /var/cache/apt/:/var/cache/apt/
 
-  build-docs:
-    image: jobandtalent/mkdocs
-    group: build
-    commands:
-      - cd docs/
-      - pip3 install mdx_figcaption_ng
-      - mkdocs build --clean
-      - for i in $(ls | grep -v compiled_docs); do rm -rf $i; done
-      - mkdir -p /drone/src/presslabs-org/wp-content/root/gitfs/docs
-      - rm -rf /drone/src/presslabs-org/wp-content/root/gitfs/docs/*
-      - mv compiled_docs/* /drone/src/presslabs-org/wp-content/root/gitfs/docs
-      - rm -rf compiled_docs/
+  trigger-docs-build:
+    image: plugins/downstream
+    server: https://drone.presslabs.net
+    fork: true
+    secrets: [DRONE_TOKEN]
+    repositories:
+      - presslabs/docs
     when:
       branch: master
-
-  update-presslabs-org:
-    image: appleboy/drone-git-push
-    branch: prod
-    group: docs
-    commit: true
-    path: /drone/src/presslabs-org
-    commit_message: "[docs] Update gitfs docs"
-    remote: git@github.com:/Presslabs/presslabs-org.git
-    secrets:
-      - GIT_PUSH_SSH_KEY
-    when:
-      branch: master
-
-workspace:
-   base: /drone
-   path: src/gitfs
+      event: push
