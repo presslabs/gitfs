@@ -33,9 +33,19 @@ from gitfs.log import log
 
 
 class Router(object):
-    def __init__(self, remote_url, repo_path, mount_path,
-                 credentials, current_path="current", history_path="history",
-                 branch=None, user="root", group="root", **kwargs):
+    def __init__(
+        self,
+        remote_url,
+        repo_path,
+        mount_path,
+        credentials,
+        current_path="current",
+        history_path="history",
+        branch=None,
+        user="root",
+        group="root",
+        **kwargs
+    ):
         """
         Clone repo from a remote into repo_path/<repo_name> and checkout to
         a specific branch.
@@ -56,29 +66,32 @@ class Router(object):
 
         self.routes = []
 
-        log.info('Cloning into {}'.format(self.repo_path))
+        log.info("Cloning into {}".format(self.repo_path))
 
-        self.repo = Repository.clone(self.remote_url, self.repo_path,
-                                     self.branch, credentials)
-        log.info('Done cloning')
+        self.repo = Repository.clone(
+            self.remote_url, self.repo_path, self.branch, credentials
+        )
+        log.info("Done cloning")
 
         self.repo.credentials = credentials
 
-        submodules = os.path.join(self.repo_path, '.gitmodules')
-        ignore = os.path.join(self.repo_path, '.gitignore')
-        self.repo.ignore = CachedIgnore(submodules=submodules,
-                                        ignore=ignore,
-                                        exclude=kwargs['ignore_file'] or None,
-                                        hard_ignore=kwargs['hard_ignore'])
+        submodules = os.path.join(self.repo_path, ".gitmodules")
+        ignore = os.path.join(self.repo_path, ".gitignore")
+        self.repo.ignore = CachedIgnore(
+            submodules=submodules,
+            ignore=ignore,
+            exclude=kwargs["ignore_file"] or None,
+            hard_ignore=kwargs["hard_ignore"],
+        )
 
         self.uid = getpwnam(user).pw_uid
         self.gid = getgrnam(group).gr_gid
 
-        self.commit_queue = kwargs['commit_queue']
+        self.commit_queue = kwargs["commit_queue"]
         self.mount_time = int(time.time())
 
-        self.max_size = kwargs['max_size']
-        self.max_offset = kwargs['max_offset']
+        self.max_size = kwargs["max_size"]
+        self.max_offset = kwargs["max_offset"]
 
         self.repo.commits.update()
 
@@ -88,19 +101,19 @@ class Router(object):
         for worker in self.workers:
             worker.start()
 
-        log.debug('Done init')
+        log.debug("Done init")
 
     def destroy(self, path):
-        log.debug('Stopping workers')
+        log.debug("Stopping workers")
         shutting_down.set()
         fetch.set()
 
         for worker in self.workers:
             worker.join()
-        log.debug('Workers stopped')
+        log.debug("Workers stopped")
 
         shutil.rmtree(self.repo_path)
-        log.info('Successfully umounted %s', self.mount_path)
+        log.info("Successfully umounted %s", self.mount_path)
 
     def __call__(self, operation, *args):
         """
@@ -119,20 +132,17 @@ class Router(object):
         :rtype: function
         """
 
-        if operation in ['destroy', 'init']:
+        if operation in ["destroy", "init"]:
             view = self
         else:
             path = args[0]
             view, relative_path = self.get_view(path)
             args = (relative_path,) + args[1:]
 
-        log.debug('Call %s %s with %r' % (operation,
-                                          view.__class__.__name__,
-                                          args))
+        log.debug("Call %s %s with %r" % (operation, view.__class__.__name__, args))
 
         if not hasattr(view, operation):
-            log.debug('No attribute %s on %s' % (operation,
-                      view.__class__.__name__))
+            log.debug("No attribute %s on %s" % (operation, view.__class__.__name__))
             raise FuseOSError(ENOSYS)
 
         idle.clear()
@@ -140,11 +150,8 @@ class Router(object):
 
     def register(self, routes):
         for regex, view in routes:
-            log.debug('Registering %s for %s', view, regex)
-            self.routes.append({
-                'regex': regex,
-                'view': view
-            })
+            log.debug("Registering %s for %s", view, regex)
+            self.routes.append({"regex": regex, "view": view})
 
     def get_view(self, path):
         """
@@ -158,13 +165,13 @@ class Router(object):
         """
 
         for route in self.routes:
-            result = re.search(route['regex'], path)
+            result = re.search(route["regex"], path)
             if result is None:
                 continue
 
             groups = result.groups()
-            relative_path = re.sub(route['regex'], '', path)
-            relative_path = '/' if not relative_path else relative_path
+            relative_path = re.sub(route["regex"], "", path)
+            relative_path = "/" if not relative_path else relative_path
 
             cache_key = result.group(0)
             log.debug("Router: Cache key for %s: %s", path, cache_key)
@@ -177,24 +184,24 @@ class Router(object):
             kwargs = result.groupdict()
 
             # TODO: move all this to a nice config variable
-            kwargs['repo'] = self.repo
-            kwargs['ignore'] = self.repo.ignore
-            kwargs['repo_path'] = self.repo_path
-            kwargs['mount_path'] = self.mount_path
-            kwargs['regex'] = route['regex']
-            kwargs['relative_path'] = relative_path
-            kwargs['current_path'] = self.current_path
-            kwargs['history_path'] = self.history_path
-            kwargs['uid'] = self.uid
-            kwargs['gid'] = self.gid
-            kwargs['branch'] = self.branch
-            kwargs['mount_time'] = self.mount_time
-            kwargs['queue'] = self.commit_queue
-            kwargs['max_size'] = self.max_size
-            kwargs['max_offset'] = self.max_offset
+            kwargs["repo"] = self.repo
+            kwargs["ignore"] = self.repo.ignore
+            kwargs["repo_path"] = self.repo_path
+            kwargs["mount_path"] = self.mount_path
+            kwargs["regex"] = route["regex"]
+            kwargs["relative_path"] = relative_path
+            kwargs["current_path"] = self.current_path
+            kwargs["history_path"] = self.history_path
+            kwargs["uid"] = self.uid
+            kwargs["gid"] = self.gid
+            kwargs["branch"] = self.branch
+            kwargs["mount_time"] = self.mount_time
+            kwargs["queue"] = self.commit_queue
+            kwargs["max_size"] = self.max_size
+            kwargs["max_offset"] = self.max_offset
 
             args = set(groups) - set(kwargs.values())
-            view = route['view'](*args, **kwargs)
+            view = route["view"](*args, **kwargs)
 
             lru_cache[cache_key] = view
             log.debug("Router: Added %s to cache", path)
@@ -213,4 +220,4 @@ class Router(object):
         methods = inspect.getmembers(FUSE, predicate=callable)
         fuse_allowed_methods = set(elem[0] for elem in methods)
 
-        return attr_name in fuse_allowed_methods - set(['bmap', 'lock'])
+        return attr_name in fuse_allowed_methods - set(["bmap", "lock"])

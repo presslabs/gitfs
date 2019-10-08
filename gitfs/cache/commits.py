@@ -26,19 +26,20 @@ class CommitCache(object):
 
     def update(self):
         new_commits = {}
-        head = self.repo.lookup_reference('HEAD').resolve().target
+        head = self.repo.lookup_reference("HEAD").resolve().target
 
         for commit in self.repo.walk(head, GIT_SORT_TIME):
             commit_time = datetime.fromtimestamp(commit.commit_time)
 
-            date = commit_time.date().strftime('%Y-%m-%d')
-            time = commit_time.time().strftime('%H-%M-%S')
+            date = commit_time.date().strftime("%Y-%m-%d")
+            time = commit_time.time().strftime("%H-%M-%S")
 
             if date not in new_commits:
                 new_commits[date] = []
 
-            insort_left(new_commits[date], Commit(commit.commit_time, time,
-                                                  commit.hex[:10]))
+            insort_left(
+                new_commits[date], Commit(commit.commit_time, time, commit.hex[:10])
+            )
 
         self.__commits = new_commits
 
@@ -59,7 +60,7 @@ class CommitCache(object):
 
 
 class Commit(object):
-    __slots__ = ['hex', 'time', 'timestamp']
+    __slots__ = ["hex", "time", "timestamp"]
 
     def __init__(self, timestamp, time, hex):
         self.hex = hex

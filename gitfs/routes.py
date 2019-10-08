@@ -21,14 +21,22 @@ from gitfs.views import IndexView, CurrentView, HistoryView, CommitView
 def prepare_routes(args):
     routes = []
 
-    routes.append((r'^/%s/(?P<date>\d{4}-\d{1,2}-\d{1,2})/(?P<time>\d{2}-\d{2}-\d{2})-(?P<commit_sha1>[0-9a-f]{10})' % args.history_path, CommitView))
-    routes.append((r'^/%s/(?P<date>\d{4}-\d{1,2}-\d{1,2})' % args.history_path, HistoryView))
-    routes.append((r'^/%s' % args.history_path, HistoryView))
+    routes.append(
+        (
+            r"^/%s/(?P<date>\d{4}-\d{1,2}-\d{1,2})/(?P<time>\d{2}-\d{2}-\d{2})-(?P<commit_sha1>[0-9a-f]{10})"
+            % args.history_path,
+            CommitView,
+        )
+    )
+    routes.append(
+        (r"^/%s/(?P<date>\d{4}-\d{1,2}-\d{1,2})" % args.history_path, HistoryView)
+    )
+    routes.append((r"^/%s" % args.history_path, HistoryView))
 
-    if ('/' == args.current_path):
-        routes.append((r'^/', CurrentView))
+    if "/" == args.current_path:
+        routes.append((r"^/", CurrentView))
     else:
-        routes.append((r'^/%s' % args.current_path, CurrentView))
-        routes.append((r'^/', IndexView))
+        routes.append((r"^/%s" % args.current_path, CurrentView))
+        routes.append((r"^/", IndexView))
 
     return routes

@@ -49,7 +49,7 @@ def split_path_into_components(path):
 
     path = head
 
-    while path and path != '/':
+    while path and path != "/":
         head, tail = os.path.split(path)
         components.appendleft(tail)
         path = head

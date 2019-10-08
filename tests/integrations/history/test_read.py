@@ -35,11 +35,7 @@ class TestHistoryView(BaseTest):
         directory = "{}/history/{}".format(self.mount_path, self.today)
         stats = os.stat(directory)
 
-        attrs = {
-            'st_uid': os.getuid(),
-            'st_gid': os.getgid(),
-            'st_mode': 0o40555,
-        }
+        attrs = {"st_uid": os.getuid(), "st_gid": os.getgid(), "st_mode": 0o40555}
 
         for name, value in iteritems(attrs):
             assert getattr(stats, name) == value
@@ -55,11 +51,7 @@ class TestHistoryView(BaseTest):
         directory = "{}/history/{}/{}".format(self.mount_path, self.today, commit)
         stats = os.stat(directory)
 
-        attrs = {
-            'st_uid': os.getuid(),
-            'st_gid': os.getgid(),
-            'st_mode': 0o40555,
-        }
+        attrs = {"st_uid": os.getuid(), "st_gid": os.getgid(), "st_mode": 0o40555}
         for name, value in iteritems(attrs):
             assert getattr(stats, name) == value
 
@@ -68,8 +60,7 @@ class TestHistoryView(BaseTest):
         assert st_time == self._from_timestamp(stats.st_ctime)
         assert st_time == self._from_timestamp(stats.st_mtime)
 
-    def _from_timestamp(self, timestamp, format="%Y-%m-%d %H-%M-%S",
-                        utc=False):
+    def _from_timestamp(self, timestamp, format="%Y-%m-%d %H-%M-%S", utc=False):
         if utc:
             return datetime.utcfromtimestamp(timestamp).strftime(format)
         else:

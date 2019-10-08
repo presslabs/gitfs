@@ -14,4 +14,4 @@
 
 
 class Node(object):
-    __slots__ = 'prev', 'next', 'data'
+    __slots__ = "prev", "next", "data"

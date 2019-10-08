@@ -85,7 +85,7 @@ class LRUCache(Cache):
             del link.prev
 
     def __repr__(self):
-        return '%s(%r, maxsize=%d, currsize=%d)' % (
+        return "%s(%r, maxsize=%d, currsize=%d)" % (
             self.__class__.__name__,
             [(key, super(LRUCache, self).__getitem__(key)[0]) for key in self],
             self.maxsize,
@@ -100,7 +100,7 @@ class LRUCache(Cache):
             link = root.next
 
             if link is root:
-                raise KeyError('cache is empty')
+                raise KeyError("cache is empty")
 
             key = link.data
             return (key, self.pop(key))

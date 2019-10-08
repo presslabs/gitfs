@@ -14,13 +14,12 @@
 
 
 from gitfs.worker.peasant import Peasant
-from gitfs.events import (fetch, fetch_successful, shutting_down, idle,
-                          remote_operation)
+from gitfs.events import fetch, fetch_successful, shutting_down, idle, remote_operation
 from gitfs.log import log
 
 
 class FetchWorker(Peasant):
-    name = 'FetchWorker'
+    name = "FetchWorker"
 
     def work(self):
         while True:
@@ -44,7 +43,9 @@ class FetchWorker(Peasant):
 
             try:
                 log.debug("Start fetching")
-                was_behind = self.repository.fetch(self.upstream, self.branch, self.credentials)
+                was_behind = self.repository.fetch(
+                    self.upstream, self.branch, self.credentials
+                )
                 fetch_successful.set()
                 if was_behind:
                     log.info("Fetch done")

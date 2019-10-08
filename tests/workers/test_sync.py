@@ -28,8 +28,14 @@ class TestSyncWorker(object):
 
         mocked_queue.get.side_effect = Empty()
 
-        worker = SyncWorker("name", "email", "name", "email",
-                            strategy="strategy", commit_queue=mocked_queue)
+        worker = SyncWorker(
+            "name",
+            "email",
+            "name",
+            "email",
+            strategy="strategy",
+            commit_queue=mocked_queue,
+        )
         worker.on_idle = mocked_idle
         worker.timeout = 1
         worker.min_idle_times = 1
@@ -47,10 +53,10 @@ class TestSyncWorker(object):
 
         mocked_syncing.is_set.return_value = False
 
-        with patch.multiple("gitfs.worker.sync", syncing=mocked_syncing,
-                            writers=MagicMock(value=0)):
-            worker = SyncWorker("name", "email", "name", "email",
-                                strategy="strategy")
+        with patch.multiple(
+            "gitfs.worker.sync", syncing=mocked_syncing, writers=MagicMock(value=0)
+        ):
+            worker = SyncWorker("name", "email", "name", "email", strategy="strategy")
             worker.commits = "commits"
             worker.commit = mocked_commit
             worker.sync = mocked_sync
@@ -68,10 +74,16 @@ class TestSyncWorker(object):
         upstream = "origin"
         branch = "master"
 
-        worker = SyncWorker("name", "email", "name", "email",
-                            strategy=mocked_strategy,
-                            repository=mocked_repo,
-                            upstream=upstream, branch=branch)
+        worker = SyncWorker(
+            "name",
+            "email",
+            "name",
+            "email",
+            strategy=mocked_strategy,
+            repository=mocked_repo,
+            upstream=upstream,
+            branch=branch,
+        )
         worker.merge()
 
         mocked_strategy.assert_called_once_with(branch, branch, upstream)
@@ -92,15 +104,24 @@ class TestSyncWorker(object):
         mocked_repo.behind = True
         mocked_push_successful.set.side_effect = ValueError
 
-        with patch.multiple('gitfs.worker.sync', sync_done=mocked_sync_done,
-                            syncing=mocked_syncing,
-                            push_successful=mocked_push_successful,
-                            fetch=mocked_fetch):
-            worker = SyncWorker("name", "email", "name", "email",
-                                repository=mocked_repo,
-                                strategy=mocked_strategy,
-                                credentials=credentials,
-                                upstream=upstream, branch=branch)
+        with patch.multiple(
+            "gitfs.worker.sync",
+            sync_done=mocked_sync_done,
+            syncing=mocked_syncing,
+            push_successful=mocked_push_successful,
+            fetch=mocked_fetch,
+        ):
+            worker = SyncWorker(
+                "name",
+                "email",
+                "name",
+                "email",
+                repository=mocked_repo,
+                strategy=mocked_strategy,
+                credentials=credentials,
+                upstream=upstream,
+                branch=branch,
+            )
             worker.merge = mocked_merge
 
             worker.sync()
@@ -112,8 +133,7 @@ class TestSyncWorker(object):
             assert mocked_fetch.set.call_count == 1
             assert mocked_push_successful.set.call_count == 1
             assert mocked_repo.behind is False
-            mocked_repo.push.assert_called_once_with(upstream, branch,
-                                                     credentials)
+            mocked_repo.push.assert_called_once_with(upstream, branch, credentials)
 
     def test_sync_with_push_conflict(self):
         upstream = "origin"
@@ -131,15 +151,24 @@ class TestSyncWorker(object):
         mocked_repo.ahead = MagicMock(1)
         mocked_repo.push.side_effect = [GitError("Mocked error"), None]
 
-        with patch.multiple('gitfs.worker.sync', sync_done=mocked_sync_done,
-                            syncing=mocked_syncing,
-                            push_successful=mocked_push_successful,
-                            fetch=mocked_fetch):
-            worker = SyncWorker("name", "email", "name", "email",
-                                repository=mocked_repo,
-                                strategy=mocked_strategy,
-                                credentials=credentials,
-                                upstream=upstream, branch=branch)
+        with patch.multiple(
+            "gitfs.worker.sync",
+            sync_done=mocked_sync_done,
+            syncing=mocked_syncing,
+            push_successful=mocked_push_successful,
+            fetch=mocked_fetch,
+        ):
+            worker = SyncWorker(
+                "name",
+                "email",
+                "name",
+                "email",
+                repository=mocked_repo,
+                strategy=mocked_strategy,
+                credentials=credentials,
+                upstream=upstream,
+                branch=branch,
+            )
             worker.merge = mocked_merge
 
             while not worker.sync():
@@ -154,19 +183,28 @@ class TestSyncWorker(object):
             assert mocked_repo.behind is False
             assert mocked_repo.ahead.call_count == 2
 
-            mocked_repo.push.assert_has_calls([call(upstream, branch, credentials),
-                                               call(upstream, branch, credentials)])
+            mocked_repo.push.assert_has_calls(
+                [
+                    call(upstream, branch, credentials),
+                    call(upstream, branch, credentials),
+                ]
+            )
 
     def test_commit_with_just_one_job(self):
         mocked_repo = MagicMock()
 
-        message = 'just a simple message'
-        jobs = [{'params': {'message': message}}]
+        message = "just a simple message"
+        jobs = [{"params": {"message": message}}]
         author = ("name", "email")
 
-        worker = SyncWorker(author[0], author[1], author[0], author[1],
-                            strategy="strategy",
-                            repository=mocked_repo)
+        worker = SyncWorker(
+            author[0],
+            author[1],
+            author[0],
+            author[1],
+            strategy="strategy",
+            repository=mocked_repo,
+        )
         worker.commit(jobs)
 
         mocked_repo.commit.assert_called_once_with(message, author, author)
@@ -178,21 +216,25 @@ class TestSyncWorker(object):
     def test_commit_with_more_than_one_job(self):
         mocked_repo = MagicMock()
 
-        message = 'just a simple message'
-        jobs = [{'params': {'message': message, 'add': ['path1', 'path2'],
-                            'remove': []}},
-                {'params': {'message': message, 'remove': ['path2'],
-                            'add': []}}]
+        message = "just a simple message"
+        jobs = [
+            {"params": {"message": message, "add": ["path1", "path2"], "remove": []}},
+            {"params": {"message": message, "remove": ["path2"], "add": []}},
+        ]
         author = ("name", "email")
 
-        worker = SyncWorker(author[0], author[1], author[0], author[1],
-                            strategy="strategy",
-                            repository=mocked_repo)
+        worker = SyncWorker(
+            author[0],
+            author[1],
+            author[0],
+            author[1],
+            strategy="strategy",
+            repository=mocked_repo,
+        )
         worker.commit(jobs)
 
         asserted_message = "Update 2 items. Added 2 items. Removed 1 items."
-        mocked_repo.commit.assert_called_once_with(asserted_message, author,
-                                                   author)
+        mocked_repo.commit.assert_called_once_with(asserted_message, author, author)
         assert mocked_repo.commits.update.call_count == 1
 
         strategy = pygit2.GIT_CHECKOUT_FORCE
@@ -205,9 +247,15 @@ class TestSyncWorker(object):
 
         mocked_queue.get.side_effect = Empty()
 
-        with patch.multiple('gitfs.worker.sync', idle=mocked_idle_event):
-            worker = SyncWorker("name", "email", "name", "email",
-                                strategy="strategy", commit_queue=mocked_queue)
+        with patch.multiple("gitfs.worker.sync", idle=mocked_idle_event):
+            worker = SyncWorker(
+                "name",
+                "email",
+                "name",
+                "email",
+                strategy="strategy",
+                commit_queue=mocked_queue,
+            )
             worker.on_idle = mocked_idle
             worker.timeout = 1
             worker.min_idle_times = -1

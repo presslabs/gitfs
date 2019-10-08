@@ -28,13 +28,19 @@ class TestCachedIgnore(object):
             mocked_file = mocked_open.return_value.__enter__.return_value
             mocked_file.read.return_value = "file"
 
-            with patch.multiple("gitfs.cache.gitignore", os=mocked_os,
-                                re=mocked_re):
+            with patch.multiple("gitfs.cache.gitignore", os=mocked_os, re=mocked_re):
                 gitignore = CachedIgnore("some_file", "some_file")
 
-                assert gitignore.items == ['.git', '.git/*', '/.git/*',
-                                           '*.keep', '*.gitmodules',
-                                           '/found/*', '/found', 'found']
+                assert gitignore.items == [
+                    ".git",
+                    ".git/*",
+                    "/.git/*",
+                    "*.keep",
+                    "*.gitmodules",
+                    "/found/*",
+                    "/found",
+                    "found",
+                ]
 
     def test_update(self):
         gitignore = CachedIgnore()
@@ -47,5 +53,5 @@ class TestCachedIgnore(object):
     def test_contains(self):
         gitignore = CachedIgnore()
 
-        assert '.git' in gitignore
-        assert 'file' not in gitignore
+        assert ".git" in gitignore
+        assert "file" not in gitignore

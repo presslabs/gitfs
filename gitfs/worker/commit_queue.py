@@ -29,7 +29,6 @@ class BaseQueue(object):
 
 
 class CommitQueue(BaseQueue):
-
     def add(self, job):
         self.queue.put(job)
 
@@ -41,14 +40,16 @@ class CommitQueue(BaseQueue):
             message = "You need to add or to remove some files from/to index"
             raise ValueError(message)
 
-        self.queue.put({
-            'type': 'commit',
-            'params': {
-                'add': self._to_list(add),
-                'message': message,
-                'remove': self._to_list(remove),
+        self.queue.put(
+            {
+                "type": "commit",
+                "params": {
+                    "add": self._to_list(add),
+                    "message": message,
+                    "remove": self._to_list(remove),
+                },
             }
-        })
+        )
         log.debug("Got a new commit job on queue")
 
     def _to_list(self, variable):

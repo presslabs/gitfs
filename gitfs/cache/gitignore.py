@@ -21,8 +21,7 @@ from six import string_types
 
 
 class CachedIgnore(object):
-    def __init__(self, ignore=False, submodules=False, exclude=False,
-                 hard_ignore=None):
+    def __init__(self, ignore=False, submodules=False, exclude=False, hard_ignore=None):
         self.items = []
 
         self.ignore = ignore
@@ -36,7 +35,7 @@ class CachedIgnore(object):
         self.update()
 
     def update(self):
-        self.items = ['.git', '.git/*', '/.git/*', '*.keep', '*.gitmodules']
+        self.items = [".git", ".git/*", "/.git/*", "*.keep", "*.gitmodules"]
 
         self.items += self._parse_ignore_file(self.ignore)
         self.items += self._parse_ignore_file(self.exclude)
@@ -61,7 +60,7 @@ class CachedIgnore(object):
             with open(ignore_file) as gitignore:
                 for item in gitignore.readlines():
                     item = item.strip()
-                    if item and not item.startswith('#'):
+                    if item and not item.startswith("#"):
                         items.append(item)
         return items
 

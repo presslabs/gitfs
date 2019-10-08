@@ -47,7 +47,7 @@ class Cache(collections.MutableMapping):
         size = self.getsizeof(value)
 
         if size > maxsize:
-            raise ValueError('value too large')
+            raise ValueError("value too large")
 
         if key not in mapping or mapping[key][1] < size:
             while self.__currsize + size > maxsize:
@@ -70,7 +70,7 @@ class Cache(collections.MutableMapping):
         return len(self.__mapping)
 
     def __repr__(self):
-        return '%s(%r, maxsize=%d, currsize=%d)' % (
+        return "%s(%r, maxsize=%d, currsize=%d)" % (
             self.__class__.__name__,
             list(self.items()),
             self.__maxsize,

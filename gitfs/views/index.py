@@ -22,15 +22,14 @@ from .read_only import ReadOnlyView
 
 
 class IndexView(ReadOnlyView):
-
     def __init__(self, *args, **kwargs):
         super(ReadOnlyView, self).__init__(*args, **kwargs)
 
-        self.current_path = kwargs.get('current_path', 'current')
-        self.history_path = kwargs.get('history_path', 'history')
+        self.current_path = kwargs.get("current_path", "current")
+        self.history_path = kwargs.get("history_path", "history")
 
     def getattr(self, path, fh=None):
-        '''
+        """
         Returns a dictionary with keys identical to the stat C structure of
         stat(2).
 
@@ -39,18 +38,15 @@ class IndexView(ReadOnlyView):
         NOTE: There is an incombatibility between Linux and Mac OS X
         concerning st_nlink of directories. Mac OS X counts all files inside
         the directory, while Linux counts only the subdirectories.
-        '''
+        """
 
-        if path != '/':
+        if path != "/":
             raise FuseOSError(ENOENT)
 
         attrs = super(IndexView, self).getattr(path, fh)
-        attrs.update({
-            'st_mode': S_IFDIR | 0o555,
-            'st_nlink': 2,
-        })
+        attrs.update({"st_mode": S_IFDIR | 0o555, "st_nlink": 2})
 
         return attrs
 
     def readdir(self, path, fh):
-        return ['.', '..', self.current_path, self.history_path]
+        return [".", "..", self.current_path, self.history_path]

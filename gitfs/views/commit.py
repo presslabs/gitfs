@@ -15,8 +15,12 @@
 
 import os
 from errno import ENOENT
-from pygit2 import GIT_FILEMODE_TREE, GIT_FILEMODE_BLOB,\
-    GIT_FILEMODE_BLOB_EXECUTABLE, GIT_FILEMODE_LINK
+from pygit2 import (
+    GIT_FILEMODE_TREE,
+    GIT_FILEMODE_BLOB,
+    GIT_FILEMODE_BLOB_EXECUTABLE,
+    GIT_FILEMODE_LINK,
+)
 from fuse import FuseOSError
 
 from gitfs.utils import split_path_into_components
@@ -24,8 +28,12 @@ from gitfs.cache import lru_cache
 
 from .read_only import ReadOnlyView
 
-VALID_FILE_MODES = [GIT_FILEMODE_BLOB, GIT_FILEMODE_BLOB_EXECUTABLE,
-                    GIT_FILEMODE_LINK, GIT_FILEMODE_TREE]
+VALID_FILE_MODES = [
+    GIT_FILEMODE_BLOB,
+    GIT_FILEMODE_BLOB_EXECUTABLE,
+    GIT_FILEMODE_LINK,
+    GIT_FILEMODE_TREE,
+]
 
 
 class CommitView(ReadOnlyView):
@@ -51,13 +59,15 @@ class CommitView(ReadOnlyView):
 
         is_valid = False
         for entry in tree:
-            valid_mode = (entry.name == path_components[0] and
-                          entry.filemode in VALID_FILE_MODES)
+            valid_mode = (
+                entry.name == path_components[0] and entry.filemode in VALID_FILE_MODES
+            )
             if valid_mode and len(path_components) == 1:
                 return True
             elif valid_mode and len(path_components) > 1:
-                is_valid = self._validate_commit_path(self.repo[entry.id],
-                                                      path_components[1:])
+                is_valid = self._validate_commit_path(
+                    self.repo[entry.id], path_components[1:]
+                )
                 if is_valid:
                     return is_valid
 
@@ -65,14 +75,14 @@ class CommitView(ReadOnlyView):
 
     def read(self, path, size, offset, fh):
         data = self.repo.get_blob_data(self.commit.tree, path)
-        return data[offset:offset + size]
+        return data[offset : offset + size]
 
     def readlink(self, path):
         obj_name = os.path.split(path)[1]
         return self.repo.get_blob_data(self.commit.tree, obj_name)
 
     def getattr(self, path, fh=None):
-        '''
+        """
         Returns a dictionary with keys identical to the stat C structure of
         stat(2).
 
@@ -81,16 +91,15 @@ class CommitView(ReadOnlyView):
         NOTE: There is an incombatibility between Linux and Mac OS X
         concerning st_nlink of directories. Mac OS X counts all files inside
         the directory, while Linux counts only the subdirectories.
-        '''
+        """
 
         if not path:
             return
 
         attrs = super(CommitView, self).getattr(path, fh)
-        attrs.update({
-            'st_ctime': self.commit.commit_time,
-            'st_mtime': self.commit.commit_time,
-        })
+        attrs.update(
+            {"st_ctime": self.commit.commit_time, "st_mtime": self.commit.commit_time}
+        )
 
         stats = self.repo.get_git_object_default_stats(self.commit.tree, path)
         if stats is None:
@@ -101,10 +110,9 @@ class CommitView(ReadOnlyView):
         return attrs
 
     def access(self, path, mode):
-        if hasattr(self, "relative_path") and self.relative_path != '/':
+        if hasattr(self, "relative_path") and self.relative_path != "/":
             path_elems = split_path_into_components(self.relative_path)
-            is_valid_path = self._validate_commit_path(self.commit.tree,
-                                                       path_elems)
+            is_valid_path = self._validate_commit_path(self.commit.tree, path_elems)
             if not is_valid_path:
                 raise FuseOSError(ENOENT)
 
@@ -119,6 +127,6 @@ class CommitView(ReadOnlyView):
         if tree_name:
             dir_tree = self.repo.get_git_object(self.commit.tree, path)
 
-        dir_entries = ['.', '..'] + [entry.name for entry in dir_tree]
+        dir_entries = [".", ".."] + [entry.name for entry in dir_tree]
         for entry in dir_entries:
             yield entry

@@ -9,7 +9,7 @@ except ImportError:
 from gitfs.cache import lru_cache
 
 
-CacheInfo = collections.namedtuple('CacheInfo', 'hits misses maxsize currsize')
+CacheInfo = collections.namedtuple("CacheInfo", "hits misses maxsize currsize")
 
 
 def _makekey_typed(args, kwargs):

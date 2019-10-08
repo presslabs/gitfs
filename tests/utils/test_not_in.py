@@ -29,10 +29,8 @@ class TestNotIn(object):
         mocked_inspect = MagicMock()
         mocked_inspect.getargspec.return_value = [["file"]]
 
-        with patch.multiple("gitfs.utils.decorators.not_in",
-                            inspect=mocked_inspect):
-            not_in("ignore", check=["file"])(mocked_function)(mocked_object,
-                                                              "file")
+        with patch.multiple("gitfs.utils.decorators.not_in", inspect=mocked_inspect):
+            not_in("ignore", check=["file"])(mocked_function)(mocked_object, "file")
 
         mocked_function.assert_called_once_with(mocked_object, "file")
 
@@ -44,8 +42,7 @@ class TestNotIn(object):
         mocked_look_at = MagicMock()
         mocked_look_at.cache = mocked_gitignore
 
-        with patch.multiple("gitfs.utils.decorators.not_in",
-                            inspect=mocked_inspect):
+        with patch.multiple("gitfs.utils.decorators.not_in", inspect=mocked_inspect):
             with pytest.raises(FuseOSError):
                 not_in(mocked_look_at, check=["file"]).check_args(None, "file")
 
@@ -58,7 +55,6 @@ class TestNotIn(object):
         mocked_look_at.cache = mocked_gitignore
         mocked_look_at.check_key.return_value = True
 
-        with patch.multiple("gitfs.utils.decorators.not_in",
-                            inspect=mocked_inspect):
+        with patch.multiple("gitfs.utils.decorators.not_in", inspect=mocked_inspect):
             with pytest.raises(FuseOSError):
                 not_in(mocked_look_at, check=["file"]).check_args(None, "file")

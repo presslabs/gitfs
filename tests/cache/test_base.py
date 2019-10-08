@@ -24,7 +24,7 @@ class TestBaseCache(object):
         cache = Cache(0, getsizeof=lambda x: 1)
 
         with pytest.raises(ValueError):
-            cache['key'] = "item"
+            cache["key"] = "item"
 
     def test_base_setitem_when_current_size_is_to_big(self):
         mocked_pop = MagicMock(side_effect=ValueError)
@@ -36,32 +36,32 @@ class TestBaseCache(object):
         cache.popitem = mocked_pop
 
         with pytest.raises(ValueError):
-            cache['key'] = "item"
+            cache["key"] = "item"
 
     def test_setitem(self):
         cache = Cache(1)
 
-        cache['key'] = 1
-        cache['key'] = 2
+        cache["key"] = 1
+        cache["key"] = 2
 
-        assert cache['key'] == 2
+        assert cache["key"] == 2
         assert cache.currsize == 1
 
     def test_delitem(self):
         cache = Cache(1)
 
-        cache['key'] = 1
-        del cache['key']
+        cache["key"] = 1
+        del cache["key"]
 
         with pytest.raises(KeyError):
-            cache['key']
+            cache["key"]
 
         assert cache.currsize == 0
 
     def test_aux_method(self):
         cache = Cache(1)
 
-        cache['key'] = 1
+        cache["key"] = 1
         for key in cache:
             assert key == "key"
             assert cache["key"] == 1

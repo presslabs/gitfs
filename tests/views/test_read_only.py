@@ -26,8 +26,7 @@ class TestReadOnly(object):
     def test_cant_write(self):
         view = ReadOnlyView()
 
-        for method in ["write", "create", "utimens",
-                       "chmod", "mkdir"]:
+        for method in ["write", "create", "utimens", "chmod", "mkdir"]:
             with pytest.raises(FuseOSError):
                 getattr(view, method)("path", 1)
 
