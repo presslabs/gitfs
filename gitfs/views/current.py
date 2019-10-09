@@ -186,6 +186,11 @@ class CurrentView(PassthroughView):
         log.debug("CurrentView: Open %s for write", path)
         return fh
 
+    @write_operation
+    @not_in("ignore", check=["path"])
+    def lock(self, path, fip, cmd, lock):
+        return super().lock(path, fip, cmd, lock)
+
     def open_for_read(self, path, flags):
         full_path = self.repo._full_path(path)
         log.info("CurrentView: Open %s for read", path)

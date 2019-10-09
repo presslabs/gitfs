@@ -140,7 +140,7 @@ class Repository(object):
         """
 
         remote = self.get_remote(upstream)
-        remote.push(["refs/heads/%s" % (branch)], callbacks=credentials)
+        remote.push(["refs/heads/%s" % branch], callbacks=credentials)
 
     def fetch(self, upstream, branch_name, credentials):
         """

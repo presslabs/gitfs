@@ -44,7 +44,7 @@ class Router(object):
         branch=None,
         user="root",
         group="root",
-        **kwargs
+        **kwargs,
     ):
         """
         Clone repo from a remote into repo_path/<repo_name> and checkout to

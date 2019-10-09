@@ -13,7 +13,9 @@
 # limitations under the License.
 
 
+import fcntl
 import os
+
 from fuse import FuseOSError
 from errno import EACCES
 
@@ -152,6 +154,12 @@ class PassthroughView(View):
         full_path = self.repo._full_path(path)
         with open(full_path, "r+") as input_file:
             input_file.truncate(length)
+
+    def lock(self, path, fh, cmd, lock):
+        fcntl.lockf(fh, fcntl.LOCK_EX)
+
+    def release(self, path, fh):
+        fcntl.lockf(fh, fcntl.LOCK_UN)
 
     def flush(self, path, fh):
         return os.fsync(fh)
