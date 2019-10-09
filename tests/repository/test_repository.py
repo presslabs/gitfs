@@ -364,24 +364,18 @@ class TestRepository(RepositoryBaseTest):
 
     def test_diverge(self):
         mocked_repo = MagicMock()
-        mocked_lookup = MagicMock()
         mocked_find = MagicMock()
         mocked_commits = MagicMock()
         mocked_branch_remote = MagicMock(target=1)
         mocked_branch_local = MagicMock(target=2)
 
-        def lookup(reference, opt):
-            if "origin/master" == reference:
-                return mocked_branch_remote
-            return mocked_branch_local
-
         mocked_commits.second_commits = []
         mocked_commits.first_commits = []
         mocked_find.return_value = mocked_commits
-        mocked_lookup = lookup
 
         repo = Repository(mocked_repo)
-        repo.lookup_branch = mocked_lookup
+        repo.branches.local.get.return_value = mocked_branch_local
+        repo.branches.remote.get.return_value = mocked_branch_remote
         repo.find_diverge_commits = mocked_find
 
         assert repo.diverge("origin", "master") == (False, False)

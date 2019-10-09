@@ -22,8 +22,11 @@ from .base import Merger
 class AcceptMine(Merger):
     def _create_remote_copy(self, branch_name, upstream, new_branch):
         reference = "{}/{}".format(upstream, branch_name)
-        remote = self.repository.lookup_branch(reference, pygit2.GIT_BRANCH_REMOTE)
-        remote_commit = remote.get_object()
+
+        remote = self.repository.branches.remote.get(reference)
+        remote_commit = self.repository[remote.target.hex]
+
+        # TODO: add tests and checks for failures
 
         local = self.repository.create_branch(new_branch, remote_commit)
         ref = self.repository.lookup_reference("refs/heads/%s" % new_branch)
@@ -32,8 +35,11 @@ class AcceptMine(Merger):
         return local
 
     def _create_local_copy(self, branch_name, new_branch):
-        branch = self.repository.lookup_branch(branch_name, pygit2.GIT_BRANCH_LOCAL)
-        branch_commit = branch.get_object()
+        branch = self.repository.branches.local.get(branch_name)
+        branch_commit = self.repository[branch.target.hex]
+
+        # TODO: add tests and checks for failures
+
         return self.repository.create_branch(new_branch, branch_commit)
 
     def merge(self, local_branch, remote_branch, upstream):

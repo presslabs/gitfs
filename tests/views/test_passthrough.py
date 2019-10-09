@@ -26,15 +26,6 @@ from gitfs.views import PassthroughView
 
 class TestPassthrough(object):
     def setup(self):
-        def mock_super(*args, **kwargs):
-            if args and issubclass(PassthroughView, args[0]):
-                return MagicMock()
-
-            return original_super(*args, **kwargs)
-
-        builtins.original_super = super
-        builtins.super = mock_super
-
         root = "/the/root/path"
 
         def _full_path(partial):
@@ -45,10 +36,6 @@ class TestPassthrough(object):
         mocked_repo = MagicMock(_full_path=_full_path)
         self.repo = mocked_repo
         self.repo_path = root
-
-    def teardown(self):
-        builtins.super = builtins.original_super
-        del builtins.original_super
 
     def test_access(self):
         mocked_access = MagicMock()

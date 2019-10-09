@@ -12,11 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import random
-
 import time
-from six.moves.queue import Empty
 
 import pygit2
+from six.moves.queue import Empty
 
 from gitfs.worker.peasant import Peasant
 from gitfs.merges import AcceptMine

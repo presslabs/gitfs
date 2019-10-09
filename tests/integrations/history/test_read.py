@@ -29,7 +29,7 @@ class TestHistoryView(BaseTest):
     def test_listdirs_with_commits(self):
         commits = self.get_commits_by_date(self.today)[::-1]
         directory = os.listdir("{}/history/{}".format(self.mount_path, self.today))
-        assert directory == commits
+        assert sorted(directory) == sorted(commits)
 
     def test_stats(self):
         directory = "{}/history/{}".format(self.mount_path, self.today)

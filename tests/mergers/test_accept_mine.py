@@ -30,27 +30,26 @@ class TestAcceptMine(object):
     def test_create_local_copy(self):
         mocked_repo = MagicMock()
         mocked_branch = MagicMock()
+        mocked_commit = MagicMock()
 
-        mocked_branch.get_object.return_value = "local_commit"
-        mocked_repo.lookup_branch.return_value = mocked_branch
+        mocked_branch.target.hex = "local_commit"
+        mocked_repo.branches.local.get.return_value = mocked_branch
+        mocked_repo.__getitem__.return_value = mocked_commit
         mocked_repo.create_branch.return_value = "branch"
 
         mine = AcceptMine(mocked_repo)
         assert mine._create_local_copy("old_branch", "new_branch") == "branch"
 
-        mocked_repo.lookup_branch.assert_called_once_with(
-            "old_branch", GIT_BRANCH_LOCAL
-        )
-        assert mocked_branch.get_object.call_count == 1
-        mocked_repo.create_branch.assert_called_once_with("new_branch", "local_commit")
+        mocked_repo.create_branch.assert_called_once_with("new_branch", mocked_commit)
 
     def test_create_remote_copy(self):
         mocked_repo = MagicMock()
         mocked_branch = MagicMock()
+        mocked_commit = MagicMock()
 
-        mocked_branch.get_object.return_value = "remote_commit"
-        mocked_repo.lookup_branch.return_value = mocked_branch
-        mocked_repo.lookup_reference.return_value = "ref"
+        mocked_branch.target.hex = "remote_commit"
+        mocked_repo.branches.remote.return_value = mocked_branch
+        mocked_repo.__getitem__.return_value = mocked_commit
         mocked_repo.create_branch.return_value = "branch"
 
         mine = AcceptMine(mocked_repo)
@@ -59,9 +58,7 @@ class TestAcceptMine(object):
         )
 
         reference = "{}/{}".format("upstream", "old_branch")
-        mocked_repo.lookup_branch.assert_called_once_with(reference, GIT_BRANCH_REMOTE)
-        assert mocked_branch.get_object.call_count == 1
-        mocked_repo.create_branch.assert_called_once_with("new_branch", "remote_commit")
+        mocked_repo.create_branch.assert_called_once_with("new_branch", mocked_commit)
         mocked_repo.checkout.has_calls([call("ref", strategy=GIT_CHECKOUT_FORCE)])
 
         asserted_ref = "refs/heads/new_branch"

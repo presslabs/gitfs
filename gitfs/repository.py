@@ -73,8 +73,10 @@ class Repository(object):
 
     def diverge(self, upstream, branch):
         reference = "{}/{}".format(upstream, branch)
-        remote_branch = self.lookup_branch(reference, GIT_BRANCH_REMOTE)
-        local_branch = self.lookup_branch(branch, GIT_BRANCH_LOCAL)
+        remote_branch = self._repo.branches.remote.get(reference)
+        local_branch = self._repo.branches.local.get(branch)
+
+        # TODO: check for missing branches
 
         if remote_branch.target == local_branch.target:
             return False, False
