@@ -1,17 +1,24 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
 set -e
+
 "$VIRTUAL_ENV/bin/pip" install cffi
 "$VIRTUAL_ENV/bin/pip" install -r test_requirements.txt
+
 mkdir -p "$TEST_DIR"
 mkdir -p "$MNT_DIR"
 mkdir -p "$REPO_DIR"
 mkdir -p "$BARE_REPO"
+
 cd "$BARE_REPO"
 git init --bare .
+
 cd "$TEST_DIR"
 git clone "$BARE_REPO" "$REMOTE"
+
 cd "$REMOTE"
 echo "just testing around here" >> testing
+
 touch me
 git add .
 git commit -m "Initial test commit"

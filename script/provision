@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
 export PYTHON_VERSION=python3.7
 
 function python {
