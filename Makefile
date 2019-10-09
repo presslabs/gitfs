@@ -2,7 +2,7 @@ PREFIX:=/usr/local
 BUILD_DIR:=build
 VIRTUAL_ENV?=$(BUILD_DIR)/virtualenv
 
-TESTS:=tests
+TESTS?=tests
 TEST_DIR:=/tmp/gitfs-tests
 MNT_DIR:=$(TEST_DIR)/$(shell bash -c 'echo $$RANDOM')_mnt
 REPO_DIR:=$(TEST_DIR)/$(shell bash -c 'echo $$RANDOM')_repo
