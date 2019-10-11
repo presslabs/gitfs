@@ -1,13 +1,11 @@
 pipeline:
   test:
-    image: ubuntu:18.04
-    group: build
+    image: quay.io/presslabs/gitfs-test:${PYTHON_VERSION}
     privileged: true
     environment:
       - PIP_DOWNLOAD_CACHE=/tmp/pip_download_cache
-      - DEBIAN_FRONTEND=noninteractive
+      - PYTHON=${PYTHON_VERSION}
     commands:
-      - apt-get update && apt-get install -qy build-essential python-pip python-virtualenv python-dev software-properties-common libfuse-dev fuse git libffi-dev python3.7-dev libgit2-dev
       - chmod 660 /dev/fuse
       - echo user_allow_other | tee -a /etc/fuse.conf > /dev/null
       - chmod 644 /etc/fuse.conf
@@ -27,3 +25,8 @@ pipeline:
     when:
       branch: master
       event: push
+
+matrix:
+  include:
+    - PYTHON_VERSION: 2.7
+    - PYTHON_VERSION: 3.7
