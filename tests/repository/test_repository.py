@@ -59,6 +59,7 @@ class TestRepository(RepositoryBaseTest):
 
         mocked_repo.remotes = [mocked_remote]
         mocked_repo.lookup_branch().get_object.return_value = MockedCommit()
+        mocked_repo.walk.return_value = [MockedCommit()]
 
         repo = Repository(mocked_repo)
         repo.fetch("origin", "master", "credentials")

@@ -387,10 +387,9 @@ class Repository(object):
         :type branches: list
         :returns: yields a list of commits corresponding to given branches
         :rtype: list
-
         """
 
-        iterators = [self._repo.walk(branch.target, sort) for branch in branches]
+        iterators = [iter(self._repo.walk(branch.target, sort)) for branch in branches]
         stop_iteration = [False for branch in branches]
 
         commits = []
