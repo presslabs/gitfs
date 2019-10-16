@@ -39,11 +39,11 @@ $(BUILD_DIR):
 $(VIRTUAL_ENV)/bin/py.test: $(VIRTUAL_ENV)/bin/pip$(PYTHON)
 	@touch $@
 
-$(VIRTUAL_ENV)/bin/pip3.7:
-	virtualenv --setuptools $(VIRTUAL_ENV) -ppython3.7
-
 $(VIRTUAL_ENV)/bin/pip2.7:
 	virtualenv --setuptools $(VIRTUAL_ENV)
+
+$(VIRTUAL_ENV)/bin/pip%:
+	virtualenv --setuptools $(VIRTUAL_ENV) -ppython$*
 
 virtualenv: $(VIRTUAL_ENV)/bin/pip$(PYTHON)
 
