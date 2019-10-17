@@ -31,8 +31,7 @@ class retry(object):
                 except:
                     time.sleep(self.each)
 
-                if (isinstance(self.times, int) and not
-                   isinstance(self.times, bool)):
+                if isinstance(self.times, int) and not isinstance(self.times, bool):
                     self.times -= 1
 
             return f(*args, **kwargs)

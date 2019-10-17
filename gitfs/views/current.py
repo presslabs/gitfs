@@ -29,25 +29,20 @@ from .passthrough import PassthroughView, STATS
 
 
 class CurrentView(PassthroughView):
-
     def __init__(self, *args, **kwargs):
         super(CurrentView, self).__init__(*args, **kwargs)
         self.dirty = {}
 
-        self.current_path = kwargs.get('current_path', 'current')
+        self.current_path = kwargs.get("current_path", "current")
 
     @write_operation
     @not_in("ignore", check=["old", "new"])
     def rename(self, old, new):
-        new = re.sub(self.regex, '', new)
+        new = re.sub(self.regex, "", new)
         result = super(CurrentView, self).rename(old, new)
 
         message = "Rename {} to {}".format(old, new)
-        self._stage(**{
-            'remove': os.path.split(old)[1],
-            'add': new,
-            'message': message
-        })
+        self._stage(**{"remove": os.path.split(old)[1], "add": new, "message": message})
 
         log.debug("CurrentView: Renamed %s to %s", old, new)
         return result
@@ -66,8 +61,8 @@ class CurrentView(PassthroughView):
     @write_operation
     @not_in("ignore", check=["target"])
     def link(self, name, target):
-        if target.startswith('/%s/' % self.current_path):
-            target = target.replace('/%s/' % self.current_path, '/')
+        if target.startswith("/%s/" % self.current_path):
+            target = target.replace("/%s/" % self.current_path, "/")
 
         result = super(CurrentView, self).link(target, name)
 
@@ -86,10 +81,7 @@ class CurrentView(PassthroughView):
         status = os.lstat(full_path)
 
         attrs = dict((key, getattr(status, key)) for key in STATS)
-        attrs.update({
-            'st_uid': self.uid,
-            'st_gid': self.gid,
-        })
+        attrs.update({"st_uid": self.uid, "st_gid": self.gid})
 
         log.debug("CurrentView: Get attributes %s for %s", str(attrs), path)
         return attrs
@@ -107,10 +99,7 @@ class CurrentView(PassthroughView):
             raise FuseOSError(errno.EFBIG)
 
         result = super(CurrentView, self).write(path, buf, offset, fh)
-        self.dirty[fh] = {
-            'message': 'Update {}'.format(path),
-            'stage': True
-        }
+        self.dirty[fh] = {"message": "Update {}".format(path), "stage": True}
 
         log.debug("CurrentView: Wrote %s to %s", len(buf), path)
         return result
@@ -131,8 +120,8 @@ class CurrentView(PassthroughView):
             super(CurrentView, self).chmod(keep_path, 0o644)
 
             self.dirty[fh] = {
-                'message': "Create the {} directory".format(path),
-                'stage': True
+                "message": "Create the {} directory".format(path),
+                "stage": True,
             }
 
             self.release(keep_path, fh)
@@ -145,10 +134,7 @@ class CurrentView(PassthroughView):
         fh = self.open_for_write(path, os.O_WRONLY | os.O_CREAT)
         super(CurrentView, self).chmod(path, mode)
 
-        self.dirty[fh] = {
-            'message': "Created {}".format(path),
-            'stage': True
-        }
+        self.dirty[fh] = {"message": "Created {}".format(path), "stage": True}
 
         log.debug("CurrentView: Created %s", path)
         return fh
@@ -159,8 +145,8 @@ class CurrentView(PassthroughView):
         """
         Executes chmod on the file at os level and then it commits the change.
         """
-        str_mode = ('%o' % mode)[-4:]
-        if str_mode not in ['0755', '0644']:
+        str_mode = ("%o" % mode)[-4:]
+        if str_mode not in ["0755", "0644"]:
             raise FuseOSError(errno.EINVAL)
 
         result = super(CurrentView, self).chmod(path, mode)
@@ -168,11 +154,10 @@ class CurrentView(PassthroughView):
         if os.path.isdir(self.repo._full_path(path)):
             return result
 
-        message = 'Chmod to {} on {}'.format(str_mode, path)
+        message = "Chmod to {} on {}".format(str_mode, path)
         self._stage(add=path, message=message)
 
-        log.debug("CurrentView: Change %s mode to %s", path,
-                  ('0%o' % mode)[-4:])
+        log.debug("CurrentView: Change %s mode to %s", path, ("0%o" % mode)[-4:])
         return result
 
     @write_operation
@@ -184,7 +169,7 @@ class CurrentView(PassthroughView):
 
         result = super(CurrentView, self).fsync(path, fdatasync, fh)
 
-        message = 'Fsync {}'.format(path)
+        message = "Fsync {}".format(path)
         self._stage(add=path, message=message)
 
         log.debug("CurrentView: Fsync %s", path)
@@ -196,13 +181,15 @@ class CurrentView(PassthroughView):
         global writers
         fh = self.open_for_read(path, flags)
         writers += 1
-        self.dirty[fh] = {
-            'message': "Opened {} for write".format(path),
-            'stage': False
-        }
+        self.dirty[fh] = {"message": "Opened {} for write".format(path), "stage": False}
 
         log.debug("CurrentView: Open %s for write", path)
         return fh
+
+    @write_operation
+    @not_in("ignore", check=["path"])
+    def lock(self, path, fip, cmd, lock):
+        return super().lock(path, fip, cmd, lock)
 
     def open_for_read(self, path, flags):
         full_path = self.repo._full_path(path)
@@ -210,8 +197,7 @@ class CurrentView(PassthroughView):
         return os.open(full_path, flags)
 
     def open(self, path, flags):
-        write_mode = flags & (os.O_WRONLY | os.O_RDWR |
-                              os.O_APPEND | os.O_CREAT)
+        write_mode = flags & (os.O_WRONLY | os.O_RDWR | os.O_APPEND | os.O_CREAT)
         if write_mode:
             return self.open_for_write(path, flags)
         return self.open_for_read(path, flags)
@@ -223,8 +209,8 @@ class CurrentView(PassthroughView):
         """
 
         if fh in self.dirty:
-            message = self.dirty[fh]['message']
-            should_stage = self.dirty[fh].get('stage', False)
+            message = self.dirty[fh]["message"]
+            should_stage = self.dirty[fh].get("stage", False)
             del self.dirty[fh]
 
             global writers
@@ -239,7 +225,7 @@ class CurrentView(PassthroughView):
     @write_operation
     @not_in("ignore", check=["path"])
     def rmdir(self, path):
-        message = 'Delete the {} directory'.format(path)
+        message = "Delete the {} directory".format(path)
 
         # Unlink all the files
         full_path = self.repo._full_path(path)
@@ -261,7 +247,7 @@ class CurrentView(PassthroughView):
     def unlink(self, path):
         result = super(CurrentView, self).unlink(path)
 
-        message = 'Deleted {}'.format(path)
+        message = "Deleted {}".format(path)
         self._stage(remove=path, message=message)
 
         log.debug("CurrentView: Deleted %s", path)
@@ -277,8 +263,7 @@ class CurrentView(PassthroughView):
                 paths = self._get_files_from_path(add)
                 if paths:
                     for path in paths:
-                        path = path.replace("{}/".format(add),
-                                            "{}/".format(remove))
+                        path = path.replace("{}/".format(add), "{}/".format(remove))
                         self.repo.index.remove(path)
                 else:
                     self.repo.index.remove(remove)
@@ -308,8 +293,7 @@ class CurrentView(PassthroughView):
         if os.path.isdir(full_path):
             for (dirpath, dirs, files) in os.walk(full_path):
                 for filename in files:
-                    paths.append("{}/{}".format(
-                        dirpath.replace(workdir, ''), filename))
+                    paths.append("{}/{}".format(dirpath.replace(workdir, ""), filename))
         return paths
 
     def _sanitize(self, path):

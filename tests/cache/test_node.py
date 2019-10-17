@@ -24,6 +24,6 @@ class TestNode(object):
         node.next = "next"
         node.data = "data"
 
-        assert node.prev == 'prev'
-        assert node.next == 'next'
-        assert node.data == 'data'
+        assert node.prev == "prev"
+        assert node.next == "next"
+        assert node.data == "data"

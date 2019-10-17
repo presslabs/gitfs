@@ -25,8 +25,9 @@ class TestFetchWorker(object):
         mocked_fetch = MagicMock(side_effect=ValueError)
         mocked_fetch_event = MagicMock()
 
-        with patch.multiple('gitfs.worker.fetch', Peasant=mocked_peasant,
-                            fetch=mocked_fetch_event):
+        with patch.multiple(
+            "gitfs.worker.fetch", Peasant=mocked_peasant, fetch=mocked_fetch_event
+        ):
             worker = FetchWorker()
             worker.fetch = mocked_fetch
             worker.timeout = 5
@@ -45,17 +46,18 @@ class TestFetchWorker(object):
         mocked_repo.fetch = MagicMock(side_effect=ValueError)
         mocked_fetch_ok.set.side_effect = ValueError
 
-        with patch.multiple('gitfs.worker.fetch',
-                            fetch_successful=mocked_fetch_ok,
-                            fetch=mocked_fetch):
-            worker = FetchWorker(repository=mocked_repo,
-                                 upstream="origin",
-                                 credentials="credentials",
-                                 branch="master")
+        with patch.multiple(
+            "gitfs.worker.fetch", fetch_successful=mocked_fetch_ok, fetch=mocked_fetch
+        ):
+            worker = FetchWorker(
+                repository=mocked_repo,
+                upstream="origin",
+                credentials="credentials",
+                branch="master",
+            )
             worker.fetch()
 
-            mocked_repo.fetch.assert_called_once_with("origin", "master",
-                                                      "credentials")
+            mocked_repo.fetch.assert_called_once_with("origin", "master", "credentials")
             assert mocked_fetch_ok.clear.call_count == 1
             assert mocked_fetch.clear.call_count == 1
 
@@ -67,8 +69,12 @@ class TestFetchWorker(object):
 
         mocked_idle.is_set.return_value = True
 
-        with patch.multiple('gitfs.worker.fetch', Peasant=mocked_peasant,
-                            fetch=mocked_fetch_event, idle=mocked_idle):
+        with patch.multiple(
+            "gitfs.worker.fetch",
+            Peasant=mocked_peasant,
+            fetch=mocked_fetch_event,
+            idle=mocked_idle,
+        ):
             worker = FetchWorker()
             worker.fetch = mocked_fetch
             worker.timeout = 5

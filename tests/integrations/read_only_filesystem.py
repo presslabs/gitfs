@@ -28,7 +28,7 @@ class ReadOnlyFSTest(BaseTest):
 
         with pytest.raises(IOError) as err:
             with open(filename, "w") as f:
-                    f.write(content)
+                f.write(content)
 
         assert err.value.errno == errno.EROFS
         assert "Read-only file system" in str(err.value)

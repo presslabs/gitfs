@@ -16,8 +16,20 @@
 import datetime
 import re
 
-MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug",
-          "Sep", "Oct", "Nov", "Dec"]
+MONTHS = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+]
 
 SPEC = {
     # map formatting code to a regular expression fragment
@@ -44,7 +56,7 @@ SPEC = {
     "%W": r"(?P<weekday>\d\d)",
     "%y": r"(?P<year>\d\d)",
     "%Y": r"(?P<year>\d\d\d\d)",
-    "%%": r"%"
+    "%%": r"%",
 }
 
 

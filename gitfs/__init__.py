@@ -17,4 +17,5 @@ __version__ = "0.4.5.1"
 
 def mount():
     from gitfs.mounter import start_fuse
+
     start_fuse()

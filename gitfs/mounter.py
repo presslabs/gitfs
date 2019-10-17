@@ -29,13 +29,17 @@ from gitfs.worker import CommitQueue, SyncWorker, FetchWorker
 
 
 def parse_args(parser):
-    parser.add_argument('remote_url', help='repo to be cloned')
-    parser.add_argument('mount_point', help='where the repo should be mount')
-    parser.add_argument('-v', '--version', action='version',
-                        version='%(prog)s ' + __version__)
-    parser.add_argument('-o', help='other options: repo_path, user, '
-                                   'group, branch, max_size, max_offset, '
-                                   'fetch_timeout, merge_timeout, ssh_user')
+    parser.add_argument("remote_url", help="repo to be cloned")
+    parser.add_argument("mount_point", help="where the repo should be mount")
+    parser.add_argument(
+        "-v", "--version", action="version", version="%(prog)s " + __version__
+    )
+    parser.add_argument(
+        "-o",
+        help="other options: repo_path, user, "
+        "group, branch, max_size, max_offset, "
+        "fetch_timeout, merge_timeout, ssh_user",
+    )
 
     return Args(parser)
 
@@ -44,8 +48,7 @@ def get_credentials(args):
     if args.password:
         credentials = UserPass(args.username, args.password)
     else:
-        credentials = Keypair(args.ssh_user, args.ssh_key + ".pub",
-                              args.ssh_key, "")
+        credentials = Keypair(args.ssh_user, args.ssh_key + ".pub", args.ssh_key, "")
     return RemoteCallbacks(credentials=credentials)
 
 
@@ -56,23 +59,27 @@ def prepare_components(args):
 
     try:
         # setting router
-        router = Router(remote_url=args.remote_url,
-                        mount_path=args.mount_point,
-                        current_path=args.current_path,
-                        history_path=args.history_path,
-                        repo_path=args.repo_path,
-                        branch=args.branch,
-                        user=args.user,
-                        group=args.group,
-                        max_size=args.max_size * 1024 * 1024,
-                        max_offset=args.max_size * 1024 * 1024,
-                        commit_queue=commit_queue,
-                        credentials=credentials,
-                        ignore_file=args.ignore_file,
-                        hard_ignore=args.hard_ignore)
+        router = Router(
+            remote_url=args.remote_url,
+            mount_path=args.mount_point,
+            current_path=args.current_path,
+            history_path=args.history_path,
+            repo_path=args.repo_path,
+            branch=args.branch,
+            user=args.user,
+            group=args.group,
+            max_size=args.max_size * 1024 * 1024,
+            max_offset=args.max_size * 1024 * 1024,
+            commit_queue=commit_queue,
+            credentials=credentials,
+            ignore_file=args.ignore_file,
+            hard_ignore=args.hard_ignore,
+        )
     except KeyError as error:
-        sys.stderr.write("Can't clone reference origin/%s from remote %s: %s\n" %
-                         (args.branch, args.remote_url, error))
+        sys.stderr.write(
+            "Can't clone reference origin/%s from remote %s: %s\n"
+            % (args.branch, args.remote_url, error)
+        )
         raise error
 
     # register all the routes
@@ -80,23 +87,29 @@ def prepare_components(args):
     router.register(routes)
 
     # setup workers
-    merge_worker = SyncWorker(args.commiter_name, args.commiter_email,
-                              args.commiter_name, args.commiter_email,
-                              commit_queue=commit_queue,
-                              repository=router.repo,
-                              upstream="origin",
-                              branch=args.branch,
-                              repo_path=router.repo_path,
-                              timeout=args.merge_timeout,
-                              credentials=credentials,
-                              min_idle_times=args.min_idle_times)
+    merge_worker = SyncWorker(
+        args.commiter_name,
+        args.commiter_email,
+        args.commiter_name,
+        args.commiter_email,
+        commit_queue=commit_queue,
+        repository=router.repo,
+        upstream="origin",
+        branch=args.branch,
+        repo_path=router.repo_path,
+        timeout=args.merge_timeout,
+        credentials=credentials,
+        min_idle_times=args.min_idle_times,
+    )
 
-    fetch_worker = FetchWorker(upstream="origin",
-                               branch=args.branch,
-                               repository=router.repo,
-                               timeout=args.fetch_timeout,
-                               credentials=credentials,
-                               idle_timeout=args.idle_fetch_timeout)
+    fetch_worker = FetchWorker(
+        upstream="origin",
+        branch=args.branch,
+        repository=router.repo,
+        timeout=args.fetch_timeout,
+        credentials=credentials,
+        idle_timeout=args.idle_fetch_timeout,
+    )
 
     merge_worker.daemon = True
     fetch_worker.daemon = True
@@ -107,7 +120,7 @@ def prepare_components(args):
 
 
 def start_fuse():
-    parser = argparse.ArgumentParser(prog='GitFS')
+    parser = argparse.ArgumentParser(prog="GitFS")
     args = parse_args(parser)
 
     try:
@@ -116,20 +129,33 @@ def start_fuse():
         return
 
     if args.max_open_files != -1:
-        resource.setrlimit(resource.RLIMIT_NOFILE,
-                           (args.max_open_files, args.max_open_files))
+        resource.setrlimit(
+            resource.RLIMIT_NOFILE, (args.max_open_files, args.max_open_files)
+        )
 
     # ready to mount it
-    if sys.platform == 'darwin':
-        FUSE(router, args.mount_point, foreground=args.foreground,
-             allow_root=args.allow_root, allow_other=args.allow_other,
-             fsname=args.remote_url, subtype="gitfs")
+    if sys.platform == "darwin":
+        FUSE(
+            router,
+            args.mount_point,
+            foreground=args.foreground,
+            allow_root=args.allow_root,
+            allow_other=args.allow_other,
+            fsname=args.remote_url,
+            subtype="gitfs",
+        )
     else:
-        FUSE(router, args.mount_point, foreground=args.foreground,
-             nonempty=True, allow_root=args.allow_root,
-             allow_other=args.allow_other, fsname=args.remote_url,
-             subtype="gitfs")
+        FUSE(
+            router,
+            args.mount_point,
+            foreground=args.foreground,
+            nonempty=True,
+            allow_root=args.allow_root,
+            allow_other=args.allow_other,
+            fsname=args.remote_url,
+            subtype="gitfs",
+        )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     start_fuse()

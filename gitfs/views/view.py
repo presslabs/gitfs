@@ -29,8 +29,8 @@ class View(LoggingMixIn, Operations):
 
     def getattr(self, path, fh=None):
         return {
-            'st_uid': self.uid,
-            'st_gid': self.gid,
-            'st_ctime': self.mount_time,
-            'st_mtime': self.mount_time,
+            "st_uid": self.uid,
+            "st_gid": self.gid,
+            "st_ctime": self.mount_time,
+            "st_mtime": self.mount_time,
         }

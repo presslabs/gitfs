@@ -15,4 +15,4 @@
 
 import logging
 
-log = logging.getLogger('gitfs')
+log = logging.getLogger("gitfs")

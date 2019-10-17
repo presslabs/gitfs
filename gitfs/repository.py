@@ -18,10 +18,18 @@ from collections import namedtuple
 from shutil import rmtree
 from stat import S_IFDIR, S_IFREG, S_IFLNK
 
-from pygit2 import (clone_repository, Signature, GIT_SORT_TOPOLOGICAL,
-                    GIT_FILEMODE_TREE, GIT_STATUS_CURRENT,
-                    GIT_FILEMODE_LINK, GIT_FILEMODE_BLOB, GIT_BRANCH_REMOTE,
-                    GIT_BRANCH_LOCAL, GIT_FILEMODE_BLOB_EXECUTABLE)
+from pygit2 import (
+    clone_repository,
+    Signature,
+    GIT_SORT_TOPOLOGICAL,
+    GIT_FILEMODE_TREE,
+    GIT_STATUS_CURRENT,
+    GIT_FILEMODE_LINK,
+    GIT_FILEMODE_BLOB,
+    GIT_BRANCH_REMOTE,
+    GIT_BRANCH_LOCAL,
+    GIT_FILEMODE_BLOB_EXECUTABLE,
+)
 from six import iteritems
 
 from gitfs.cache import CommitCache
@@ -30,12 +38,12 @@ from gitfs.utils.path import split_path_into_components
 from gitfs.utils.commits import CommitsList
 
 
-DivergeCommits = namedtuple("DivergeCommits", ["common_parent",
-                            "first_commits", "second_commits"])
+DivergeCommits = namedtuple(
+    "DivergeCommits", ["common_parent", "first_commits", "second_commits"]
+)
 
 
 class Repository(object):
-
     def __init__(self, repository, commits=None):
         self._repo = repository
         self.commits = commits or CommitCache(self)
@@ -65,14 +73,15 @@ class Repository(object):
 
     def diverge(self, upstream, branch):
         reference = "{}/{}".format(upstream, branch)
-        remote_branch = self.lookup_branch(reference, GIT_BRANCH_REMOTE)
-        local_branch = self.lookup_branch(branch, GIT_BRANCH_LOCAL)
+        remote_branch = self._repo.branches.remote.get(reference)
+        local_branch = self._repo.branches.local.get(branch)
+
+        # TODO: check for missing branches
 
         if remote_branch.target == local_branch.target:
             return False, False
 
-        diverge_commits = self.find_diverge_commits(local_branch,
-                                                    remote_branch)
+        diverge_commits = self.find_diverge_commits(local_branch, remote_branch)
         behind = len(diverge_commits.second_commits) > 0
         ahead = len(diverge_commits.first_commits) > 0
 
@@ -102,7 +111,7 @@ class Repository(object):
                             full_path,
                             onerror=lambda function, fpath, excinfo: log.info(
                                 "Repository: Checkout couldn't delete %s", fpath
-                            )
+                            ),
                         )
                 continue
 
@@ -110,12 +119,11 @@ class Repository(object):
             stats = self.get_git_object_default_stats(ref, path)
             current_stat = os.lstat(full_path)
 
-            if stats['st_mode'] != current_stat.st_mode:
+            if stats["st_mode"] != current_stat.st_mode:
                 try:
                     os.chmod(full_path, current_stat.st_mode)
                 except OSError:
-                    log.info("Repository: Checkout couldn't chmod %s",
-                             full_path)
+                    log.info("Repository: Checkout couldn't chmod %s", full_path)
                 self._repo.index.add(self._sanitize(path))
 
         return result
@@ -134,7 +142,7 @@ class Repository(object):
         """
 
         remote = self.get_remote(upstream)
-        remote.push(["refs/heads/%s" % (branch)], callbacks=credentials)
+        remote.push(["refs/heads/%s" % branch], callbacks=credentials)
 
     def fetch(self, upstream, branch_name, credentials):
         """
@@ -169,8 +177,7 @@ class Repository(object):
         if parents is None:
             parents = [self._repo.revparse_single(ref).id]
 
-        return self._repo.create_commit(ref, author, commiter, message,
-                                        tree, parents)
+        return self._repo.create_commit(ref, author, commiter, message, tree, parents)
 
     @classmethod
     def clone(cls, remote_url, path, branch=None, credentials=None):
@@ -186,8 +193,13 @@ class Repository(object):
 
         """
 
-        repo = clone_repository(remote_url, path, checkout_branch=branch,
-                                callbacks=credentials)
+        try:
+            repo = clone_repository(
+                remote_url, path, checkout_branch=branch, callbacks=credentials
+            )
+        except Exception as e:
+            log.error("Error on cloning the repository: ", exc_info=True)
+
         repo.checkout_head()
         return cls(repo)
 
@@ -206,9 +218,11 @@ class Repository(object):
         :type path_components: list
         """
 
-        return (entry_name == searched_entry and
-                len(path_components) == 1 and
-                entry_name == path_components[0])
+        return (
+            entry_name == searched_entry
+            and len(path_components) == 1
+            and entry_name == path_components[0]
+        )
 
     def _get_git_object(self, tree, obj_name, path_components, modifier):
         """
@@ -239,8 +253,9 @@ class Repository(object):
             if self._is_searched_entry(entry.name, obj_name, path_components):
                 return modifier(entry)
             elif entry.filemode == GIT_FILEMODE_TREE:
-                git_obj = self._get_git_object(self._repo[entry.id], obj_name,
-                                               path_components[1:], modifier)
+                git_obj = self._get_git_object(
+                    self._repo[entry.id], obj_name, path_components[1:], modifier
+                )
                 if git_obj:
                     return git_obj
 
@@ -266,9 +281,9 @@ class Repository(object):
 
         path_components = split_path_into_components(path)
         try:
-            return self._get_git_object(tree, path_components[-1],
-                                        path_components,
-                                        lambda entry: entry.filemode)
+            return self._get_git_object(
+                tree, path_components[-1], path_components, lambda entry: entry.filemode
+            )
         except:
             return GIT_FILEMODE_TREE
 
@@ -290,21 +305,19 @@ class Repository(object):
         # It acts as a proxy for the _get_git_object method, which
         # does the actual searching.
         path_components = split_path_into_components(path)
-        return self._get_git_object(tree, path_components[-1], path_components,
-                                    lambda entry: self._repo[entry.id])
+        return self._get_git_object(
+            tree,
+            path_components[-1],
+            path_components,
+            lambda entry: self._repo[entry.id],
+        )
 
     def get_git_object_default_stats(self, ref, path):
         types = {
-            GIT_FILEMODE_LINK: {
-                'st_mode': S_IFLNK | 0o444,
-            }, GIT_FILEMODE_TREE: {
-                'st_mode': S_IFDIR | 0o555,
-                'st_nlink': 2
-            }, GIT_FILEMODE_BLOB: {
-                'st_mode': S_IFREG | 0o444,
-            }, GIT_FILEMODE_BLOB_EXECUTABLE: {
-                'st_mode': S_IFREG | 0o555,
-            },
+            GIT_FILEMODE_LINK: {"st_mode": S_IFLNK | 0o444},
+            GIT_FILEMODE_TREE: {"st_mode": S_IFDIR | 0o555, "st_nlink": 2},
+            GIT_FILEMODE_BLOB: {"st_mode": S_IFREG | 0o444},
+            GIT_FILEMODE_BLOB_EXECUTABLE: {"st_mode": S_IFREG | 0o555},
         }
 
         if path == "/":
@@ -316,7 +329,7 @@ class Repository(object):
 
         stats = types[obj_type]
         if obj_type in [GIT_FILEMODE_BLOB, GIT_FILEMODE_BLOB_EXECUTABLE]:
-            stats['st_size'] = self.get_blob_size(ref, path)
+            stats["st_size"] = self.get_blob_size(ref, path)
 
         return stats
 
@@ -378,11 +391,9 @@ class Repository(object):
         :type branches: list
         :returns: yields a list of commits corresponding to given branches
         :rtype: list
-
         """
 
-        iterators = [self._repo.walk(branch.target, sort)
-                     for branch in branches]
+        iterators = [iter(self._repo.walk(branch.target, sort)) for branch in branches]
         stop_iteration = [False for branch in branches]
 
         commits = []
@@ -420,8 +431,7 @@ class Repository(object):
                 repo.get_remote("fork")
         """
 
-        remote = [remote for remote in self._repo.remotes
-                  if remote.name == name]
+        remote = [remote for remote in self._repo.remotes if remote.name == name]
 
         if not remote:
             raise ValueError("Missing remote")
@@ -457,12 +467,10 @@ class Repository(object):
         first_commits = CommitsList()
         second_commits = CommitsList()
 
-        walker = self.walk_branches(GIT_SORT_TOPOLOGICAL,
-                                    first_branch, second_branch)
+        walker = self.walk_branches(GIT_SORT_TOPOLOGICAL, first_branch, second_branch)
 
         for first_commit, second_commit in walker:
-            if (first_commit in second_commits or
-               second_commit in first_commits):
+            if first_commit in second_commits or second_commit in first_commits:
                 break
 
             if first_commit not in first_commits:

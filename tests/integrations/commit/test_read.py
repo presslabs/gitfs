@@ -24,8 +24,9 @@ from tests.integrations.base import BaseTest
 class TestReadCommitView(BaseTest):
     def test_listdirs(self):
         commits = self.get_commits_by_date()
-        files = os.listdir("{}/history/{}/{}".format(
-            self.mount_path, self.today, commits[-1]))
+        files = os.listdir(
+            "{}/history/{}/{}".format(self.mount_path, self.today, commits[-1])
+        )
 
         real_files = os.listdir(self.repo_path)
         real_files.remove(".git")
@@ -38,11 +39,7 @@ class TestReadCommitView(BaseTest):
 
         stats = os.stat(filename)
 
-        attrs = {
-            'st_uid': os.getuid(),
-            'st_gid': os.getgid(),
-            'st_mode': 0o100444,
-        }
+        attrs = {"st_uid": os.getuid(), "st_gid": os.getgid(), "st_mode": 0o100444}
 
         for name, value in iteritems(attrs):
             assert getattr(stats, name) == value

@@ -38,8 +38,11 @@ class Sh(object):
         command = self.command + " ".join(args)
         self.command = ""
 
-        return subprocess.Popen(command, shell=True, stdout=subprocess.PIPE,
-                                cwd=self.cwd).stdout.read().decode()
+        return (
+            subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, cwd=self.cwd)
+            .stdout.read()
+            .decode()
+        )
 
 
 class pull(object):
@@ -82,20 +85,25 @@ class BaseTest(object):
         if date is None:
             date = self.today
 
-        lines = self.sh.git.log("--before", '"%s 23:59:59"' % date,
-                                "--after", '"%s 00:00:00"' % date,
-                                '--pretty="%ai %H"').splitlines()
+        lines = self.sh.git.log(
+            "--before",
+            '"%s 23:59:59"' % date,
+            "--after",
+            '"%s 00:00:00"' % date,
+            '--pretty="%ai %H"',
+        ).splitlines()
 
         lines = map(lambda line: line.split(), lines)
 
         return list(
-            map(lambda tokens: "%s-%s" % (
-                tokens[1].replace(":", "-"),
-                tokens[3][:10]), lines))
+            map(
+                lambda tokens: "%s-%s" % (tokens[1].replace(":", "-"), tokens[3][:10]),
+                lines,
+            )
+        )
 
     def get_commit_dates(self):
-        return list(set(self.sh.git.log("--pretty=%ad", "--date=short").
-                        splitlines()))
+        return list(set(self.sh.git.log("--pretty=%ad", "--date=short").splitlines()))
 
     def assert_commit_message(self, message):
         assert message == self.commit_message()
@@ -152,6 +160,7 @@ class GitFSLog(object):
         with gitfs_log("Expected log output"):
             do_operation_that_produces_expected_log_output()
         """
+
         @contextmanager
         def log_context(gitfs_log):
             gitfs_log.clear()
@@ -160,6 +169,7 @@ class GitFSLog(object):
                 gitfs_log.expect(expected, **kwargs)
             else:
                 gitfs_log.expect_multiple(expected, **kwargs)
+
         return log_context(self)
 
     def _get_line(self, timeout, pollfreq=0.01):
@@ -182,15 +192,15 @@ class GitFSLog(object):
         started = time.time()
         elapsed = 0
         while elapsed < timeout:
-            line = self._get_line(
-                timeout=(timeout - elapsed))
+            line = self._get_line(timeout=(timeout - elapsed))
             if line is None:
                 break  # timed out waiting for line
             elif expected in line:
                 return
             elapsed = time.time() - started
         raise AssertionError(
-            "Timed out waiting for '{}' in the stream".format(expected))
+            "Timed out waiting for '{}' in the stream".format(expected)
+        )
 
     def expect_multiple(self, expected, *args, **kwargs):
         """Blocks untill all `expected` strings are found in the stream, in the
@@ -200,6 +210,6 @@ class GitFSLog(object):
             self.expect(exp, *args, **kwargs)
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def gitfs_log():
     return GitFSLog(os.open("log.txt", os.O_NONBLOCK))

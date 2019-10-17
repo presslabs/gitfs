@@ -32,36 +32,38 @@ from gitfs.cache import lru_cache
 
 class Args(object):
     def __init__(self, parser):
-        self.DEFAULTS = OrderedDict([
-            ("repo_path", (self.get_repo_path, "string")),
-            ("user", (self.get_current_user, "string")),
-            ("group", (self.get_current_group, "string")),
-            ("username", ("", "string")),
-            ("password", ("", "string")),
-            ("ssh_key", (self.get_ssh_key, "string")),
-            ("ssh_user", (self.get_ssh_user, "string")),
-            ("foreground", (False, "bool")),
-            ("branch", ("master", "string")),
-            ("allow_other", (False, "bool")),
-            ("allow_root", (True, "bool")),
-            ("commiter_name", (self.get_commiter_user, "string")),
-            ("commiter_email", (self.get_commiter_email, "string")),
-            ("max_size", (10, "float")),
-            ("fetch_timeout", (30, "float")),
-            ("idle_fetch_timeout", (30 * 60, "float")),  # 30 min
-            ("merge_timeout", (5, "float")),
-            ("debug", (False, "bool")),
-            ("log", ("syslog", "string")),
-            ("log_level", ("warning", "string")),
-            ("cache_size", (800, "int")),
-            ("sentry_dsn", (self.get_sentry_dsn, "string")),
-            ("ignore_file", ("", "string")),
-            ("hard_ignore", ("", "string")),
-            ("min_idle_times", (10, "float")),
-            ("max_open_files", (-1, "int")),
-            ("history_path", ("history", "string")),
-            ("current_path", ("current", "string")),
-        ])
+        self.DEFAULTS = OrderedDict(
+            [
+                ("repo_path", (self.get_repo_path, "string")),
+                ("user", (self.get_current_user, "string")),
+                ("group", (self.get_current_group, "string")),
+                ("username", ("", "string")),
+                ("password", ("", "string")),
+                ("ssh_key", (self.get_ssh_key, "string")),
+                ("ssh_user", (self.get_ssh_user, "string")),
+                ("foreground", (False, "bool")),
+                ("branch", ("master", "string")),
+                ("allow_other", (False, "bool")),
+                ("allow_root", (True, "bool")),
+                ("commiter_name", (self.get_commiter_user, "string")),
+                ("commiter_email", (self.get_commiter_email, "string")),
+                ("max_size", (10, "float")),
+                ("fetch_timeout", (30, "float")),
+                ("idle_fetch_timeout", (30 * 60, "float")),  # 30 min
+                ("merge_timeout", (5, "float")),
+                ("debug", (False, "bool")),
+                ("log", ("syslog", "string")),
+                ("log_level", ("warning", "string")),
+                ("cache_size", (800, "int")),
+                ("sentry_dsn", (self.get_sentry_dsn, "string")),
+                ("ignore_file", ("", "string")),
+                ("hard_ignore", ("", "string")),
+                ("min_idle_times", (10, "float")),
+                ("max_open_files", (-1, "int")),
+                ("history_path", ("history", "string")),
+                ("current_path", ("current", "string")),
+            ]
+        )
         self.config = self.build_config(parser.parse_args())
 
     def build_config(self, args):
@@ -82,35 +84,43 @@ class Args(object):
 
         # check log_level
         if args.debug:
-            args.log_level = 'debug'
+            args.log_level = "debug"
 
         # setup logging
         if args.log != "syslog":
-            if args.log in ('-', '/dev/stdout'):
+            if args.log in ("-", "/dev/stdout"):
                 handler = StreamHandler(sys.stdout)
             else:
                 handler = TimedRotatingFileHandler(args.log, when="midnight")
-            handler.setFormatter(Formatter(fmt='%(asctime)s %(threadName)s: '
-                                           '%(message)s',
-                                           datefmt='%B-%d-%Y %H:%M:%S'))
+            handler.setFormatter(
+                Formatter(
+                    fmt="%(asctime)s %(threadName)s: " "%(message)s",
+                    datefmt="%B-%d-%Y %H:%M:%S",
+                )
+            )
         else:
-            if sys.platform == 'darwin':
+            if sys.platform == "darwin":
                 handler = SysLogHandler(address="/var/run/syslog")
             else:
                 handler = SysLogHandler(address="/dev/log")
-            logger_fmt = 'GitFS on {mount_point} [%(process)d]: %(threadName)s: '\
-                         '%(message)s'.format(mount_point=args.mount_point)
+            logger_fmt = (
+                "GitFS on {mount_point} [%(process)d]: %(threadName)s: "
+                "%(message)s".format(mount_point=args.mount_point)
+            )
             handler.setFormatter(Formatter(fmt=logger_fmt))
 
-        if args.sentry_dsn != '':
+        if args.sentry_dsn != "":
             from raven.conf import setup_logging
             from raven.handlers.logging import SentryHandler
 
-            sentry_handler = SentryHandler(args.sentry_dsn, tags={
-                'owner': args.user,
-                'remote': args.remote_url,
-                'mountpoint': args.mount_point
-            })
+            sentry_handler = SentryHandler(
+                args.sentry_dsn,
+                tags={
+                    "owner": args.user,
+                    "remote": args.remote_url,
+                    "mountpoint": args.mount_point,
+                },
+            )
             sentry_handler.setLevel("ERROR")
             setup_logging(sentry_handler)
             log.addHandler(sentry_handler)
@@ -131,7 +141,7 @@ class Args(object):
         if attr in self.__dict__:
             return self.__dict__[attr]
         else:
-            return getattr(self.__dict__['config'], attr)
+            return getattr(self.__dict__["config"], attr)
 
     def set_defaults(self, args):
         for option, value in iteritems(self.DEFAULTS):
@@ -184,6 +194,6 @@ class Args(object):
         url = args.remote_url
         parse_result = urlparse(url)
         if not parse_result.scheme:
-            url = 'ssh://' + url
+            url = "ssh://" + url
             parse_result = urlparse(url)
         return parse_result.username if parse_result.username else ""

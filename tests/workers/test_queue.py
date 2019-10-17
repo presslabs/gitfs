@@ -30,7 +30,7 @@ class TestBaseQueue(object):
         mocked_queue = MagicMock()
         mocked_queue.get.return_value = "get"
 
-        with patch('gitfs.worker.commit_queue.Queue') as mocked_queue_module:
+        with patch("gitfs.worker.commit_queue.Queue") as mocked_queue_module:
             mocked_queue_module.return_value = mocked_queue
 
             queue = BaseQueue()
@@ -73,11 +73,9 @@ class TestCommitQueue(object):
 
         queue.commit(message="message", add="add", remove="remove")
 
-        mocked_queue.put.assert_called_once_with({
-            'type': 'commit',
-            'params': {
-                'add': ["add"],
-                'message': "message",
-                'remove': ["remove"],
+        mocked_queue.put.assert_called_once_with(
+            {
+                "type": "commit",
+                "params": {"add": ["add"], "message": "message", "remove": ["remove"]},
             }
-        })
+        )

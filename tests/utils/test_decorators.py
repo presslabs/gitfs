@@ -31,6 +31,7 @@ class MockedWraps(object):
     def __call__(self, f):
         def decorated(*args, **kwargs):
             return f(*args, **kwargs)
+
         return decorated
 
 
@@ -45,8 +46,9 @@ class TestRetryDecorator(object):
         mocked_time = MagicMock()
         mocked_method = MagicMock(side_effect=ValueError)
 
-        with patch.multiple('gitfs.utils.decorators.retry', wraps=MockedWraps,
-                            time=mocked_time):
+        with patch.multiple(
+            "gitfs.utils.decorators.retry", wraps=MockedWraps, time=mocked_time
+        ):
             again = retry(times=3)
 
             with pytest.raises(ValueError):
@@ -61,8 +63,7 @@ class TestWhileNotDecorator(object):
         mocked_method = MagicMock()
         mocked_self = EmptyMock(obj="obj")
 
-        with patch.multiple('gitfs.utils.decorators.while_not',
-                            wraps=MockedWraps):
+        with patch.multiple("gitfs.utils.decorators.while_not", wraps=MockedWraps):
             with pytest.raises(TypeError):
                 not_now = while_not("obj")
                 not_now(mocked_method)(mocked_self, "arg", kwarg="kwarg")
@@ -77,8 +78,9 @@ class TestWhileNotDecorator(object):
         mocked_time.sleep.side_effect = lambda x: an_event.clear()
         mocked_method.__name__ = "name"
 
-        with patch.multiple('gitfs.utils.decorators.while_not',
-                            wraps=MockedWraps, time=mocked_time):
+        with patch.multiple(
+            "gitfs.utils.decorators.while_not", wraps=MockedWraps, time=mocked_time
+        ):
             not_now = while_not(an_event)
             not_now(mocked_method)("arg", kwarg="kwarg")
 

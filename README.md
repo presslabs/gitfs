@@ -3,13 +3,12 @@ gitfs [![Build Status](https://drone.presslabs.net/api/badges/PressLabs/gitfs/st
 
 # Welcome to GitFS
 
-
 gitfs is a [FUSE](http://fuse.sourceforge.net/) file system that fully
 integrates with git. You can mount a remote repository's branch locally, and any
 subsequent changes made to the files will be automatically committed to the
 remote.
 
-gitfs was developed by the awesome engineering team at [Presslabs](https://www.presslabs.com/), 
+gitfs was developed by the awesome engineering team at [Presslabs](https://www.presslabs.com/),
 a Managed WordPress Hosting provider.
 
 ## What's its purpose?
@@ -23,6 +22,41 @@ every commit.
 gitfs is useful in places where you want to keep track of all your files, but at
 the same time you don't have the possibility of organizing everything into
 commits yourself. A FUSE filesystem for git repositories, with local cache.
+
+## Installing
+
+We provide packages for the major Ubuntu releases and MacOS, but you can find community packages for most of popular Linux
+distributions. If you want to build packages for a distribution, or you already did, please contact us and we'll list it here.
+
+### Ubuntu 18.04+
+
+```bash
+sudo add-apt-repository ppa:presslabs/gitfs
+sudo apt-get update
+sudo apt-get install gitfs
+```
+
+### MacOS
+```bash
+brew install gitfs
+```
+
+## Usage
+
+You can mount a remote or local repository easly, just by providing the repository to clone and a directory used to mount.
+
+```bash
+gitfs http://your.com/repository.git /mount/directory
+```
+
+The entire filesystem can be tweaked when mounting it, using a set of options.
+
+```bash
+gitfs git@github.com:user/repo.git /mypath -o
+repo_path=/tmp/path,branch=dev,log=-,debug=true,foreground=true,fetch_timeout=0.1,merge_timeout=0.1...
+```
+
+For an entire list of options, you can check the [arguments page](https://www.presslabs.com/code/gitfs/gitfs-arguments/).
 
 ## Features
 * Automatically commits changes: create, delete, update files and their metadata

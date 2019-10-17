@@ -12,33 +12,51 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import random
-
 import time
-from six.moves.queue import Empty
 
 import pygit2
+from six.moves.queue import Empty
 
 from gitfs.worker.peasant import Peasant
 from gitfs.merges import AcceptMine
 
-from gitfs.events import (fetch, syncing, sync_done, writers, shutting_down,
-                          remote_operation, push_successful, idle)
+from gitfs.events import (
+    fetch,
+    syncing,
+    sync_done,
+    writers,
+    shutting_down,
+    remote_operation,
+    push_successful,
+    idle,
+)
 from gitfs.log import log
 
 
 class SyncWorker(Peasant):
-    name = 'SyncWorker'
+    name = "SyncWorker"
 
-    def __init__(self, author_name, author_email, commiter_name,
-                 commiter_email, strategy=None, *args, **kwargs):
+    def __init__(
+        self,
+        author_name,
+        author_email,
+        commiter_name,
+        commiter_email,
+        strategy=None,
+        *args,
+        **kwargs
+    ):
         super(SyncWorker, self).__init__(*args, **kwargs)
 
         self.author = (author_name, author_email)
         self.commiter = (commiter_name, commiter_email)
 
-        strategy = strategy or AcceptMine(self.repository, author=self.author,
-                                          commiter=self.commiter,
-                                          repo_path=self.repo_path)
+        strategy = strategy or AcceptMine(
+            self.repository,
+            author=self.author,
+            commiter=self.commiter,
+            repo_path=self.repo_path,
+        )
         self.strategy = strategy
         self.commits = []
 
@@ -51,7 +69,7 @@ class SyncWorker(Peasant):
 
             try:
                 job = self.commit_queue.get(timeout=self.timeout, block=True)
-                if job['type'] == 'commit':
+                if job["type"] == "commit":
                     self.commits.append(job)
                 log.debug("Got a commit job")
 
@@ -123,8 +141,7 @@ class SyncWorker(Peasant):
             log.debug("I'm behind so I start merging")
             try:
                 log.debug("Start fetching")
-                self.repository.fetch(self.upstream, self.branch,
-                                      self.credentials)
+                self.repository.fetch(self.upstream, self.branch, self.credentials)
                 log.debug("Done fetching")
                 log.debug("Start merging")
                 self.merge()
@@ -138,8 +155,7 @@ class SyncWorker(Peasant):
             try:
                 with remote_operation:
                     log.debug("Start pushing")
-                    self.repository.push(self.upstream, self.branch,
-                                         self.credentials)
+                    self.repository.push(self.upstream, self.branch, self.credentials)
                     self.repository.behind = False
                     log.info("Push done")
                 log.debug("Clear syncing")
@@ -162,14 +178,14 @@ class SyncWorker(Peasant):
 
     def commit(self, jobs):
         if len(jobs) == 1:
-            message = jobs[0]['params']['message']
+            message = jobs[0]["params"]["message"]
         else:
             updates = set([])
             number_of_removal = 0
             number_of_additions = 0
             for job in jobs:
-                removal_set = set(job['params']['remove'])
-                addition_set = set(job['params']['add'])
+                removal_set = set(job["params"]["remove"])
+                addition_set = set(job["params"]["add"])
                 number_of_removal += len(removal_set)
                 number_of_additions += len(addition_set)
                 updates = updates | removal_set | addition_set
@@ -181,16 +197,20 @@ class SyncWorker(Peasant):
             message = message.strip()
 
         old_head = self.repository.head.target
-        new_commit = self.repository.commit(message, self.author,
-                                            self.commiter)
+        new_commit = self.repository.commit(message, self.author, self.commiter)
 
         if new_commit:
-            log.debug("Commit %s with %s as author and %s as commiter",
-                      message, self.author, self.commiter)
+            log.debug(
+                "Commit %s with %s as author and %s as commiter",
+                message,
+                self.author,
+                self.commiter,
+            )
             self.repository.commits.update()
             log.debug("Update commits cache")
         else:
-            self.repository.create_reference("refs/heads/%s" % self.branch,
-                                             old_head, force=True)
+            self.repository.create_reference(
+                "refs/heads/%s" % self.branch, old_head, force=True
+            )
         self.repository.checkout_head(strategy=pygit2.GIT_CHECKOUT_FORCE)
         log.debug("Checkout to HEAD")

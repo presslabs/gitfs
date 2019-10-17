@@ -136,7 +136,7 @@ class TestWriteCurrentView(BaseTest):
         directory = "{}/new_directory".format(self.current_path)
 
         with pytest.raises(IOError):
-            with open("{}/.keep".format(directory), 'w') as f:
+            with open("{}/.keep".format(directory), "w") as f:
                 f.write("some content")
 
     def test_create_embedded_directory(self, gitfs_log):
@@ -152,7 +152,7 @@ class TestWriteCurrentView(BaseTest):
             # check the existence of the .keep files
             keep_files = [
                 "{}/directory/.keep".format(self.repo_path),
-                "{}/directory/embedded-directory/.keep".format(self.repo_path)
+                "{}/directory/embedded-directory/.keep".format(self.repo_path),
             ]
             for keep_file in keep_files:
                 assert os.path.exists(keep_file)
@@ -169,13 +169,15 @@ class TestWriteCurrentView(BaseTest):
 
         with pull(self.sh):
             # check if directory exists or not
-            directory_path = "{}/directory/new-embedded-directory".format(self.repo_path)
+            directory_path = "{}/directory/new-embedded-directory".format(
+                self.repo_path
+            )
             assert os.path.exists(directory_path)
 
             # check the existence of the .keep files
             keep_files = [
                 "{}/directory/.keep".format(self.repo_path),
-                "{}/directory/new-embedded-directory/.keep".format(self.repo_path)
+                "{}/directory/new-embedded-directory/.keep".format(self.repo_path),
             ]
             for keep_file in keep_files:
                 assert os.path.exists(keep_file)
@@ -205,7 +207,9 @@ class TestWriteCurrentView(BaseTest):
                 assert os.path.exists(keep_file)
 
             self.assert_new_commit()
-            commit_msg = "Update {} items. Added {} items.".format(len(keep_files), len(keep_files))
+            commit_msg = "Update {} items. Added {} items.".format(
+                len(keep_files), len(keep_files)
+            )
             self.assert_commit_message(commit_msg)
 
     def test_create_embedded_directory_big_depth(self, gitfs_log):
@@ -226,7 +230,7 @@ class TestWriteCurrentView(BaseTest):
             path = self.repo_path
             for letter in string.ascii_lowercase:
                 path = os.path.join(path, letter)
-                path_with_keep = os.path.join(path, '.keep')
+                path_with_keep = os.path.join(path, ".keep")
                 keep_files.append(path_with_keep)
 
             # check the existence of the .keep files
@@ -236,10 +240,7 @@ class TestWriteCurrentView(BaseTest):
     def test_chmod_valid_mode(self, gitfs_log):
         filename = "{}/testing".format(self.current_path)
         with gitfs_log("SyncWorker: Set push_successful"):
-            os.chmod(
-                filename,
-                0o755,
-            )
+            os.chmod(filename, 0o755)
 
         with pull(self.sh):
             # check if the right mode was set
@@ -253,10 +254,7 @@ class TestWriteCurrentView(BaseTest):
         filename = "{}/testing".format(self.current_path)
 
         with pytest.raises(OSError):
-            os.chmod(
-                filename,
-                0o777,
-            )
+            os.chmod(filename, 0o777)
 
     def test_rename(self, gitfs_log):
         old_filename = "{}/testing".format(self.current_path)
@@ -305,8 +303,9 @@ class TestWriteCurrentView(BaseTest):
             assert os.path.exists(name)
 
             self.assert_new_commit()
-            self.assert_commit_message("Create symlink to {} for "
-                                       "/links".format(target))
+            self.assert_commit_message(
+                "Create symlink to {} for " "/links".format(target)
+            )
 
     def test_edit_file(self, gitfs_log):
         content = "first part"
@@ -357,7 +356,9 @@ class TestWriteCurrentView(BaseTest):
             self.assert_new_commit()
 
         with pull(self.sh):
-            self.assert_commit_message("Update {} items. Added {} items.".format(no_of_files, no_of_files))
+            self.assert_commit_message(
+                "Update {} items. Added {} items.".format(no_of_files, no_of_files)
+            )
 
     def test_delete_file(self, gitfs_log):
         filename = "{}/deletable_file".format(self.current_path)

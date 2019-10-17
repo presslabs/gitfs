@@ -33,7 +33,7 @@ class TestArgs(object):
         mocked_parse_res1 = MagicMock()
         mocked_parse_res2 = MagicMock()
         mocked_log_handler = MagicMock()
-        url = 'user@domain.com:owner/test.git'
+        url = "user@domain.com:owner/test.git"
 
         mocked_file.mkdtemp.return_value = "/tmp"
         mocked_pass.getuser.return_value = "test_user"
@@ -52,12 +52,18 @@ class TestArgs(object):
         mocked_args.user = None
         mocked_args.branch = None
         mocked_args.ssh_user = None
-        mocked_args.sentry_dsn = ''
+        mocked_args.sentry_dsn = ""
 
-        with patch.multiple('gitfs.utils.args', os=mocked_os, grp=mocked_grp,
-                            getpass=mocked_pass, tempfile=mocked_file,
-                            TimedRotatingFileHandler=mocked_log_handler,
-                            urlparse=mocked_urlparse, log=mocked_log):
+        with patch.multiple(
+            "gitfs.utils.args",
+            os=mocked_os,
+            grp=mocked_grp,
+            getpass=mocked_pass,
+            tempfile=mocked_file,
+            TimedRotatingFileHandler=mocked_log_handler,
+            urlparse=mocked_urlparse,
+            log=mocked_log,
+        ):
 
             args = Args(mocked_parser)
             asserted_results = {
@@ -74,6 +80,6 @@ class TestArgs(object):
             assert args.config == mocked_args
             assert mocked_pass.getuser.call_count == 1
             assert mocked_file.mkdtemp.call_count == 1
-            mocked_log.setLevel.assert_called_once_with('DEBUG')
-            mocked_urlparse.assert_has_calls([call(url), call('ssh://' + url)])
+            mocked_log.setLevel.assert_called_once_with("DEBUG")
+            mocked_urlparse.assert_has_calls([call(url), call("ssh://" + url)])
             mocked_grp.getgrgid.has_calls([call(1)])

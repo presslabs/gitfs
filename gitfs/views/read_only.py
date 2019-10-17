@@ -26,8 +26,7 @@ class ReadOnlyView(View):
         raise FuseOSError(ENOTSUP)
 
     def open(self, path, flags):
-        write_flags = (os.O_WRONLY | os.O_RDWR | os.O_APPEND | os.O_TRUNC
-                       | os.O_CREAT)
+        write_flags = os.O_WRONLY | os.O_RDWR | os.O_APPEND | os.O_TRUNC | os.O_CREAT
 
         if write_flags & flags:
             raise FuseOSError(EROFS)

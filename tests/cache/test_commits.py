@@ -39,20 +39,21 @@ class TestCommitCache(object):
         mocked_repo.lookup_reference().resolve().target = "head"
         mocked_repo.walk.return_value = [mocked_commit]
         mocked_commit.commit_time = 1411135000
-        mocked_commit.hex = '1111111111'
+        mocked_commit.hex = "1111111111"
 
         cache = CommitCache(mocked_repo)
         cache.update()
 
-        cache['2014-09-20'] = Commit(1, 1, "1111111111")
-        assert sorted(cache.keys()) == ['2014-09-19', '2014-09-20']
+        cache["2014-09-20"] = Commit(1, 1, "1111111111")
+        assert sorted(cache.keys()) == ["2014-09-19", "2014-09-20"]
         asserted_time = datetime.fromtimestamp(mocked_commit.commit_time)
-        asserted_time = "{}-{}-{}".format(asserted_time.hour, asserted_time.minute,
-                                          asserted_time.second)
-        assert repr(cache['2014-09-19']) == '[%s-1111111111]' % asserted_time
-        del cache['2014-09-20']
+        asserted_time = "{}-{}-{}".format(
+            asserted_time.hour, asserted_time.minute, asserted_time.second
+        )
+        assert repr(cache["2014-09-19"]) == "[%s-1111111111]" % asserted_time
+        del cache["2014-09-20"]
         for commit_date in cache:
-            assert commit_date == '2014-09-19'
+            assert commit_date == "2014-09-19"
 
         mocked_repo.lookup_reference.has_calls([call("HEAD")])
         mocked_repo.walk.assert_called_once_with("head", GIT_SORT_TIME)

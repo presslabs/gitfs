@@ -1,19 +1,20 @@
 pipeline:
+  verify-lint:
+    image: quay.io/presslabs/gitfs-test:3.6
+    commands:
+      - pip3 install black
+      - make verify-lint
+
   test:
-    image: ubuntu:trusty
-    group: build
+    image: quay.io/presslabs/gitfs-test:${PYTHON_VERSION}
     privileged: true
     environment:
       - PIP_DOWNLOAD_CACHE=/tmp/pip_download_cache
-      - DEBIAN_FRONTEND=noninteractive
+      - PYTHON=${PYTHON_VERSION}
     commands:
-      - apt-get update && apt-get install -qy build-essential python-pip python-virtualenv python-dev software-properties-common python-software-properties libfuse-dev fuse git libffi-dev python3.4-dev
-      - sudo add-apt-repository -y ppa:presslabs/gitfs
-      - sudo apt-get update
-      - sudo apt-get install -y libgit2 libgit2-dev
-      - sudo chmod 660 /dev/fuse
-      - echo user_allow_other | sudo tee -a /etc/fuse.conf > /dev/null
-      - sudo chmod 644 /etc/fuse.conf
+      - chmod 660 /dev/fuse
+      - echo user_allow_other | tee -a /etc/fuse.conf > /dev/null
+      - chmod 644 /etc/fuse.conf
       - git config --global user.email "drone@example.com"
       - git config --global user.name "Drone CI"
       - make test
@@ -30,3 +31,12 @@ pipeline:
     when:
       branch: master
       event: push
+
+matrix:
+  include:
+    - PYTHON_VERSION: 2.7
+    - PYTHON_VERSION: 3.4
+    - PYTHON_VERSION: 3.5
+    - PYTHON_VERSION: 3.6
+    - PYTHON_VERSION: 3.7
+    - PYTHON_VERSION: 3.8

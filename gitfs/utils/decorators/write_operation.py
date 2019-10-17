@@ -18,8 +18,7 @@ from functools import wraps
 
 from fuse import FuseOSError
 
-from gitfs.events import (sync_done, syncing, writers, push_successful,
-                          fetch_successful)
+from gitfs.events import sync_done, syncing, writers, push_successful, fetch_successful
 from gitfs.log import log
 
 
@@ -42,4 +41,5 @@ def write_operation(f):
             writers -= 1
 
         return result
+
     return decorated

@@ -23,7 +23,7 @@ from tests.integrations.base import BaseTest
 class TestReadCurrentView(BaseTest):
     def test_listdirs(self):
         dirs = set(os.listdir(self.current_path))
-        assert dirs == set(['testing', 'me'])
+        assert dirs == set(["testing", "me"])
 
     def test_read_from_a_file(self):
         with open("{}/testing".format(self.current_path)) as f:
@@ -38,12 +38,12 @@ class TestReadCurrentView(BaseTest):
         real_stats = os.stat(filename)
 
         attrs = {
-            'st_uid': os.getuid(),
-            'st_gid': os.getgid(),
-            'st_mode': 0o100644,
-            'st_ctime': real_stats.st_ctime,
-            'st_mtime': real_stats.st_mtime,
-            'st_atime': real_stats.st_atime,
+            "st_uid": os.getuid(),
+            "st_gid": os.getgid(),
+            "st_mode": 0o100644,
+            "st_ctime": real_stats.st_ctime,
+            "st_mtime": real_stats.st_mtime,
+            "st_atime": real_stats.st_atime,
         }
 
         for name, value in iteritems(attrs):

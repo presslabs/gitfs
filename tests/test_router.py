@@ -46,43 +46,50 @@ class TestRouter(object):
         mocked_grnam.return_value.gr_gid = 1
 
         mocks = {
-            'repository': mocked_repository,
-            'repo': mocked_repo,
-            'log': mocked_log,
-            'ignore': mocked_ignore,
-            'ignore_cache': mocked_ignore,
-            'lru': mocked_lru,
-            'getpwnam': mocked_pwnam,
-            'getgrnam': mocked_grnam,
-            'time': mocked_time,
-            'queue': mocked_queue,
-            'shutil': mocked_shutil,
-            'shutting': mocked_shutting,
-            'fetch': mocked_fetch,
+            "repository": mocked_repository,
+            "repo": mocked_repo,
+            "log": mocked_log,
+            "ignore": mocked_ignore,
+            "ignore_cache": mocked_ignore,
+            "lru": mocked_lru,
+            "getpwnam": mocked_pwnam,
+            "getgrnam": mocked_grnam,
+            "time": mocked_time,
+            "queue": mocked_queue,
+            "shutil": mocked_shutil,
+            "shutting": mocked_shutting,
+            "fetch": mocked_fetch,
         }
 
         init_kwargs = {
-            'remote_url': 'remote_url',
-            'repo_path': 'repository_path',
-            'mount_path': 'mount_path',
-            'credentials': mocked_credentials,
-            'branch': mocked_branch,
-            'user': 'user',
-            'group': 'root',
-            'commit_queue': mocked_queue,
-            'max_size': 10,
-            'max_offset': 10,
-            'ignore_file': '',
-            'module_file': '',
-            'hard_ignore': None,
+            "remote_url": "remote_url",
+            "repo_path": "repository_path",
+            "mount_path": "mount_path",
+            "credentials": mocked_credentials,
+            "branch": mocked_branch,
+            "user": "user",
+            "group": "root",
+            "commit_queue": mocked_queue,
+            "max_size": 10,
+            "max_offset": 10,
+            "ignore_file": "",
+            "module_file": "",
+            "hard_ignore": None,
         }
 
-        with patch.multiple('gitfs.router', Repository=mocked_repository,
-                            log=mocked_log, CachedIgnore=mocked_ignore,
-                            lru_cache=mocked_lru, getpwnam=mocked_pwnam,
-                            getgrnam=mocked_grnam, time=mocked_time,
-                            shutil=mocked_shutil, fetch=mocked_fetch,
-                            shutting_down=mocked_shutting):
+        with patch.multiple(
+            "gitfs.router",
+            Repository=mocked_repository,
+            log=mocked_log,
+            CachedIgnore=mocked_ignore,
+            lru_cache=mocked_lru,
+            getpwnam=mocked_pwnam,
+            getgrnam=mocked_grnam,
+            time=mocked_time,
+            shutil=mocked_shutil,
+            fetch=mocked_fetch,
+            shutting_down=mocked_shutting,
+        ):
             router = Router(**init_kwargs)
 
         mocks.update(init_kwargs)
@@ -91,21 +98,27 @@ class TestRouter(object):
     def test_constructor(self):
         router, mocks = self.get_new_router()
 
-        asserted_call = (mocks['remote_url'], mocks['repo_path'],
-                         mocks['branch'], mocks['credentials'])
-        mocks['repository'].clone.assert_called_once_with(*asserted_call)
-        mocks['ignore'].assert_called_once_with(**{
-            'ignore': 'repository_path/.gitignore',
-            'exclude': None,
-            'hard_ignore': None,
-            'submodules': 'repository_path/.gitmodules'
-        })
-        mocks['getpwnam'].assert_called_once_with(mocks['user'])
-        mocks['getgrnam'].assert_called_once_with(mocks['group'])
+        asserted_call = (
+            mocks["remote_url"],
+            mocks["repo_path"],
+            mocks["branch"],
+            mocks["credentials"],
+        )
+        mocks["repository"].clone.assert_called_once_with(*asserted_call)
+        mocks["ignore"].assert_called_once_with(
+            **{
+                "ignore": "repository_path/.gitignore",
+                "exclude": None,
+                "hard_ignore": None,
+                "submodules": "repository_path/.gitmodules",
+            }
+        )
+        mocks["getpwnam"].assert_called_once_with(mocks["user"])
+        mocks["getgrnam"].assert_called_once_with(mocks["group"])
 
-        assert mocks['repo'].commits.update.call_count == 1
-        assert mocks['time'].time.call_count == 1
-        assert router.commit_queue == mocks['queue']
+        assert mocks["repo"].commits.update.call_count == 1
+        assert mocks["time"].time.call_count == 1
+        assert router.commit_queue == mocks["queue"]
         assert router.max_size == 10
         assert router.max_offset == 10
 
@@ -128,22 +141,25 @@ class TestRouter(object):
         router, mocks = self.get_new_router()
         router.workers = [mocked_fetch, mocked_sync]
 
-        with patch.multiple('gitfs.router', shutil=mocks['shutil'],
-                            fetch=mocks['fetch'],
-                            shutting_down=mocks['shutting']):
+        with patch.multiple(
+            "gitfs.router",
+            shutil=mocks["shutil"],
+            fetch=mocks["fetch"],
+            shutting_down=mocks["shutting"],
+        ):
             router.destroy("path")
 
         assert mocked_fetch.join.call_count == 1
         assert mocked_sync.join.call_count == 1
-        assert mocks['fetch'].set.call_count == 1
-        assert mocks['shutting'].set.call_count == 1
-        mocks['shutil'].rmtree.assert_called_once_with(mocks['repo_path'])
+        assert mocks["fetch"].set.call_count == 1
+        assert mocks["shutting"].set.call_count == 1
+        mocks["shutil"].rmtree.assert_called_once_with(mocks["repo_path"])
 
     def test_call_with_invalid_operation(self):
         router, mocks = self.get_new_router()
 
         router.register([("/", CurrentView)])
-        with patch('gitfs.router.lru_cache') as mocked_cache:
+        with patch("gitfs.router.lru_cache") as mocked_cache:
             mocked_cache.get_if_exists.return_value = None
             with pytest.raises(FuseOSError):
                 router("random_operation", "/")
@@ -156,8 +172,9 @@ class TestRouter(object):
         router, mocks = self.get_new_router()
 
         router.register([("/", MagicMock(return_value=mocked_view))])
-        with patch.multiple('gitfs.router',
-                            idle=mocked_idle_event, lru_cache=mocked_cache):
+        with patch.multiple(
+            "gitfs.router", idle=mocked_idle_event, lru_cache=mocked_cache
+        ):
             mocked_cache.get_if_exists.return_value = None
             result = router("random_operation", "/")
 
@@ -169,7 +186,7 @@ class TestRouter(object):
 
         router, mocks = self.get_new_router()
         router.init = mocked_init
-        assert router('init', "/") == mocked_init("/")
+        assert router("init", "/") == mocked_init("/")
 
     def test_get_missing_view(self):
         router, mocks = self.get_new_router()
@@ -184,33 +201,35 @@ class TestRouter(object):
 
         router, mocks = self.get_new_router()
 
-        router.register([
-            ("/history", mocked_view),
-            ("/current", mocked_view),
-            ("/", MagicMock(return_value=mocked_index)),
-        ])
-        with patch('gitfs.router.lru_cache') as mocked_cache:
+        router.register(
+            [
+                ("/history", mocked_view),
+                ("/current", mocked_view),
+                ("/", MagicMock(return_value=mocked_index)),
+            ]
+        )
+        with patch("gitfs.router.lru_cache") as mocked_cache:
             mocked_cache.get_if_exists.return_value = None
 
             view, path = router.get_view("/current")
             assert view == mocked_current
             assert path == "/"
             asserted_call = {
-                'repo': mocks['repo'],
-                'ignore': mocks['repo'].ignore,
-                'repo_path': mocks['repo_path'],
-                'mount_path': mocks['mount_path'],
-                'history_path': 'history',
-                'current_path': 'current',
-                'regex': "/current",
-                'relative_path': "/",
-                'uid': 1,
-                'gid': 1,
-                'branch': mocks['branch'],
-                'mount_time': 0,
-                'queue': mocks['queue'],
-                'max_size': mocks['max_size'],
-                'max_offset': mocks['max_offset'],
+                "repo": mocks["repo"],
+                "ignore": mocks["repo"].ignore,
+                "repo_path": mocks["repo_path"],
+                "mount_path": mocks["mount_path"],
+                "history_path": "history",
+                "current_path": "current",
+                "regex": "/current",
+                "relative_path": "/",
+                "uid": 1,
+                "gid": 1,
+                "branch": mocks["branch"],
+                "mount_time": 0,
+                "queue": mocks["queue"],
+                "max_size": mocks["max_size"],
+                "max_offset": mocks["max_offset"],
             }
             mocked_view.assert_called_once_with(**asserted_call)
             mocked_cache.get_if_exists.assert_called_once_with("/current")
@@ -220,10 +239,8 @@ class TestRouter(object):
 
         router, mocks = self.get_new_router()
 
-        router.register([
-            ("/", MagicMock(return_value=mocked_index)),
-        ])
-        with patch('gitfs.router.lru_cache') as mocked_cache:
+        router.register([("/", MagicMock(return_value=mocked_index))])
+        with patch("gitfs.router.lru_cache") as mocked_cache:
             mocked_cache.get_if_exists.return_value = mocked_index
 
             view, path = router.get_view("/")

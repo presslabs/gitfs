@@ -35,7 +35,7 @@ class TestCommitView(object):
         mocked_repo.revparse_single.return_value = mocked_commit
 
         view = CommitView(repo=mocked_repo, commit_sha1="sha1")
-        with patch('gitfs.views.commit.os') as mocked_os:
+        with patch("gitfs.views.commit.os") as mocked_os:
             mocked_os.path.split.return_value = [None, None]
 
             dirs = [entry for entry in view.readdir("/path", 0)]
@@ -54,7 +54,7 @@ class TestCommitView(object):
         mocked_repo.get_git_object.return_value = [mocked_entry]
 
         view = CommitView(repo=mocked_repo, commit_sha1="sha1")
-        with patch('gitfs.views.commit.os') as mocked_os:
+        with patch("gitfs.views.commit.os") as mocked_os:
             mocked_os.path.split.return_value = [None, True]
 
             dirs = [entry for entry in view.readdir("/path", 0)]
@@ -119,26 +119,24 @@ class TestCommitView(object):
     def test_getattr_with_simple_path(self):
         mocked_repo = MagicMock()
         mocked_commit = MagicMock()
-        stats = {
-            'st_mode': S_IFDIR | 0o555,
-            'st_nlink': 2
-        }
+        stats = {"st_mode": S_IFDIR | 0o555, "st_nlink": 2}
 
         mocked_commit.tree = "tree"
         mocked_commit.commit_time = "now+1"
         mocked_repo.revparse_single.return_value = mocked_commit
         mocked_repo.get_git_object_default_stats.return_value = stats
 
-        view = CommitView(repo=mocked_repo, commit_sha1="sha1",
-                          mount_time="now", uid=1, gid=1)
+        view = CommitView(
+            repo=mocked_repo, commit_sha1="sha1", mount_time="now", uid=1, gid=1
+        )
         result = view.getattr("/", 1)
         asserted_result = {
-            'st_uid': 1,
-            'st_gid': 1,
-            'st_mtime': "now+1",
-            'st_ctime': "now+1",
-            'st_mode': S_IFDIR | 0o555,
-            'st_nlink': 2
+            "st_uid": 1,
+            "st_gid": 1,
+            "st_mtime": "now+1",
+            "st_ctime": "now+1",
+            "st_mode": S_IFDIR | 0o555,
+            "st_nlink": 2,
         }
         assert result == asserted_result
 
@@ -151,8 +149,9 @@ class TestCommitView(object):
         mocked_repo.revparse_single.return_value = mocked_commit
         mocked_repo.get_git_object_default_stats.return_value = None
 
-        view = CommitView(repo=mocked_repo, commit_sha1="sha1",
-                          mount_time="now", uid=1, gid=1)
+        view = CommitView(
+            repo=mocked_repo, commit_sha1="sha1", mount_time="now", uid=1, gid=1
+        )
 
         with pytest.raises(FuseOSError):
             view.getattr("/path", 1)
@@ -168,22 +167,23 @@ class TestCommitView(object):
         mocked_commit.commit_time = "now+1"
         mocked_repo.revparse_single.return_value = mocked_commit
         mocked_repo.get_git_object_default_stats.return_value = {
-            'st_mode': S_IFREG | 0o444,
-            'st_size': 10
+            "st_mode": S_IFREG | 0o444,
+            "st_size": 10,
         }
 
-        view = CommitView(repo=mocked_repo, commit_sha1="sha1",
-                          mount_time="now", uid=1, gid=1)
+        view = CommitView(
+            repo=mocked_repo, commit_sha1="sha1", mount_time="now", uid=1, gid=1
+        )
 
         result = view.getattr("/path", 1)
 
         asserted_result = {
-            'st_uid': 1,
-            'st_gid': 1,
-            'st_mtime': "now+1",
-            'st_ctime': "now+1",
-            'st_mode': S_IFREG | 0o444,
-            'st_size': 10
+            "st_uid": 1,
+            "st_gid": 1,
+            "st_mtime": "now+1",
+            "st_ctime": "now+1",
+            "st_mode": S_IFREG | 0o444,
+            "st_size": 10,
         }
         assert result == asserted_result
         args = ("tree", "/path")
@@ -197,15 +197,15 @@ class TestCommitView(object):
         mocked_repo.revparse_single.return_value = mocked_commit
         mocked_repo.get_blob_data.return_value = "link value"
 
-        with patch('gitfs.views.commit.os') as mocked_os:
+        with patch("gitfs.views.commit.os") as mocked_os:
             mocked_os.path.split.return_value = ["name", "another_name"]
 
-            view = CommitView(repo=mocked_repo, commit_sha1="sha1",
-                              mount_time="now", uid=1, gid=1)
+            view = CommitView(
+                repo=mocked_repo, commit_sha1="sha1", mount_time="now", uid=1, gid=1
+            )
             assert view.readlink("/path") == "link value"
             mocked_os.path.split.assert_called_once_with("/path")
-            mocked_repo.get_blob_data.assert_called_once_with("tree",
-                                                              "another_name")
+            mocked_repo.get_blob_data.assert_called_once_with("tree", "another_name")
 
     def test_read(self):
         mocked_repo = MagicMock()
@@ -215,8 +215,9 @@ class TestCommitView(object):
         mocked_repo.revparse_single.return_value = mocked_commit
         mocked_repo.get_blob_data.return_value = [1, 1, 1]
 
-        view = CommitView(repo=mocked_repo, commit_sha1="sha1",
-                          mount_time="now", uid=1, gid=1)
+        view = CommitView(
+            repo=mocked_repo, commit_sha1="sha1", mount_time="now", uid=1, gid=1
+        )
         assert view.read("/path", 1, 1, 0) == [1]
         mocked_repo.get_blob_data.assert_called_once_with("tree", "/path")
 
@@ -227,8 +228,9 @@ class TestCommitView(object):
         mocked_commit.tree = "tree"
         mocked_repo.revparse_single.return_value = mocked_commit
 
-        view = CommitView(repo=mocked_repo, commit_sha1="sha1",
-                          mount_time="now", uid=1, gid=1)
+        view = CommitView(
+            repo=mocked_repo, commit_sha1="sha1", mount_time="now", uid=1, gid=1
+        )
 
         assert view._validate_commit_path([], "") is False
 
@@ -242,8 +244,9 @@ class TestCommitView(object):
         mocked_entry.name = "simple_entry"
         mocked_entry.filemode = GIT_FILEMODE_TREE
 
-        view = CommitView(repo=mocked_repo, commit_sha1="sha1",
-                          mount_time="now", uid=1, gid=1)
+        view = CommitView(
+            repo=mocked_repo, commit_sha1="sha1", mount_time="now", uid=1, gid=1
+        )
         result = view._validate_commit_path([mocked_entry], ["simple_entry"])
         assert result is True
 
@@ -264,12 +267,12 @@ class TestCommitView(object):
 
         mocked_repo.__getitem__.return_value = [mocked_entry]
 
-        view = CommitView(repo=mocked_repo, commit_sha1="sha1",
-                          mount_time="now", uid=1, gid=1)
-        result = view._validate_commit_path([mocked_second_entry,
-                                             mocked_entry],
-                                            ["complex_entry",
-                                             "simple_entry"])
+        view = CommitView(
+            repo=mocked_repo, commit_sha1="sha1", mount_time="now", uid=1, gid=1
+        )
+        result = view._validate_commit_path(
+            [mocked_second_entry, mocked_entry], ["complex_entry", "simple_entry"]
+        )
         assert result is True
         mocked_repo.__getitem__.assert_called_once_with(1)
 

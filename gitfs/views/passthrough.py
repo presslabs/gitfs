@@ -13,34 +13,53 @@
 # limitations under the License.
 
 
+import fcntl
 import os
+
 from fuse import FuseOSError
 from errno import EACCES
 
 from .view import View
 
-STATS = ('st_atime', 'st_ctime', 'st_gid', 'st_mode', 'st_mtime', 'st_nlink',
-         'st_size', 'st_uid')
+STATS = (
+    "st_atime",
+    "st_ctime",
+    "st_gid",
+    "st_mode",
+    "st_mtime",
+    "st_nlink",
+    "st_size",
+    "st_uid",
+)
 
-FS_STATS = ('f_bavail', 'f_bfree', 'f_blocks', 'f_bsize', 'f_favail',
-            'f_ffree', 'f_files', 'f_flag', 'f_frsize', 'f_namemax')
+FS_STATS = (
+    "f_bavail",
+    "f_bfree",
+    "f_blocks",
+    "f_bsize",
+    "f_favail",
+    "f_ffree",
+    "f_files",
+    "f_flag",
+    "f_frsize",
+    "f_namemax",
+)
 
 
 class PassthroughView(View):
-
     def __init__(self, *args, **kwargs):
         super(PassthroughView, self).__init__(*args, **kwargs)
-        self.repo = kwargs['repo']
-        self.root = kwargs['repo_path']
+        self.repo = kwargs["repo"]
+        self.root = kwargs["repo_path"]
 
-        self.is_current_path_root = kwargs.get('current_path', 'current') == '/'
-        self.history_path = kwargs.get('history_path', 'history')
+        self.is_current_path_root = kwargs.get("current_path", "current") == "/"
+        self.history_path = kwargs.get("history_path", "history")
 
     def access(self, path, mode):
         full_path = self.repo._full_path(path)
         if not os.access(full_path, mode):
             raise FuseOSError(EACCES)
-        if path.endswith('/.git'):
+        if path.endswith("/.git"):
             raise FuseOSError(EACCES)
         return 0
 
@@ -60,8 +79,8 @@ class PassthroughView(View):
     def readdir(self, path, fh):
         full_path = self.repo._full_path(path)
 
-        dirents = ['.', '..']
-        hidden_items = ['.git', '.keep']
+        dirents = [".", ".."]
+        hidden_items = [".git", ".keep"]
         if os.path.isdir(full_path):
             for entry in os.listdir(full_path):
                 if entry not in hidden_items:
@@ -133,8 +152,14 @@ class PassthroughView(View):
 
     def truncate(self, path, length, fh=None):
         full_path = self.repo._full_path(path)
-        with open(full_path, 'r+') as input_file:
+        with open(full_path, "r+") as input_file:
             input_file.truncate(length)
+
+    def lock(self, path, fh, cmd, lock):
+        fcntl.lockf(fh, fcntl.LOCK_EX)
+
+    def release(self, path, fh):
+        fcntl.lockf(fh, fcntl.LOCK_UN)
 
     def flush(self, path, fh):
         return os.fsync(fh)

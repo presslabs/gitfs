@@ -19,8 +19,12 @@ from stat import S_IFDIR, S_IFREG
 
 import pytest
 from mock import MagicMock, patch, call, ANY
-from pygit2 import (GIT_BRANCH_REMOTE, GIT_SORT_TIME,
-                    GIT_FILEMODE_BLOB, GIT_STATUS_CURRENT)
+from pygit2 import (
+    GIT_BRANCH_REMOTE,
+    GIT_SORT_TIME,
+    GIT_FILEMODE_BLOB,
+    GIT_STATUS_CURRENT,
+)
 
 from gitfs.repository import Repository
 from .base import RepositoryBaseTest
@@ -29,7 +33,6 @@ Commit = namedtuple("Commit", "hex")
 
 
 class TestRepository(RepositoryBaseTest):
-
     def test_push(self):
         mocked_repo = MagicMock()
         mocked_remote = MagicMock()
@@ -39,8 +42,9 @@ class TestRepository(RepositoryBaseTest):
         repo = Repository(mocked_repo)
         repo.push("origin", "master", "credentials")
 
-        mocked_remote.push.assert_called_once_with(["refs/heads/master"],
-                                                   callbacks="credentials")
+        mocked_remote.push.assert_called_once_with(
+            ["refs/heads/master"], callbacks="credentials"
+        )
 
     def test_fetch(self):
         class MockedCommit(object):
@@ -55,6 +59,7 @@ class TestRepository(RepositoryBaseTest):
 
         mocked_repo.remotes = [mocked_remote]
         mocked_repo.lookup_branch().get_object.return_value = MockedCommit()
+        mocked_repo.walk.return_value = [MockedCommit()]
 
         repo = Repository(mocked_repo)
         repo.fetch("origin", "master", "credentials")
@@ -75,7 +80,7 @@ class TestRepository(RepositoryBaseTest):
         author = ("author_1", "author_2")
         commiter = ("commiter_1", "commiter_2")
 
-        with patch('gitfs.repository.Signature') as mocked_signature:
+        with patch("gitfs.repository.Signature") as mocked_signature:
             mocked_signature.return_value = "signature"
 
             repo = Repository(mocked_repo)
@@ -88,11 +93,9 @@ class TestRepository(RepositoryBaseTest):
 
             mocked_signature.has_calls([call(*author), call(*commiter)])
             mocked_repo.revparse_single.assert_called_once_with("HEAD")
-            mocked_repo.create_commit.assert_called_once_with("HEAD",
-                                                              "signature",
-                                                              "signature",
-                                                              "message",
-                                                              "tree", [1])
+            mocked_repo.create_commit.assert_called_once_with(
+                "HEAD", "signature", "signature", "message", "tree", [1]
+            )
 
     def test_commit_with_nothing_to_commit(self):
         mocked_repo = MagicMock()
@@ -112,14 +115,14 @@ class TestRepository(RepositoryBaseTest):
         remote_url = "git@github.com:test/test.git"
         path = "/path/to/repo"
 
-        with patch('gitfs.repository.clone_repository') as mocked_clone:
+        with patch("gitfs.repository.clone_repository") as mocked_clone:
             mocked_clone.return_value = mocked_repo
 
             Repository.clone(remote_url, path)
 
-            mocked_clone.assert_called_once_with(remote_url, path,
-                                                 checkout_branch=None,
-                                                 callbacks=None)
+            mocked_clone.assert_called_once_with(
+                remote_url, path, checkout_branch=None, callbacks=None
+            )
             assert mocked_repo.checkout_head.call_count == 1
 
     def test_remote_head(self):
@@ -138,8 +141,7 @@ class TestRepository(RepositoryBaseTest):
         assert mocked_remote.get_object.call_count == 1
 
         ref = "{}/{}".format(upstream, branch)
-        mocked_repo.lookup_branch.assert_called_once_with(ref,
-                                                          GIT_BRANCH_REMOTE)
+        mocked_repo.lookup_branch.assert_called_once_with(ref, GIT_BRANCH_REMOTE)
 
     def test_get_remote(self):
         upstream = "origin"
@@ -200,13 +202,14 @@ class TestRepository(RepositoryBaseTest):
 
         def mocked_walk(target, sort):
             return BranchWalker() if target == "first" else BranchWalker(2)
+
         mocked_repo.walk = mocked_walk
 
         repo = Repository(mocked_repo)
 
         counter_1 = 1
         counter_2 = 1
-        branches = (MagicMock(target='first'), MagicMock(target='second'))
+        branches = (MagicMock(target="first"), MagicMock(target="second"))
         for commit_1, commit_2 in repo.walk_branches(GIT_SORT_TIME, *branches):
             assert commit_1 == counter_1
             assert commit_2 == counter_2
@@ -217,21 +220,17 @@ class TestRepository(RepositoryBaseTest):
 
     def test_get_commits_by_dates(self):
         mocked_repo = MagicMock()
-        commits = {
-            'now': [1, 2, 3]
-        }
+        commits = {"now": [1, 2, 3]}
 
         repo = Repository(mocked_repo, commits)
-        assert repo.get_commits_by_date('now') == ['1', '2', '3']
+        assert repo.get_commits_by_date("now") == ["1", "2", "3"]
 
     def test_get_commit_dates(self):
         mocked_repo = MagicMock()
-        commits = {
-            'now': [1, 2, 3]
-        }
+        commits = {"now": [1, 2, 3]}
 
         repo = Repository(mocked_repo, commits)
-        assert repo.get_commit_dates() == ['now']
+        assert repo.get_commit_dates() == ["now"]
 
     def test_is_searched_entry(self):
         mocked_repo = MagicMock()
@@ -242,33 +241,33 @@ class TestRepository(RepositoryBaseTest):
 
     def test_get_git_object_type(self):
         mocked_entry = MagicMock()
-        mocked_entry.name = 'entry'
-        mocked_entry.filemode = 'git_file'
+        mocked_entry.name = "entry"
+        mocked_entry.filemode = "git_file"
 
         mocked_repo = MagicMock()
         repo = Repository(mocked_repo)
 
-        mock_path = 'gitfs.repository.split_path_into_components'
+        mock_path = "gitfs.repository.split_path_into_components"
         with patch(mock_path) as mocked_split_path:
-            mocked_split_path.return_value = ['entry']
+            mocked_split_path.return_value = ["entry"]
 
             result = repo.get_git_object_type([mocked_entry], "path")
 
-            assert result == 'git_file'
+            assert result == "git_file"
             mocked_split_path.assert_called_once_with("path")
 
     def test_get_git_object(self):
         mocked_entry = MagicMock()
-        mocked_entry.name = 'entry'
-        mocked_entry.filemode = 'git_file'
+        mocked_entry.name = "entry"
+        mocked_entry.filemode = "git_file"
 
         mocked_repo = MagicMock()
         mocked_repo.__getitem__.return_value = "succed"
         repo = Repository(mocked_repo)
 
-        mock_path = 'gitfs.repository.split_path_into_components'
+        mock_path = "gitfs.repository.split_path_into_components"
         with patch(mock_path) as mocked_split_path:
-            mocked_split_path.return_value = ['entry']
+            mocked_split_path.return_value = ["entry"]
 
             result = repo.get_git_object([mocked_entry], "path")
 
@@ -351,7 +350,7 @@ class TestRepository(RepositoryBaseTest):
         repo = Repository(mocked_repo)
 
         assert repo.one_attr == mocked_repo.one_attr
-        assert repo['one_attr'] == mocked_repo['one_attr']
+        assert repo["one_attr"] == mocked_repo["one_attr"]
         assert repo.behind is False
 
     def test_ahead(self):
@@ -366,29 +365,22 @@ class TestRepository(RepositoryBaseTest):
 
     def test_diverge(self):
         mocked_repo = MagicMock()
-        mocked_lookup = MagicMock()
         mocked_find = MagicMock()
         mocked_commits = MagicMock()
         mocked_branch_remote = MagicMock(target=1)
         mocked_branch_local = MagicMock(target=2)
 
-        def lookup(reference, opt):
-            if "origin/master" == reference:
-                return mocked_branch_remote
-            return mocked_branch_local
-
         mocked_commits.second_commits = []
         mocked_commits.first_commits = []
         mocked_find.return_value = mocked_commits
-        mocked_lookup = lookup
 
         repo = Repository(mocked_repo)
-        repo.lookup_branch = mocked_lookup
+        repo.branches.local.get.return_value = mocked_branch_local
+        repo.branches.remote.get.return_value = mocked_branch_remote
         repo.find_diverge_commits = mocked_find
 
         assert repo.diverge("origin", "master") == (False, False)
-        mocked_find.assert_called_once_with(mocked_branch_local,
-                                            mocked_branch_remote)
+        mocked_find.assert_called_once_with(mocked_branch_local, mocked_branch_remote)
 
     def test_checkout(self):
         mocked_checkout = MagicMock(return_value="done")
@@ -397,9 +389,9 @@ class TestRepository(RepositoryBaseTest):
         mocked_index = MagicMock()
         mocked_stats = MagicMock()
         mocked_status = {
-            '/': GIT_STATUS_CURRENT,
-            '/current/some_path': "another_git_status",
-            '/current/another_path': "another_git_status",
+            "/": GIT_STATUS_CURRENT,
+            "/current/some_path": "another_git_status",
+            "/current/another_path": "another_git_status",
         }
 
         mocked_full_path.return_value = "full_path"
@@ -408,26 +400,26 @@ class TestRepository(RepositoryBaseTest):
         mocked_stats.st_mode = "another_mode"
 
         def contains(self, path):
-            if path == '/current/another_path':
+            if path == "/current/another_path":
                 return True
             return False
+
         mocked_index.__contains__ = contains
         mocked_repo.index = mocked_index
 
-        with patch('gitfs.repository.os') as mocked_os:
+        with patch("gitfs.repository.os") as mocked_os:
             mocked_os.lstat.return_value = mocked_stats
 
             repo = Repository(mocked_repo)
             repo._full_path = mocked_full_path
-            repo.get_git_object_stat = lambda x: {'st_mode': 'a_stat'}
+            repo.get_git_object_stat = lambda x: {"st_mode": "a_stat"}
 
             assert repo.checkout("ref", "args") == "done"
             assert mocked_repo.status.call_count == 1
             mocked_checkout.assert_called_once_with("ref", "args")
             mocked_os.unlink.assert_called_once_with("full_path")
             mocked_os.lstat.assert_called_once_with("full_path")
-            mocked_os.chmod.assert_called_once_with("full_path",
-                                                    "another_mode")
+            mocked_os.chmod.assert_called_once_with("full_path", "another_mode")
             mocked_index.add.assert_called_once_with("current/another_path")
 
     def test_checkout_with_directory_in_status(self):
@@ -437,9 +429,9 @@ class TestRepository(RepositoryBaseTest):
         mocked_index = MagicMock()
         mocked_stats = MagicMock()
         mocked_status = {
-            '/': GIT_STATUS_CURRENT,
-            '/current/some_path': "another_git_status",
-            '/current/another_path': "another_git_status",
+            "/": GIT_STATUS_CURRENT,
+            "/current/some_path": "another_git_status",
+            "/current/another_path": "another_git_status",
         }
 
         mocked_full_path.return_value = "full_path"
@@ -448,31 +440,29 @@ class TestRepository(RepositoryBaseTest):
         mocked_stats.st_mode = "16877"
 
         def contains(self, path):
-            if path == '/current/another_path':
+            if path == "/current/another_path":
                 return True
             return False
+
         mocked_index.__contains__ = contains
         mocked_repo.index = mocked_index
 
         mocked_os = MagicMock()
         mocked_rmtree = MagicMock()
-        with patch.multiple('gitfs.repository',
-                            os=mocked_os,
-                            rmtree=mocked_rmtree):
+        with patch.multiple("gitfs.repository", os=mocked_os, rmtree=mocked_rmtree):
             mocked_os.unlink.side_effect = OSError
             mocked_os.lstat.return_value = mocked_stats
 
             repo = Repository(mocked_repo)
             repo._full_path = mocked_full_path
-            repo.get_git_object_stat = lambda x: {'st_mode': 'a_stat'}
+            repo.get_git_object_stat = lambda x: {"st_mode": "a_stat"}
 
             assert repo.checkout("ref", "args") == "done"
             assert mocked_repo.status.call_count == 1
             mocked_checkout.assert_called_once_with("ref", "args")
             mocked_rmtree.assert_called_once_with("full_path", onerror=ANY)
             mocked_os.lstat.assert_called_once_with("full_path")
-            mocked_os.chmod.assert_called_once_with("full_path",
-                                                    "16877")
+            mocked_os.chmod.assert_called_once_with("full_path", "16877")
             mocked_index.add.assert_called_once_with("current/another_path")
 
     def test_git_obj_default_stats_with_invalid_obj(self):
@@ -484,8 +474,8 @@ class TestRepository(RepositoryBaseTest):
         repo.get_git_object_type = mocked_git_obj
 
         assert repo.get_git_object_default_stats("ref", "/") == {
-            'st_mode': S_IFDIR | 0o555,
-            'st_nlink': 2
+            "st_mode": S_IFDIR | 0o555,
+            "st_nlink": 2,
         }
         assert repo.get_git_object_default_stats("ref", "/ups") is None
 
@@ -502,8 +492,8 @@ class TestRepository(RepositoryBaseTest):
         repo.get_blob_size = mocked_size
 
         assert repo.get_git_object_default_stats("ref", "/ups") == {
-            'st_mode': S_IFREG | 0o444,
-            'st_size': 10
+            "st_mode": S_IFREG | 0o444,
+            "st_size": 10,
         }
         mocked_size.assert_called_once_with("ref", "/ups")
         mocked_git_obj.assert_called_once_with("ref", "/ups")
