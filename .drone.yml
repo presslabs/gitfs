@@ -1,8 +1,8 @@
 pipeline:
   verify-lint:
-    image: quay.io/presslabs/gitfs-test:${PYTHON_VERSION}
+    image: quay.io/presslabs/gitfs-test:3.6
     commands:
-      - pip install black
+      - pip3 install black
       - make verify-lint
 
   test:
