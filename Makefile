@@ -57,6 +57,12 @@ clean:
 	rm -rf $(BUILD_DIR)
 	rm -rf $(TEST_DIR)
 
+lint:
+	black -t py27 gitfs
+
+verify-lint: lint
+	git diff --exit-code
+
 .PHONY: docs
 docs: $(VIRTUAL_ENV)/bin/mkdocs
 	$(VIRTUAL_ENV)/bin/mkdocs build --clean

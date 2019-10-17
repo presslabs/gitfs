@@ -1,4 +1,10 @@
 pipeline:
+  verify-lint:
+    image: quay.io/presslabs/gitfs-test:${PYTHON_VERSION}
+    commands:
+      - pip install black
+      - make verify-lint
+
   test:
     image: quay.io/presslabs/gitfs-test:${PYTHON_VERSION}
     privileged: true
