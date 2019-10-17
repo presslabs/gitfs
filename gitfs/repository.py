@@ -193,9 +193,13 @@ class Repository(object):
 
         """
 
-        repo = clone_repository(
-            remote_url, path, checkout_branch=branch, callbacks=credentials
-        )
+        try:
+            repo = clone_repository(
+                remote_url, path, checkout_branch=branch, callbacks=credentials
+            )
+        except Exception as e:
+            log.error("Error on cloning the repository: ", exc_info=True)
+
         repo.checkout_head()
         return cls(repo)
 
