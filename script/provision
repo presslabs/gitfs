@@ -10,6 +10,7 @@ echo "I am provisioning..."
 sudo sh -c 'date > /etc/vagrant_provisioned_at'
 
 echo "Installing dependencies"
+sudo add-apt-repository ppa:presslabs/gitfs
 sudo apt-get update
 sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -q python-virtualenv python-dev libffi-dev build-essential git-core "$PYTHON_VERSION-dev" libgit2-dev "$PYTHON_VERSION-venv" libfuse-dev libfuse2
 
