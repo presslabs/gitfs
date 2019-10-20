@@ -1,3 +1,17 @@
+---
+title: How Gitfs works
+linktitle: Gitfs explained
+description: Gitfs uses fuse to create current and history directories
+categories: [gitfs]
+keywords: [gitfs, readonlyview, passthroughview, currentview, historyview, commitview, indexview, fetchworker, mergeworker]
+weight: 2
+draft: false
+aliases: []
+toc: true
+related: true
+slug: how-gitfs-works
+---
+
 ## FUSE
 
 gitfs uses [FUSE](http://fuse.sourceforge.net/) to create its filesystem. It’s used to create the `current` and `history` directories that you can find where you mounted the repository. More on that [here](usage.md#user-content-directory-structure).

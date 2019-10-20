@@ -1,6 +1,20 @@
+---
+title: How to install and use Gitfs
+linktitle: Install Gitfs
+description: Here are the required steps to install and use Gitfs on your machine.
+categories: [gitfs]
+keywords: [gitfs, install gitfs, install on ubuntu 18.04, install on ubuntu 19.04, gitfs on ubuntu, gitfs on debian, gitfs on macos]
+weight: 3
+draft: false
+aliases: []
+toc: true
+related: true
+slug: install-and-use-gitfs
+---
+
 ## Installing
 
-1. Ubuntu 12.04 and 14.04 are fully supported for now.
+1. Ubuntu 18.04, 19.04 and 19.10 are fully supported for now.
 
 ```
 sudo add-apt-repository ppa:presslabs/gitfs

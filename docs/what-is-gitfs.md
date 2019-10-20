@@ -1,3 +1,17 @@
+---
+title: What is Gitfs
+linktitle: What is Gitfs
+description: Gitfs is a fuse file system that fully integrates with git
+categories: [gitfs]
+keywords: [gitfs, versioned filesystem, git filesystem, linux filesystem, macos filesystem]
+weight: 1
+draft: false
+aliases: []
+toc: true
+related: true
+slug: what-is-gitfs
+---
+
 ## Welcome to gitfs
 
 gitfs is a [FUSE](http://fuse.sourceforge.net/) file system that fully integrates with git. You can mount a remote repository’s branch locally, and any subsequent changes made to the files will be automatically committed to the remote.

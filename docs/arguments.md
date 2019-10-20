@@ -1,3 +1,17 @@
+---
+title: Arguments
+linktitle: Arguments
+description: A list with all arguments for Gitfs
+categories: [gitfs]
+keywords: [gitfs, arguments, usage]
+weight: 4
+draft: false
+aliases: []
+toc: true
+related: true
+slug: arguments
+---
+
 ## Using options
 
 In order to use options when mounting gitfs, you need to append the options as an argument when using the mount command like this:

@@ -1,0 +1,92 @@
+baseURL = "https://www.presslabs.com/code/gitfs/"
+languageCode = "en-us"
+title = "Gitfs DOCS"
+summaryLength = 15
+metaDataFormat = "yaml"
+theme = "docs"
+enableRobotsTXT = true
+enableGitInfo = true
+pygmentsCodeFences = true
+pygmentsOptions = ""
+pygmentsUseClasses = true
+pygmentsUseClassic = false
+pygmentsStyle = "github"
+dataDir = "/site/data"
+
+[params]
+  site_url = "https://www.presslabs.com/code/"
+  legal_url = "https://www.presslabs.com/legal"
+  breadcrumbs_root = "Gitfs DOCS"
+  quick_start = true
+  quick_start_link = "what-is-gitfs/"
+  logo_text = "CODE"
+  search_placeholder = "Search code"
+  footer_menu = true
+  footer_menu_title = "DOCUMENTATION"
+  title = "Welcome to Gitfs Documentation!"
+  description = "Gitfs is a fuse filesystem that fully integrates with git"
+  release = "0.5.1"
+  # debug = true
+  algolia_search = true
+  algolia_appId = "0TS6NFHDBC"
+  algolia_apiKey = "099bffdf3b4a6ea94ddbea10f73dd15a"
+  algolia_indexName = "Gitfs Docs"
+  algolia_currentLanguageOnly = true
+  images = ["images/code.jpg"]
+
+[params.algolia]
+  vars = ["title", "description", "summary", "content", "date", "lastmod", "permalink", "text", "lvl0", "lvl1", "url"]
+  params = ["categories", "keywords"]
+
+[blackfriday]
+  angledQuotes = true
+  extensions = ["hardLineBreak"]
+  sourceRelativeLinks = true
+  fractions = false
+  plainIDAnchors = true
+
+[outputFormats.Algolia]
+  baseName = "algolia"
+  isPlainText = true
+  mediaType = "application/json"
+  notAlternative = true
+
+[outputs]
+  home = [ "HTML", "RSS", "JSON", "Algolia" ]
+
+[taxonomies]
+  category = "categories"
+
+[related]
+  threshold = 80
+  includeNewer = true
+  toLower = false
+
+[[related.indices]]
+  name = "keywords"
+  weight = 150
+
+[[menu.docs]]
+  name = "What is Gitfs"
+  weight = 1
+  url = "/what-is-gitfs/"
+
+[[menu.docs]]
+  name = "How it works"
+  weight = 2
+  url = "/how-gitfs-works/"
+
+[[menu.docs]]
+  name = "Usage"
+  weight = 3
+  url = "/install-and-use-gitfs/"
+
+[[menu.docs]]
+  name = "Arguments"
+  weight = 4
+  url = "/arguments/"
+
+[imaging]
+  resampleFilter = "CatmullRom"
+  quality = 75
+  anchor = "smart"
