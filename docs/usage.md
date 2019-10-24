@@ -30,6 +30,15 @@ Prerequisites
 brew install gitfs
 ```
 
+3. Debian and Raspbian
+
+```
+sudo echo "deb http://ppa.launchpad.net/presslabs/gitfs/ubuntu disco main" > /etc/apt/sources.list.d/gitfs.list
+sudo echo "deb-src http://ppa.launchpad.net/presslabs/gitfs/ubuntu disco main" >> /etc/apt/sources.list.d/gitfs.list
+sudo apt update
+sudo apt install gitfs
+```
+
 ### Mounting
 
 Before mounting, you’ll need a working git repository. You can use a [local repository](http://git-scm.com/book/en/Git-on-the-Server-Setting-Up-the-Server) or maybe a git service like [GitHub](http://github.com/).
