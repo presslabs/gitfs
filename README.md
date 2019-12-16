@@ -37,8 +37,17 @@ sudo apt-get install gitfs
 ```
 
 ### MacOS
+
 ```bash
 brew install gitfs
+```
+
+#### Pip
+
+We also publish a package to PyPI, which can be installed via pip using the following commmand:
+
+```bash
+pip install gitfs
 ```
 
 ## Usage
