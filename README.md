@@ -1,4 +1,4 @@
-gitfs [![Build Status](https://drone.presslabs.net/api/badges/PressLabs/gitfs/status.svg?arrra)](https://drone.presslabs.net/github.com/PressLabs/gitfs) [![Coverage Status](https://coveralls.io/repos/PressLabs/gitfs/badge.png?branch=HEAD)](https://coveralls.io/r/PressLabs/gitfs?branch=HEAD)
+gitfs [![Build Status](https://drone.presslabs.net/api/badges/PressLabs/gitfs/status.svg?arrra)](https://drone.presslabs.net/github.com/PressLabs/gitfs) [![Coverage Status](https://coveralls.io/repos/PressLabs/gitfs/badge.png?branch=HEAD)](https://coveralls.io/r/PressLabs/gitfs?branch=HEAD) ![PyPI](https://img.shields.io/pypi/v/gitfs)
 ========
 
 # Welcome to GitFS
@@ -37,8 +37,17 @@ sudo apt-get install gitfs
 ```
 
 ### MacOS
+
 ```bash
 brew install gitfs
+```
+
+#### Pip
+
+We also publish a package to PyPI, which can be installed via pip using the following commmand:
+
+```bash
+pip install gitfs
 ```
 
 ## Usage
