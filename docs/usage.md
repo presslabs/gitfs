@@ -103,7 +103,3 @@ The inner folders are the snapshots of their respective commits.
 
 
 The inner folders are the snapshots of their respective commits.
-
-### Keeping things up to date
-
-`gitfs` automatically fetches the newest changes from your repository at a given time interval. The default delay between fetches is `30s` but you can change this value with the `fetch_delay` argument. See [Arguments](arguments.md) for more details.
