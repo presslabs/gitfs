@@ -2,14 +2,10 @@
 title: Arguments
 linktitle: Arguments
 description: A list with all arguments for Gitfs
-categories: [gitfs]
 keywords: [gitfs, arguments, usage]
-weight: 4
-draft: false
-aliases: []
-toc: true
-related: true
-slug: arguments
+menu:
+  global:
+    weight: 3
 ---
 
 ## Using options
@@ -20,7 +16,7 @@ In order to use options when mounting gitfs, you need to append the options as a
 -o option1=value1,option2=value2,option3=value3...
 ```
 
-### All available options
+## All available options
 
 | **Name**             | **Default**                | **Description**                                                                                                                                                                                                                                                                                                       |
 |----------------------|----------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
