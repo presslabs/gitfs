@@ -1,4 +1,4 @@
-baseURL = "http://0.0.0.0:8000"
+baseURL = "https://www.presslabs.com/docs/code/gitfs"
 pygmentsCodeFences = true
 pygmentsCodeFencesGuessSyntax = true
 pygmentsUseClasses = true
