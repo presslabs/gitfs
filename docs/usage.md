@@ -2,14 +2,11 @@
 title: How to install and use Gitfs
 linktitle: Install Gitfs
 description: Here are the required steps to install and use Gitfs on your machine.
-categories: [gitfs]
 keywords: [gitfs, install gitfs, install on ubuntu 18.04, install on ubuntu 19.04, gitfs on ubuntu, gitfs on debian, gitfs on macos]
-weight: 3
-draft: false
-aliases: []
-toc: true
-related: true
-slug: install-and-use-gitfs
+menu:
+  global:
+    weight: 2
+alias: install-and-use-gitfs
 ---
 
 ## Installing
@@ -48,7 +45,8 @@ In order to mount your repository to the desired directory, use:
 ```
 gitfs http://your.com/repository.git /mount/directory
 ```
-#### Full github example
+### Full github example
+
 Consider the following setup:
 - apache2 running as `www-data` user/group
 - `foo_user` - your username at github.com
@@ -61,13 +59,17 @@ Before mounting your repo, run once these two commands:
 
 Now it's time for test run:
 
-`gitfs -o log=/var/log/gitfs.log,debug=true,foreground=true,commiter_name=foo_user,commiter_email=foo_user@whatever.com,user=www-data,group=www-data,username=foo_user,password=boo_password https://github.com/foo_user/my_git_project.git /var/mount/whatever_dir`
+```
+gitfs -o log=/var/log/gitfs.log,debug=true,foreground=true,commiter_name=foo_user,commiter_email=foo_user@whatever.com,user=www-data,group=www-data,username=foo_user,password=boo_password https://github.com/foo_user/my_git_project.git /var/mount/whatever_dir
+```
 
-Open second terminal window and monitor the log file via command `tail -f /var/log/gitfs.log`. Play around with files in your dir and see how it reflects in your repository at github, make sure that it works in both directions. Use Ctrl-C to stop gitfs when you are done. 
+Open second terminal window and monitor the log file via command `tail -f /var/log/gitfs.log`. Play around with files in your dir and see how it reflects in your repository at github, make sure that it works in both directions. Use Ctrl-C to stop gitfs when you are done.
 
 For production use the following arguments:
 
-`gitfs -o log=/var/log/gitfs.log,debug=false,foreground=false,log_level=warning,commiter_name=foo_user,commiter_email=foo_user@whatever.com,user=www-data,group=www-data,username=foo_user,password=boo_password https://github.com/foo_user/my_git_project.git /var/mount/whatever_dir`
+```
+gitfs -o log=/var/log/gitfs.log,debug=false,foreground=false,log_level=warning,commiter_name=foo_user,commiter_email=foo_user@whatever.com,user=www-data,group=www-data,username=foo_user,password=boo_password https://github.com/foo_user/my_git_project.git /var/mount/whatever_dir
+```
 
 See [Arguments](arguments.md) for more details.
 
@@ -100,6 +102,5 @@ The inner folders are the snapshots of their respective commits.
 ### Keeping things up to date
 
 `gitfs` automatically fetches the newest changes from your repository at a given time interval. The default delay between fetches is `30s` but you can change this value with the `fetch_delay` argument. See [Arguments](arguments.md) for more details.
-
 
 The inner folders are the snapshots of their respective commits.
