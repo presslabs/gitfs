@@ -71,7 +71,7 @@ For production use the following arguments:
 gitfs -o log=/var/log/gitfs.log,debug=false,foreground=false,log_level=warning,commiter_name=foo_user,commiter_email=foo_user@whatever.com,user=www-data,group=www-data,username=foo_user,password=boo_password https://github.com/foo_user/my_git_project.git /var/mount/whatever_dir
 ```
 
-See [Arguments](arguments.md) for more details.
+See [Arguments](./arguments.md) for more details.
 
 ### Directory structure
 
@@ -101,6 +101,6 @@ The inner folders are the snapshots of their respective commits.
 
 ### Keeping things up to date
 
-`gitfs` automatically fetches the newest changes from your repository at a given time interval. The default delay between fetches is `30s` but you can change this value with the `fetch_delay` argument. See [Arguments](arguments.md) for more details.
+`gitfs` automatically fetches the newest changes from your repository at a given time interval. The default delay between fetches is `30s` but you can change this value with the `fetch_delay` argument. See [Arguments](./arguments.md) for more details.
 
 The inner folders are the snapshots of their respective commits.

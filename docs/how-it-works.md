@@ -10,7 +10,7 @@ menu:
 
 ## FUSE
 
-gitfs uses [FUSE](http://fuse.sourceforge.net/) to create its filesystem. It’s used to create the `current` and `history` directories that you can find where you mounted the repository. More on that [here](usage.md#user-content-directory-structure).
+gitfs uses [FUSE](http://fuse.sourceforge.net/) to create its filesystem. It’s used to create the `current` and `history` directories that you can find where you mounted the repository. More on that [here](./usage.md#user-content-directory-structure).
 
 ## pygit2
 
