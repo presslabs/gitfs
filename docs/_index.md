@@ -26,7 +26,7 @@ gitfs is useful in places where you want to keep track of all your files, but at
 
 ## Development
 
-You are highly encouraged to use gitfs, to contribute with code, tests, documentation, or just to share your experience. Development of gitfs happens at [github.com/Presslabs/gitfs](https://github.com/Presslabs/gitfs). The concise contribution guide can be found in the [CONTRIBUTING.md](https://github.com/presslabs/gitfs/blob/master/CONTRIBUTING.md) file.
+You are highly encouraged to use gitfs, to contribute with code, tests, documentation, or just to share your experience. Development of gitfs happens at [github.com/Presslabs/gitfs](https://github.com/Presslabs/gitfs). The concise contribution guide can be found in the CONTRIBUTING.md file on [GitHub](https://github.com/presslabs/gitfs/) file.
 
 ## License
 
