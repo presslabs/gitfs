@@ -65,7 +65,7 @@ gitfs git@github.com:user/repo.git /mypath -o
 repo_path=/tmp/path,branch=dev,log=-,debug=true,foreground=true,fetch_timeout=0.1,merge_timeout=0.1...
 ```
 
-For an entire list of options, you can check the [arguments page](https://www.presslabs.com/code/gitfs/gitfs-arguments/).
+For an entire list of options, you can check the [arguments page](https://www.presslabs.com/code/gitfs/arguments/).
 
 ## Features
 * Automatically commits changes: create, delete, update files and their metadata
