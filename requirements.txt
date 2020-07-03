@@ -1,5 +1,5 @@
 atomiclong==0.1.1
-cffi==1.12.3
+cffi==1.14.0
 fusepy==3.0.1
 pycparser==2.20
 pygit2==0.28.2
