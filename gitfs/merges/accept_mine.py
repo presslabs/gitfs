@@ -14,7 +14,6 @@
 
 
 import pygit2
-import six
 
 from gitfs.log import log
 from .base import Merger
@@ -132,7 +131,7 @@ class AcceptMine(Merger):
                     log.debug("AcceptMine: overwrite all file with our " "content")
                     with open(self.repository._full_path(ours.path), "w") as f:
                         data = self.repository.get(ours.id).data
-                        f.write(six.text_type(data))
+                        f.write(data)
                     self.repository.index.add(ours.path)
         else:
             log.info("AcceptMine: No conflicts to solve")

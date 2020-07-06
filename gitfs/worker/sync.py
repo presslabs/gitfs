@@ -13,9 +13,9 @@
 # limitations under the License.
 import random
 import time
+from queue import Empty
 
 import pygit2
-from six.moves.queue import Empty
 
 from gitfs.worker.peasant import Peasant
 from gitfs.merges import AcceptMine

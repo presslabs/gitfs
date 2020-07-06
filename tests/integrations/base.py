@@ -21,7 +21,6 @@ import subprocess
 import time
 
 import pytest
-from six import string_types
 
 
 class Sh(object):
@@ -165,7 +164,7 @@ class GitFSLog(object):
         def log_context(gitfs_log):
             gitfs_log.clear()
             yield
-            if isinstance(expected, string_types):
+            if isinstance(expected, str):
                 gitfs_log.expect(expected, **kwargs)
             else:
                 gitfs_log.expect_multiple(expected, **kwargs)
