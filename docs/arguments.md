@@ -18,6 +18,7 @@ In order to use options when mounting gitfs, you need to append the options as a
 
 ## All available options
 
+<div class="formated_table w-1-25 w-2-25"></div>
 | **Name**             | **Default**                | **Description**                                                                                                                                                                                                                                                                                                       |
 |----------------------|----------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `remote_url`         |                            | the URL of the remote. The accepted formats are: <ul><li>`https://username:password@hostname.com/repo.git` – for HTTP</li><li>`username@hostname.com:repo.git` – for SSH</li></ul>                                                                                                                                    |
