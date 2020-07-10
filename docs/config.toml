@@ -9,6 +9,9 @@ title = "Gitfs DOCS"
 [markup]
   defaultMarkdownHandler = "goldmark"
 
+[markup.goldmark.renderer]
+  unsafe = true
+
 [params]
   related = true
   logo_text = "CODE"
