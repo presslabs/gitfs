@@ -1,27 +1,24 @@
 #!/usr/bin/env bash
 
-export PYTHON_VERSION=python3.7
-
-function python {
-    $PYTHON_VERSION "$@"
-}
-
 echo "I am provisioning..."
 sudo sh -c 'date > /etc/vagrant_provisioned_at'
 
 echo "Installing dependencies"
-sudo add-apt-repository ppa:presslabs/gitfs
+sudo add-apt-repository -y ppa:presslabs/gitfs
 sudo apt-get update
-sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -q python-virtualenv python-dev libffi-dev build-essential git-core "$PYTHON_VERSION-dev" libgit2-dev "$PYTHON_VERSION-venv" libfuse-dev libfuse2
+sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -q python3-dev python3-venv libffi-dev build-essential git-core libgit2-dev libfuse-dev libfuse2
 
 echo "Configuring fuse"
 sudo groupadd fuse
-sudo adduser "$USER" fuse
+sudo adduser vagrant fuse
 sudo sh -c "echo 'user_allow_other' >> /etc/fuse.conf"
 
 echo "Configure virtualenv"
-python -m venv /home/vagrant/gitfs
-echo "source $HOME/gitfs/bin/activate" >> "$HOME/.bashrc"
+python3 -m venv /home/vagrant/gitfs
+echo "source /home/vagrant/gitfs/bin/activate" >> "$HOME/.bashrc"
+
+echo Installing whell
+/home/vagrant/gitfs/bin/pip install -q 'wheel'
 
 echo Installing cffi
 /home/vagrant/gitfs/bin/pip install -q 'cffi'
@@ -34,4 +31,4 @@ git config --global user.email "vagrant@localhost"
 git config --global user.name "Vagrant"
 
 echo Installing gitfs
-"$HOME/gitfs/bin/pip" install -q -e /vagrant
+/home/vagrant/gitfs/bin/pip install -q -e /vagrant

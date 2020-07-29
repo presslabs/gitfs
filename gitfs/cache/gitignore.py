@@ -17,8 +17,6 @@ import re
 import os
 import fnmatch
 
-from six import string_types
-
 
 class CachedIgnore(object):
     def __init__(self, ignore=False, submodules=False, exclude=False, hard_ignore=None):
@@ -65,7 +63,7 @@ class CachedIgnore(object):
         return items
 
     def _parse_hard_ignore(self, hard_ignore):
-        if isinstance(hard_ignore, string_types):
+        if isinstance(hard_ignore, str):
             return hard_ignore.split("|")
         else:
             return []

@@ -18,7 +18,6 @@ from mock import MagicMock, patch, call
 import os
 
 from fuse import FuseOSError
-from six.moves import builtins
 from pytest import raises
 
 from gitfs.views import PassthroughView

@@ -15,8 +15,6 @@
 
 from mock import MagicMock, patch, call
 
-from six import iteritems
-
 from gitfs.utils.args import Args
 
 
@@ -74,7 +72,7 @@ class TestArgs(object):
                 "not_magic": "False",
                 "ssh_user": "user",
             }
-            for name, value in iteritems(asserted_results):
+            for name, value in asserted_results.items():
                 assert value == getattr(args, name)
 
             assert args.config == mocked_args

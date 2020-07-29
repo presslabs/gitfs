@@ -15,8 +15,6 @@
 
 import os
 
-from six import iteritems
-
 from tests.integrations.base import BaseTest
 
 
@@ -46,5 +44,5 @@ class TestReadCurrentView(BaseTest):
             "st_atime": real_stats.st_atime,
         }
 
-        for name, value in iteritems(attrs):
+        for name, value in attrs.items():
             assert getattr(stats, name) == value

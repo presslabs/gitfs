@@ -30,7 +30,6 @@ from pygit2 import (
     GIT_BRANCH_LOCAL,
     GIT_FILEMODE_BLOB_EXECUTABLE,
 )
-from six import iteritems
 
 from gitfs.cache import CommitCache
 from gitfs.log import log
@@ -94,7 +93,7 @@ class Repository(object):
         self.ignore.update()
 
         status = self._repo.status()
-        for path, status in iteritems(status):
+        for path, status in status.items():
             # path is in current status, move on
             if status == GIT_STATUS_CURRENT:
                 continue
