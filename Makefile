@@ -43,7 +43,7 @@ $(VIRTUAL_ENV)/bin/pip2.7:
 	virtualenv --setuptools $(VIRTUAL_ENV)
 
 $(VIRTUAL_ENV)/bin/pip%:
-	virtualenv --setuptools $(VIRTUAL_ENV) -ppython$*
+	virtualenv $(VIRTUAL_ENV) --setuptools $(VIRTUAL_ENV) -ppython$*
 
 virtualenv: $(VIRTUAL_ENV)/bin/pip$(PYTHON)
 
