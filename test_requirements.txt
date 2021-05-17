@@ -1,4 +1,4 @@
 -r requirements.txt
 mock==1.0.1
 pytest==4.6.5
-pytest-cov==2.8.1
+pytest-cov==2.12.0
