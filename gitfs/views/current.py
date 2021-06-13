@@ -266,7 +266,10 @@ class CurrentView(PassthroughView):
                         path = path.replace("{}/".format(add), "{}/".format(remove))
                         self.repo.index.remove(path)
                 else:
-                    self.repo.index.remove(remove)
+                    try:
+                        self.repo.index.remove(remove)
+                    except OSError as e:
+                        log.debug("failed to remove from cache: [{}] {}".format(e, type(e)))
             else:
                 self.repo.index.remove(remove)
             non_empty = True
