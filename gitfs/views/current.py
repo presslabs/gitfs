@@ -90,9 +90,9 @@ class CurrentView(PassthroughView):
     @not_in("ignore", check=["path"])
     def write(self, path, buf, offset, fh):
         """
-            We don't like big big files, so we need to be really carefull
-            with them. First we check for offset, then for size. If any of this
-            is off limit, raise EFBIG error and delete the file.
+        We don't like big big files, so we need to be really carefull
+        with them. First we check for offset, then for size. If any of this
+        is off limit, raise EFBIG error and delete the file.
         """
 
         if offset + len(buf) > self.max_size:
@@ -269,7 +269,9 @@ class CurrentView(PassthroughView):
                     try:
                         self.repo.index.remove(remove)
                     except OSError as e:
-                        log.debug("failed to remove from cache: [{}] {}".format(e, type(e)))
+                        log.debug(
+                            "failed to remove from cache: [{}] {}".format(e, type(e))
+                        )
             else:
                 self.repo.index.remove(remove)
             non_empty = True
