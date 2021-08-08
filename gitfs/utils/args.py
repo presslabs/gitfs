@@ -185,7 +185,7 @@ class Args(object):
         return tempfile.mkdtemp(dir="/var/lib/gitfs")
 
     def get_ssh_key(self, args):
-        return os.environ["HOME"] + "/.ssh/id_rsa"
+        return os.getenv("HOME", "/root/") + "/.ssh/id_rsa"
 
     def get_sentry_dsn(self, args):
         return os.environ["SENTRY_DSN"] if "SENTRY_DSN" in os.environ else ""
