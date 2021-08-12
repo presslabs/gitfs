@@ -72,6 +72,8 @@ class Args(object):
                 if "=" in arg:
                     item, value = arg.split("=")
                     setattr(args, item, value)
+                else:
+                    setattr(args, arg, "true")
 
         return self.check_args(self.set_defaults(args))
 
