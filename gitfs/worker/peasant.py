@@ -15,8 +15,6 @@
 
 from threading import Thread
 
-from six import iteritems
-
 from gitfs.log import log
 
 
@@ -24,7 +22,7 @@ class Peasant(Thread):
     def __init__(self, *args, **kwargs):
         super(Peasant, self).__init__()
 
-        for name, value in iteritems(kwargs):
+        for name, value in kwargs.items():
             setattr(self, name, value)
 
     def run(self):
