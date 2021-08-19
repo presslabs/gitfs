@@ -168,7 +168,7 @@ class TestRepository(RepositoryBaseTest):
 
     def test_walk_branches(self):
         """
-        Given 2 branches, this method whould return the commits step by step:
+        Given 2 branches, this method would return the commits step by step:
             [(commit_1_branch_1, commit_1_branch_2),
              (commit_2_branch_1, commit_2_branch_2),
              (commit_3_branch_1, commit_3_branch_2),
