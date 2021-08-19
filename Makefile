@@ -28,10 +28,10 @@ $(BUILD_DIR)/gitfs: $(BUILD_DIR) $(VIRTUAL_ENV)/bin/pex
 	$(VIRTUAL_ENV)/bin/pex -v --disable-cache -r requirements.txt -e gitfs:mount -o $(BUILD_DIR)/gitfs .
 
 $(VIRTUAL_ENV)/bin/pex: virtualenv
-	$(VIRTUAL_ENV)/bin/pip install pex wheel
+	$(VIRTUAL_ENV)/bin/pip$(PYTHON) install pex wheel
 
 $(VIRTUAL_ENV)/bin/mkdocs: virtualenv
-	$(VIRTUAL_ENV)/bin/pip install mkdocs
+	$(VIRTUAL_ENV)/bin/pip$(PYTHON) install mkdocs
 
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
@@ -43,7 +43,7 @@ $(VIRTUAL_ENV)/bin/pip2.7:
 	virtualenv --setuptools $(VIRTUAL_ENV)
 
 $(VIRTUAL_ENV)/bin/pip%:
-	virtualenv --setuptools $(VIRTUAL_ENV) -ppython$*
+	virtualenv $(VIRTUAL_ENV) --setuptools $(VIRTUAL_ENV) -ppython$*
 
 virtualenv: $(VIRTUAL_ENV)/bin/pip$(PYTHON)
 
