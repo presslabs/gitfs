@@ -76,12 +76,6 @@ class Args(object):
         return self.check_args(self.set_defaults(args))
 
     def check_args(self, args):
-        # check allow_other and allow_root
-        if args.allow_other:
-            args.allow_root = False
-        else:
-            args.allow_root = True
-
         # check log_level
         if args.debug:
             args.log_level = "debug"
