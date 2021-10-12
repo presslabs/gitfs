@@ -44,7 +44,7 @@ class Args(object):
                 ("foreground", (False, "bool")),
                 ("branch", ("master", "string")),
                 ("allow_other", (False, "bool")),
-                ("allow_root", (True, "bool")),
+                ("allow_root", (False, "bool")),
                 ("commiter_name", (self.get_commiter_user, "string")),
                 ("commiter_email", (self.get_commiter_email, "string")),
                 ("max_size", (10, "float")),
@@ -76,12 +76,6 @@ class Args(object):
         return self.check_args(self.set_defaults(args))
 
     def check_args(self, args):
-        # check allow_other and allow_root
-        if args.allow_other:
-            args.allow_root = False
-        else:
-            args.allow_root = True
-
         # check log_level
         if args.debug:
             args.log_level = "debug"
