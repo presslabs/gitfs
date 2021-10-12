@@ -44,7 +44,7 @@ class Args(object):
                 ("foreground", (False, "bool")),
                 ("branch", ("master", "string")),
                 ("allow_other", (False, "bool")),
-                ("allow_root", (True, "bool")),
+                ("allow_root", (False, "bool")),
                 ("commiter_name", (self.get_commiter_user, "string")),
                 ("commiter_email", (self.get_commiter_email, "string")),
                 ("max_size", (10, "float")),
