@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import collections
+from collections.abc import MutableMapping
 
 
-class Cache(collections.MutableMapping):
+class Cache(MutableMapping):
     """Mutable mapping to serve as a simple cache or cache base class.
 
     This class discards arbitrary items using :meth:`popitem` to make
